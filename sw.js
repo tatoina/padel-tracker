@@ -1,8 +1,10 @@
-// PadelTracker Service Worker v1.0
-const CACHE = 'padel-v1';
+// PadelTracker Service Worker v2.0
+const CACHE = 'padel-v2';
 const ASSETS = [
   '/index.html',
-  '/manifest.json'
+  '/manifest.json',
+  '/icon-192.png',
+  '/icon-512.png'
 ];
 
 self.addEventListener('install', e => {
