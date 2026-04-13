@@ -1,0 +1,1587 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#16a34a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="PadelTracker">
+  <title>PadelTracker</title>
+  <link rel="manifest" href="manifest.json">
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --green:        #16a34a;
+      --green-dark:   #15803d;
+      --green-light:  #dcfce7;
+      --amber:        #d97706;
+      --amber-light:  #fef3c7;
+      --indigo:       #6366f1;
+      --indigo-light: #eef2ff;
+      --red:          #ef4444;
+      --red-light:    #fee2e2;
+      --bg:           #f1f5f9;
+      --card:         #ffffff;
+      --text:         #1e293b;
+      --muted:        #64748b;
+      --border:       #e2e8f0;
+      --radius:       14px;
+      --shadow:       0 1px 4px rgba(0,0,0,.08), 0 2px 8px rgba(0,0,0,.04);
+      --tab-h:        62px;
+    }
+    html { -webkit-tap-highlight-color: transparent; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+      background: var(--bg); color: var(--text);
+      min-height: 100vh; max-width: 480px; margin: 0 auto;
+      position: relative; overscroll-behavior: none;
+    }
+
+    /* ─── SCREENS ─────────────────────────────────── */
+    .screen { display: none; }
+    .screen.active { display: block; }
+
+    /* ─── SPLASH (gradient full) ──────────────────── */
+    #screen-register, #screen-pending, #screen-admin-login {
+      position: fixed; inset: 0; z-index: 900;
+      background: linear-gradient(160deg, #16a34a 0%, #166534 55%, #14532d 100%);
+      display: none; flex-direction: column; align-items: center;
+      justify-content: flex-start; padding: 2.5rem 1.25rem 2rem;
+      overflow-y: auto; -webkit-overflow-scrolling: touch;
+    }
+    #screen-register.active,
+    #screen-pending.active,
+    #screen-admin-login.active { display: flex; }
+
+    .reg-hero { text-align: center; color: #fff; margin-bottom: 2rem; padding-top: env(safe-area-inset-top); }
+    .reg-logo  { font-size: 4rem; line-height: 1; margin-bottom: 0.75rem; }
+    .reg-title { font-size: 2.25rem; font-weight: 900; letter-spacing: -0.05em; }
+    .reg-sub   { font-size: 0.9rem; opacity: 0.75; margin-top: 0.375rem; }
+
+    .reg-card {
+      background: #fff; border-radius: 20px;
+      padding: 1.625rem 1.375rem 1.375rem;
+      width: 100%; max-width: 400px;
+      box-shadow: 0 8px 40px rgba(0,0,0,.22);
+    }
+    .reg-card-title { font-size: 1.05rem; font-weight: 800; color: var(--text); margin-bottom: 1.25rem; }
+
+    .google-btn {
+      display: flex; align-items: center; justify-content: center; gap: 0.625rem;
+      width: 100%; padding: 0.75rem 1rem;
+      border: 2px solid var(--border); border-radius: 10px;
+      background: #fff; cursor: pointer; font-size: 0.9375rem;
+      font-weight: 700; font-family: inherit; color: var(--text);
+      transition: border-color .18s, box-shadow .18s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .google-btn:hover { border-color: var(--green); box-shadow: 0 0 0 3px rgba(22,163,74,.12); }
+    .google-icon { width: 22px; height: 22px; }
+
+    .or-divider { display: flex; align-items: center; gap: 0.5rem; margin: 1rem 0; color: var(--muted); font-size: 0.8rem; font-weight: 600; }
+    .or-divider::before, .or-divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+    /* ─── PENDING screen ──────────────────────────── */
+    .pending-card {
+      background: #fff; border-radius: 20px;
+      padding: 2rem 1.5rem; width: 100%; max-width: 380px;
+      text-align: center; box-shadow: 0 8px 40px rgba(0,0,0,.22);
+    }
+    .pending-icon  { font-size: 3.5rem; margin-bottom: 1rem; }
+    .pending-title { font-size: 1.25rem; font-weight: 800; color: var(--text); margin-bottom: 0.5rem; }
+    .pending-sub   { font-size: 0.875rem; color: var(--muted); line-height: 1.5; margin-bottom: 1.5rem; }
+
+    /* ─── HEADER ──────────────────────────────────── */
+    .header {
+      background: linear-gradient(135deg, #16a34a, #166534);
+      color: #fff; padding: 0.75rem 1rem;
+      padding-top: calc(0.75rem + env(safe-area-inset-top));
+      display: flex; align-items: center; gap: 0.625rem;
+      position: sticky; top: 0; z-index: 100;
+      box-shadow: 0 2px 12px rgba(0,0,0,.18);
+    }
+    .header-logo  { font-size: 1.6rem; line-height: 1; }
+    .header-text  { flex: 1; min-width: 0; }
+    .header-title { font-size: 1rem; font-weight: 800; letter-spacing: -0.02em; }
+    .header-sub   { font-size: 0.65rem; opacity: 0.8; margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    /* Group switcher pill */
+    .group-pill {
+      display: flex; align-items: center; gap: 0.375rem;
+      background: rgba(255,255,255,.18); border-radius: 20px;
+      padding: 0.3rem 0.625rem 0.3rem 0.75rem;
+      font-size: 0.72rem; font-weight: 800;
+      cursor: pointer; border: none; color: #fff;
+      flex-shrink: 0; white-space: nowrap;
+      -webkit-tap-highlight-color: transparent;
+      max-width: 130px; overflow: hidden; text-overflow: ellipsis;
+    }
+    .group-pill:active { background: rgba(255,255,255,.28); }
+    .group-pill-arrow { opacity: 0.7; font-size: 0.6rem; flex-shrink: 0; }
+
+    /* ─── GROUP SWITCHER MODAL ────────────────────── */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0; z-index: 800;
+      background: rgba(0,0,0,.45); align-items: flex-end;
+      justify-content: center;
+    }
+    .modal-overlay.open { display: flex; animation: fadeIn .15s ease; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    .modal-sheet {
+      background: #fff; border-radius: 20px 20px 0 0;
+      width: 100%; max-width: 480px;
+      padding: 1.25rem 1.25rem calc(1.25rem + env(safe-area-inset-bottom));
+      animation: slideUp .22s cubic-bezier(.34,1.56,.64,1);
+      max-height: 80vh; overflow-y: auto;
+    }
+    @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+    .modal-title { font-size: 1rem; font-weight: 800; margin-bottom: 1rem; }
+    .modal-close { float: right; background: none; border: none; font-size: 1.375rem; cursor: pointer; color: var(--muted); padding: 0 0.25rem; -webkit-tap-highlight-color: transparent; }
+
+    .group-option {
+      display: flex; align-items: center; gap: 0.75rem;
+      padding: 0.75rem 0; border-bottom: 1px solid var(--border);
+      cursor: pointer; border-radius: 8px;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .group-option:last-of-type { border-bottom: none; }
+    .group-option:active { background: var(--bg); }
+    .group-option-icon { width: 38px; height: 38px; border-radius: 50%; background: var(--green-light); color: var(--green-dark); display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0; }
+    .group-option-icon.active-g { background: var(--green); color: #fff; }
+    .group-option-name { font-weight: 700; font-size: 0.9375rem; }
+    .group-option-sub  { font-size: 0.72rem; color: var(--muted); }
+    .group-option-check { margin-left: auto; color: var(--green); font-size: 1.2rem; }
+
+    /* ─── MAIN / TAB BAR / PAGES ─────────────────── */
+    .main { padding: 1rem; padding-bottom: calc(var(--tab-h) + 1.25rem + env(safe-area-inset-bottom)); }
+    .tab-bar {
+      position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+      width: 100%; max-width: 480px;
+      height: calc(var(--tab-h) + env(safe-area-inset-bottom));
+      padding-bottom: env(safe-area-inset-bottom);
+      background: var(--card); border-top: 1px solid var(--border);
+      display: flex; z-index: 200;
+      box-shadow: 0 -4px 20px rgba(0,0,0,.07);
+    }
+    .tab-btn {
+      flex: 1; display: flex; flex-direction: column; align-items: center;
+      justify-content: center; gap: 2px;
+      border: none; background: none; cursor: pointer;
+      color: var(--muted); font-size: 0.65rem; font-weight: 600;
+      padding: 0.5rem 0 0; transition: color .18s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .tab-btn.active { color: var(--green); }
+    .tab-btn .ti { font-size: 1.4rem; line-height: 1; }
+
+    .page { display: none; }
+    .page.active { display: block; animation: fadeUp .2s ease; }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* ─── CARDS ───────────────────────────────────── */
+    .card { background: var(--card); border-radius: var(--radius); padding: 1rem 1rem 1.25rem; box-shadow: var(--shadow); margin-bottom: 0.875rem; }
+    .card-title { font-size: 0.72rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 0.875rem; }
+    .divider-text { display: flex; align-items: center; gap: 0.5rem; color: var(--muted); font-size: 0.72rem; font-weight: 700; margin: 0.875rem 0; }
+    .divider-text::before, .divider-text::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+    /* ─── FORM ELEMENTS ───────────────────────────── */
+    .form-group  { margin-bottom: 0.875rem; }
+    .form-label  { display: block; font-size: 0.8125rem; font-weight: 600; margin-bottom: 0.3rem; }
+    .form-hint   { font-size: 0.75rem; color: var(--muted); margin-top: 0.375rem; line-height: 1.4; }
+    .form-input {
+      width: 100%; padding: 0.625rem 0.875rem;
+      border: 1.5px solid var(--border); border-radius: 10px;
+      font-size: 0.9375rem; font-family: inherit; color: var(--text);
+      background: #fff; outline: none; -webkit-appearance: none;
+      transition: border-color .18s, box-shadow .18s;
+    }
+    .form-input:focus { border-color: var(--green); box-shadow: 0 0 0 3px rgba(22,163,74,.12); }
+    .form-select {
+      width: 100%; padding: 0.625rem 2.25rem 0.625rem 0.875rem;
+      border: 1.5px solid var(--border); border-radius: 10px;
+      font-size: 0.9375rem; font-family: inherit; color: var(--text);
+      background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' viewBox='0 0 24 24' stroke='%2364748b' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E") no-repeat right 0.75rem center;
+      -webkit-appearance: none; appearance: none; outline: none;
+      transition: border-color .18s, box-shadow .18s;
+    }
+    .form-select:focus { border-color: var(--green); box-shadow: 0 0 0 3px rgba(22,163,74,.12); }
+
+    /* ─── PAIR PREVIEW ────────────────────────────── */
+    .pair-vs-grid { display: grid; grid-template-columns: 1fr 32px 1fr; gap: 0.5rem; align-items: stretch; }
+    .pair-box { background: var(--green-light); border-radius: 10px; padding: 0.625rem 0.75rem; border: 1.5px solid rgba(22,163,74,.2); }
+    .pair-box.p2 { background: var(--amber-light); border-color: rgba(217,119,6,.2); }
+    .pair-box-label { font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: var(--green-dark); margin-bottom: 0.25rem; }
+    .pair-box.p2 .pair-box-label { color: var(--amber); }
+    .pair-player-name { font-size: 0.8rem; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .vs-circle { background: var(--text); color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; font-weight: 800; align-self: center; }
+
+    /* ─── SET SCORER ──────────────────────────────── */
+    .set-item { margin-bottom: 0.875rem; }
+    .set-item-label { font-size: 0.72rem; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 0.4rem; }
+    .set-item-row { display: grid; grid-template-columns: 1fr 24px 1fr; gap: 0.375rem; align-items: center; }
+    .stepper-box { border: 2px solid var(--border); border-radius: 12px; padding: 0.5rem 0.375rem 0.625rem; text-align: center; transition: border-color .18s, background .18s; background: #fff; }
+    .stepper-box.win-p1 { border-color: var(--green); background: var(--green-light); }
+    .stepper-box.win-p2 { border-color: var(--amber);  background: var(--amber-light); }
+    .stepper-name { font-size: 0.68rem; font-weight: 700; color: var(--muted); margin-bottom: 0.4rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .stepper-box.win-p1 .stepper-name { color: var(--green-dark); }
+    .stepper-box.win-p2 .stepper-name { color: #92400e; }
+    .stepper-controls { display: flex; align-items: center; justify-content: center; gap: 0.375rem; }
+    .step-btn {
+      width: 40px; height: 40px; border-radius: 50%;
+      border: 2px solid var(--border); background: #fff;
+      font-size: 1.5rem; font-weight: 700; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--text); flex-shrink: 0; line-height: 1;
+      transition: transform .12s, background .12s;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none; padding-bottom: 2px;
+    }
+    .step-btn:active { transform: scale(0.82); background: var(--bg); }
+    .step-btn.dec { color: var(--red);   border-color: rgba(239,68,68,.3); }
+    .step-btn.inc { color: var(--green); border-color: rgba(22,163,74,.3); }
+    .step-score { font-size: 2.25rem; font-weight: 900; min-width: 2.5rem; text-align: center; color: var(--text); line-height: 1; }
+    .stepper-box.win-p1 .step-score { color: var(--green-dark); }
+    .stepper-box.win-p2 .step-score { color: #92400e; }
+    .set-colon { font-size: 1.5rem; font-weight: 900; color: var(--muted); text-align: center; padding-top: 1.375rem; }
+    .set-actions { display: flex; gap: 0.5rem; margin: 0.25rem 0 0.125rem; }
+    .result-box { border-radius: 10px; padding: 0.8rem 1rem; text-align: center; font-size: 0.9375rem; font-weight: 700; margin-top: 0.875rem; }
+    .rb-empty { background: var(--bg); color: var(--muted); }
+    .rb-p1    { background: var(--green-light); color: var(--green-dark); }
+    .rb-p2    { background: var(--amber-light); color: #92400e; }
+    .rb-draw  { background: var(--indigo-light); color: #3730a3; }
+    .set-pills { display: flex; gap: 0.375rem; flex-wrap: wrap; margin-top: 0.4rem; }
+    .set-pill { border-radius: 6px; padding: 0.2rem 0.55rem; font-size: 0.875rem; font-weight: 700; border: 1px solid var(--border); background: var(--bg); color: var(--text); }
+    .set-pill.p1 { background: var(--green-light); border-color: rgba(22,163,74,.3); color: var(--green-dark); }
+    .set-pill.p2 { background: var(--amber-light);  border-color: rgba(217,119,6,.3); color: #92400e; }
+
+    /* ─── BUTTONS ─────────────────────────────────── */
+    .btn { display: block; width: 100%; padding: 0.8rem 1rem; border: none; border-radius: 10px; font-size: 0.9375rem; font-weight: 700; font-family: inherit; cursor: pointer; transition: all .18s; text-align: center; -webkit-tap-highlight-color: transparent; }
+    .btn:active        { transform: scale(0.97); }
+    .btn-primary       { background: var(--green); color: #fff; }
+    .btn-primary:hover { background: var(--green-dark); }
+    .btn-danger        { background: var(--red); color: #fff; }
+    .btn-outline       { background: #fff; color: var(--green); border: 2px solid var(--green); }
+    .btn-ghost         { background: var(--bg); color: var(--text); }
+    .btn-danger-ghost  { background: var(--bg); color: var(--red); }
+    .btn-sm            { padding: 0.45rem 0.875rem; font-size: 0.8125rem; width: auto; display: inline-block; }
+
+    /* ─── RANKING TABLE ───────────────────────────── */
+    .rank-table { width: 100%; border-collapse: collapse; }
+    .rank-table th { font-size: 0.68rem; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; padding: 0.35rem 0.4rem; text-align: center; border-bottom: 2px solid var(--border); }
+    .rank-table th:first-child { text-align: left; padding-left: 0; }
+    .rank-table td { padding: 0.7rem 0.4rem; text-align: center; font-size: 0.875rem; border-bottom: 1px solid var(--border); }
+    .rank-table td:first-child { text-align: left; padding-left: 0; }
+    .rank-table tbody tr:last-child td { border-bottom: none; }
+    .rank-table tbody tr:hover { background: var(--bg); }
+    .pos-cell  { font-weight: 800; font-size: 0.85rem; color: var(--muted); }
+    .pos-1 .pos-cell { color: #f59e0b; }
+    .pos-2 .pos-cell { color: #94a3b8; }
+    .pos-3 .pos-cell { color: #b45309; }
+    .name-cell { font-weight: 700; }
+    .pts-cell  { font-weight: 800; color: var(--green); font-size: 1.05rem; }
+    .g-cell    { color: var(--green);  font-weight: 700; }
+    .e-cell    { color: var(--indigo); font-weight: 700; }
+    .d-cell    { color: var(--red);    font-weight: 700; }
+    .pts-legend { font-size: 0.68rem; color: var(--muted); text-align: center; margin-top: 0.875rem; padding-top: 0.75rem; border-top: 1px solid var(--border); }
+
+    /* ─── HISTORY CARDS ───────────────────────────── */
+    .match-card { background: var(--card); border-radius: 12px; padding: 0.875rem; margin-bottom: 0.625rem; box-shadow: var(--shadow); border-left: 4px solid var(--border); position: relative; }
+    .match-card.res-p1   { border-left-color: var(--green); }
+    .match-card.res-draw { border-left-color: var(--indigo); }
+    .match-card.res-p2   { border-left-color: var(--amber); }
+    .match-date  { font-size: 0.72rem; color: var(--muted); margin-bottom: 0.375rem; }
+    .match-teams { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+    .match-pair  { font-size: 0.875rem; font-weight: 700; }
+    .match-pair.p1 { color: var(--green-dark); }
+    .match-pair.p2 { color: #92400e; }
+    .match-vs { font-size: 0.7rem; font-weight: 800; color: var(--muted); }
+    .del-match-btn { position: absolute; top: 0.625rem; right: 0.625rem; background: none; border: none; font-size: 1rem; cursor: pointer; color: var(--muted); opacity: 0.55; padding: 0.25rem 0.3rem; -webkit-tap-highlight-color: transparent; }
+    .del-match-btn:active { opacity: 1; }
+    .badge { display: inline-block; font-size: 0.72rem; font-weight: 700; padding: 0.2rem 0.55rem; border-radius: 20px; margin-top: 0.4rem; }
+    .badge-p1   { background: var(--green-light);  color: var(--green-dark); }
+    .badge-draw { background: var(--indigo-light); color: #3730a3; }
+    .badge-p2   { background: var(--amber-light);  color: #92400e; }
+
+    /* ─── PLAYERS LIST ────────────────────────────── */
+    .player-row { display: flex; align-items: center; padding: 0.6rem 0; border-bottom: 1px solid var(--border); }
+    .player-row:last-child { border-bottom: none; }
+    .avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--green); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.875rem; margin-right: 0.75rem; flex-shrink: 0; }
+    .avatar.me { background: var(--indigo); }
+    .player-nm  { font-weight: 600; flex: 1; }
+    .player-you { font-size: 0.68rem; color: var(--indigo); font-weight: 700; margin-left: 0.375rem; }
+    .del-player-btn { background: none; border: none; color: var(--red); cursor: pointer; font-size: 1.1rem; padding: 0.25rem 0.375rem; opacity: 0.7; -webkit-tap-highlight-color: transparent; }
+
+    /* ─── SETTINGS ────────────────────────────────── */
+    .settings-row { display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 0; border-bottom: 1px solid var(--border); }
+    .settings-row:last-child { border-bottom: none; }
+    .settings-label { font-weight: 700; font-size: 0.9375rem; }
+    .settings-desc  { font-size: 0.72rem; color: var(--muted); margin-top: 2px; }
+    .pts-input { width: 68px; padding: 0.4rem 0.5rem; border: 1.5px solid var(--border); border-radius: 8px; font-size: 1.125rem; font-weight: 800; text-align: center; color: var(--green); outline: none; font-family: inherit; -webkit-appearance: none; }
+    .pts-input:focus { border-color: var(--green); box-shadow: 0 0 0 3px rgba(22,163,74,.12); }
+
+    /* ─── ADMIN PANEL ─────────────────────────────── */
+    #screen-admin { display: none; }
+    #screen-admin.active { display: block; }
+
+    .admin-header {
+      background: linear-gradient(135deg, #1e293b, #0f172a);
+      color: #fff; padding: 0.875rem 1rem;
+      padding-top: calc(0.875rem + env(safe-area-inset-top));
+      display: flex; align-items: center; gap: 0.75rem;
+      position: sticky; top: 0; z-index: 100;
+      box-shadow: 0 2px 12px rgba(0,0,0,.3);
+    }
+    .admin-header-title { font-size: 1.05rem; font-weight: 800; flex: 1; }
+    .admin-logout-btn { background: rgba(255,255,255,.12); border: none; color: #fff; padding: 0.375rem 0.75rem; border-radius: 8px; font-size: 0.8rem; font-weight: 700; cursor: pointer; font-family: inherit; -webkit-tap-highlight-color: transparent; }
+
+    .admin-main { padding: 1rem; padding-bottom: 2rem; max-width: 480px; margin: 0 auto; }
+
+    /* Status badge */
+    .status-pill { display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.72rem; font-weight: 700; padding: 0.2rem 0.55rem; border-radius: 20px; }
+    .status-pending  { background: var(--amber-light);  color: #92400e; }
+    .status-active   { background: var(--green-light);  color: var(--green-dark); }
+    .status-inactive { background: var(--red-light);    color: #b91c1c; }
+
+    .user-admin-card { background: var(--card); border-radius: 12px; padding: 0.875rem; margin-bottom: 0.625rem; box-shadow: var(--shadow); }
+    .ua-top { display: flex; align-items: flex-start; gap: 0.75rem; margin-bottom: 0.625rem; }
+    .ua-avatar { width: 42px; height: 42px; border-radius: 50%; background: var(--green); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1rem; flex-shrink: 0; }
+    .ua-name   { font-weight: 700; font-size: 0.9375rem; }
+    .ua-email  { font-size: 0.75rem; color: var(--muted); }
+    .ua-meta   { font-size: 0.72rem; color: var(--muted); margin-top: 0.25rem; }
+    .ua-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    .ua-btn { padding: 0.4rem 0.75rem; border-radius: 8px; border: 1.5px solid var(--border); background: #fff; font-size: 0.8rem; font-weight: 700; cursor: pointer; font-family: inherit; -webkit-tap-highlight-color: transparent; transition: all .15s; }
+    .ua-btn:active { transform: scale(0.95); }
+    .ua-btn.activate  { border-color: var(--green); color: var(--green); }
+    .ua-btn.deactivate{ border-color: var(--amber); color: var(--amber); }
+    .ua-btn.reset-pw  { border-color: var(--indigo); color: var(--indigo); }
+    .ua-btn.del       { border-color: var(--red); color: var(--red); }
+
+    .admin-tabs { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+    .admin-tab { flex: 1; padding: 0.6rem; text-align: center; border-radius: 10px; border: 2px solid var(--border); background: #fff; font-size: 0.8125rem; font-weight: 700; cursor: pointer; color: var(--muted); transition: all .15s; font-family: inherit; -webkit-tap-highlight-color: transparent; }
+    .admin-tab.active { border-color: #1e293b; background: #1e293b; color: #fff; }
+
+    .admin-stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.5rem; margin-bottom: 1rem; }
+    .stat-box { background: var(--card); border-radius: 12px; padding: 0.875rem 0.5rem; text-align: center; box-shadow: var(--shadow); }
+    .stat-num  { font-size: 1.75rem; font-weight: 900; color: var(--text); line-height: 1; }
+    .stat-lbl  { font-size: 0.68rem; color: var(--muted); font-weight: 600; margin-top: 0.2rem; }
+    .stat-box.s-pending .stat-num  { color: var(--amber); }
+    .stat-box.s-active  .stat-num  { color: var(--green); }
+    .stat-box.s-inactive .stat-num { color: var(--red); }
+
+    /* ─── MISC ────────────────────────────────────── */
+    .empty { text-align: center; padding: 2.5rem 1rem; color: var(--muted); }
+    .empty-icon  { font-size: 2.75rem; margin-bottom: 0.625rem; }
+    .empty-title { font-weight: 700; margin-bottom: 0.25rem; color: var(--text); }
+    .empty-sub   { font-size: 0.8125rem; }
+
+    .toast { position: fixed; bottom: calc(var(--tab-h) + env(safe-area-inset-bottom) + 1rem); left: 50%; transform: translateX(-50%) translateY(80px); background: #1e293b; color: #fff; padding: 0.7rem 1.125rem; border-radius: 10px; font-size: 0.875rem; font-weight: 600; z-index: 999; transition: transform .28s cubic-bezier(.34,1.56,.64,1); white-space: nowrap; box-shadow: 0 4px 16px rgba(0,0,0,.22); pointer-events: none; }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+    .toast-admin { bottom: 2rem; }
+
+    #install-banner { display: none; background: var(--green); color: #fff; padding: 0.75rem 1rem; align-items: center; justify-content: space-between; gap: 0.75rem; font-size: 0.8125rem; font-weight: 600; }
+    #install-banner.visible { display: flex; }
+    #install-btn { background: #fff; color: var(--green); border: none; border-radius: 6px; padding: 0.35rem 0.75rem; font-weight: 700; cursor: pointer; font-size: 0.8rem; }
+    #install-dismiss { background: none; border: none; color: rgba(255,255,255,.75); cursor: pointer; font-size: 1.25rem; padding: 0 0.25rem; }
+
+    .row   { display: flex; gap: 0.5rem; align-items: center; }
+    .flex1 { flex: 1; }
+    .mt-2  { margin-top: 1rem; }
+    .mb-0  { margin-bottom: 0 !important; }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════
+     PANTALLA: REGISTRO
+══════════════════════════════════════════════════ -->
+<div id="screen-register" class="active">
+  <div class="reg-hero">
+    <div class="reg-logo">🎾</div>
+    <div class="reg-title">PadelTracker</div>
+    <div class="reg-sub">Registro de partidos para tu grupo</div>
+  </div>
+  <div class="reg-card">
+    <div class="reg-card-title">Crear cuenta</div>
+
+    <!-- Simulated Google login -->
+    <button class="google-btn" onclick="googleSignIn()">
+      <svg class="google-icon" viewBox="0 0 48 48">
+        <path fill="#4285F4" d="M45.12 24.5c0-1.56-.14-3.06-.4-4.5H24v8.51h11.84c-.51 2.75-2.06 5.08-4.39 6.64v5.52h7.11c4.16-3.83 6.56-9.47 6.56-16.17z"/>
+        <path fill="#34A853" d="M24 46c5.94 0 10.92-1.97 14.56-5.33l-7.11-5.52c-1.97 1.32-4.49 2.1-7.45 2.1-5.73 0-10.58-3.87-12.31-9.07H4.34v5.7C7.96 41.07 15.4 46 24 46z"/>
+        <path fill="#FBBC05" d="M11.69 28.18C11.25 26.86 11 25.45 11 24s.25-2.86.69-4.18v-5.7H4.34C2.85 17.09 2 20.45 2 24c0 3.55.85 6.91 2.34 9.88l7.35-5.7z"/>
+        <path fill="#EA4335" d="M24 10.75c3.23 0 6.13 1.11 8.41 3.29l6.31-6.31C34.91 4.18 29.93 2 24 2 15.4 2 7.96 6.93 4.34 14.12l7.35 5.7c1.73-5.2 6.58-9.07 12.31-9.07z"/>
+      </svg>
+      Continuar con Google
+    </button>
+
+    <div class="or-divider">o regístrate con email</div>
+
+    <div class="form-group">
+      <label class="form-label">Nombre</label>
+      <input type="text" id="reg-firstname" class="form-input" placeholder="Ej: Carlos" maxlength="30" autocomplete="given-name">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Apellidos</label>
+      <input type="text" id="reg-lastname" class="form-input" placeholder="Ej: García López" maxlength="50" autocomplete="family-name">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Email</label>
+      <input type="email" id="reg-email" class="form-input" placeholder="tu@email.com" autocomplete="email">
+    </div>
+    <div class="form-group mb-0">
+      <label class="form-label">Contraseña</label>
+      <input type="password" id="reg-password" class="form-input" placeholder="Mínimo 6 caracteres" autocomplete="new-password">
+    </div>
+
+    <div style="margin-top:1rem;margin-bottom:1rem">
+      <button class="btn btn-primary" onclick="registerUser()">Crear cuenta</button>
+    </div>
+
+    <p style="text-align:center;font-size:.8125rem;color:var(--muted)">
+      ¿Ya tienes cuenta?
+      <button onclick="showLogin()" style="background:none;border:none;color:var(--green);font-weight:700;cursor:pointer;font-size:.8125rem;font-family:inherit">Iniciar sesión</button>
+    </p>
+
+    <!-- Login form (hidden by default) -->
+    <div id="login-form" style="display:none;margin-top:1rem;border-top:1px solid var(--border);padding-top:1rem">
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input type="email" id="login-email" class="form-input" placeholder="tu@email.com" autocomplete="email">
+      </div>
+      <div class="form-group mb-0">
+        <label class="form-label">Contraseña</label>
+        <input type="password" id="login-password" class="form-input" placeholder="Tu contraseña" autocomplete="current-password">
+      </div>
+      <div style="margin-top:1rem">
+        <button class="btn btn-primary" onclick="loginUser()">Entrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     PANTALLA: PENDIENTE DE APROBACIÓN
+══════════════════════════════════════════════════ -->
+<div id="screen-pending">
+  <div class="reg-hero" style="margin-bottom:1.5rem">
+    <div class="reg-logo">🎾</div>
+    <div class="reg-title">PadelTracker</div>
+  </div>
+  <div class="pending-card">
+    <div class="pending-icon">⏳</div>
+    <div class="pending-title">Cuenta pendiente de activación</div>
+    <div class="pending-sub">
+      Tu solicitud ha sido enviada al administrador.<br>
+      Recibirás acceso en cuanto sea aprobada.<br><br>
+      <strong id="pending-name"></strong><br>
+      <span style="color:var(--muted)" id="pending-email"></span>
+    </div>
+    <button class="btn btn-outline" onclick="checkActivation()">🔄 Comprobar estado</button>
+    <button class="btn btn-ghost" style="margin-top:.625rem" onclick="logoutPending()">Volver al inicio</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     PANTALLA: ADMIN LOGIN
+══════════════════════════════════════════════════ -->
+<div id="screen-admin-login">
+  <div class="reg-hero">
+    <div class="reg-logo">🔐</div>
+    <div class="reg-title">Admin</div>
+    <div class="reg-sub">Panel de administración</div>
+  </div>
+  <div class="reg-card">
+    <div class="reg-card-title">🛡️ Acceso administrador</div>
+    <div class="form-group">
+      <label class="form-label">Email admin</label>
+      <input type="email" id="admin-login-email" class="form-input" value="admin@admin.es" readonly>
+    </div>
+    <div class="form-group mb-0">
+      <label class="form-label">Contraseña</label>
+      <input type="password" id="admin-login-pw" class="form-input" placeholder="Contraseña de administrador">
+    </div>
+    <div style="margin-top:1rem">
+      <button class="btn btn-primary" onclick="adminLogin()">Entrar como admin</button>
+    </div>
+    <button onclick="showRegister()" style="display:block;margin-top:.75rem;background:none;border:none;color:var(--muted);cursor:pointer;font-size:.8125rem;width:100%;text-align:center;font-family:inherit">← Volver al registro</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     PANTALLA: PANEL ADMIN
+══════════════════════════════════════════════════ -->
+<div id="screen-admin">
+  <div class="admin-header">
+    <span style="font-size:1.4rem">🛡️</span>
+    <div class="admin-header-title">Panel de Administración</div>
+    <button class="admin-logout-btn" onclick="adminLogout()">Salir</button>
+  </div>
+  <div class="admin-main">
+    <div class="admin-stats">
+      <div class="stat-box s-pending">
+        <div class="stat-num" id="stat-pending">0</div>
+        <div class="stat-lbl">Pendientes</div>
+      </div>
+      <div class="stat-box s-active">
+        <div class="stat-num" id="stat-active">0</div>
+        <div class="stat-lbl">Activos</div>
+      </div>
+      <div class="stat-box s-inactive">
+        <div class="stat-num" id="stat-inactive">0</div>
+        <div class="stat-lbl">Inactivos</div>
+      </div>
+    </div>
+
+    <div class="admin-tabs">
+      <button class="admin-tab active" id="atab-pending"  onclick="setAdminTab('pending')">⏳ Pendientes</button>
+      <button class="admin-tab" id="atab-active"   onclick="setAdminTab('active')">✅ Activos</button>
+      <button class="admin-tab" id="atab-inactive" onclick="setAdminTab('inactive')">❌ Inactivos</button>
+    </div>
+
+    <div id="admin-user-list"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     APP PRINCIPAL
+══════════════════════════════════════════════════ -->
+<div id="screen-app">
+
+  <div id="install-banner">
+    <span>📲 Instalar como app</span>
+    <div class="row">
+      <button id="install-btn">Instalar</button>
+      <button id="install-dismiss">✕</button>
+    </div>
+  </div>
+
+  <header class="header">
+    <span class="header-logo">🎾</span>
+    <div class="header-text">
+      <div class="header-title">PadelTracker</div>
+      <div class="header-sub" id="header-user">—</div>
+    </div>
+    <button class="group-pill" id="group-pill-btn" onclick="openGroupModal()">
+      <span id="group-pill-label">Sin grupo</span>
+      <span class="group-pill-arrow">▼</span>
+    </button>
+  </header>
+
+  <main class="main">
+
+    <!-- PARTIDO -->
+    <div id="page-match" class="page active">
+      <div class="card">
+        <div class="card-title">📅 Fecha del partido</div>
+        <div class="form-group" style="margin-bottom:0">
+          <input type="date" id="match-date" class="form-input">
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">👥 Selecciona los jugadores</div>
+        <div class="card-title" style="margin-bottom:.5rem">🟢 Pareja 1</div>
+        <div class="form-group">
+          <label class="form-label">Jugador 1</label>
+          <select id="p1" class="form-select"><option value="">— Seleccionar —</option></select>
+        </div>
+        <div class="form-group" style="margin-bottom:0">
+          <label class="form-label">Jugador 2</label>
+          <select id="p2" class="form-select"><option value="">— Seleccionar —</option></select>
+        </div>
+        <div class="divider-text">VS</div>
+        <div class="card-title" style="margin-bottom:.5rem">🟠 Pareja 2</div>
+        <div class="form-group">
+          <label class="form-label">Jugador 3</label>
+          <select id="p3" class="form-select"><option value="">— Seleccionar —</option></select>
+        </div>
+        <div class="form-group" style="margin-bottom:0">
+          <label class="form-label">Jugador 4</label>
+          <select id="p4" class="form-select"><option value="">— Seleccionar —</option></select>
+        </div>
+        <div style="margin-top:1rem">
+          <div class="card-title">Vista previa</div>
+          <div class="pair-vs-grid">
+            <div class="pair-box">
+              <div class="pair-box-label">Pareja 1</div>
+              <div class="pair-player-name" id="prev-p1">—</div>
+              <div class="pair-player-name" id="prev-p2">—</div>
+            </div>
+            <div class="vs-circle">VS</div>
+            <div class="pair-box p2">
+              <div class="pair-box-label">Pareja 2</div>
+              <div class="pair-player-name" id="prev-p3">—</div>
+              <div class="pair-player-name" id="prev-p4">—</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">🎾 Marcador por sets</div>
+        <div id="set-scorer"></div>
+        <div class="set-actions">
+          <button class="btn btn-outline btn-sm" onclick="addSet()">＋ Añadir set</button>
+          <button class="btn btn-danger-ghost btn-sm" id="btn-remove-set" onclick="removeSet()" style="display:none">− Quitar último</button>
+        </div>
+        <div id="result-box" class="result-box rb-empty">Anota el marcador para ver el resultado</div>
+      </div>
+
+      <button class="btn btn-primary" onclick="saveMatch()">💾 Guardar partido</button>
+    </div>
+
+    <!-- CLASIFICACIÓN -->
+    <div id="page-ranking" class="page">
+      <div class="card">
+        <div class="card-title">🏆 Clasificación individual</div>
+        <div id="ranking-body"></div>
+      </div>
+    </div>
+
+    <!-- HISTORIAL -->
+    <div id="page-history" class="page">
+      <div id="history-body"></div>
+    </div>
+
+    <!-- AJUSTES -->
+    <div id="page-settings" class="page">
+
+      <!-- Puntuación -->
+      <div class="card">
+        <div class="card-title">⚙️ Sistema de puntuación</div>
+        <div class="settings-row">
+          <div><div class="settings-label">🏆 Victoria</div><div class="settings-desc">Puntos por ganar</div></div>
+          <input type="number" id="pts-win"  class="pts-input" min="0" max="99" value="3">
+        </div>
+        <div class="settings-row">
+          <div><div class="settings-label">🤝 Empate</div><div class="settings-desc">Puntos por empatar</div></div>
+          <input type="number" id="pts-draw" class="pts-input" min="0" max="99" value="2">
+        </div>
+        <div class="settings-row">
+          <div><div class="settings-label">❌ Derrota</div><div class="settings-desc">Puntos por perder</div></div>
+          <input type="number" id="pts-loss" class="pts-input" min="0" max="99" value="1">
+        </div>
+        <button class="btn btn-primary mt-2" onclick="saveSettings()">Guardar puntuación</button>
+      </div>
+
+      <!-- Mis grupos -->
+      <div class="card">
+        <div class="card-title">🏠 Mis grupos</div>
+        <div id="my-groups-list"></div>
+        <div style="margin-top:.875rem">
+          <div class="row form-group mb-0">
+            <input type="text" id="new-group-code" class="form-input flex1"
+                   placeholder="Código de grupo" maxlength="20"
+                   style="text-transform:uppercase;letter-spacing:.06em;font-weight:700">
+            <button class="btn btn-primary btn-sm" onclick="joinGroup()">Unirse</button>
+          </div>
+          <div class="form-hint">Escribe el código que te ha dado el organizador del grupo</div>
+        </div>
+      </div>
+
+      <!-- Jugadores del grupo actual -->
+      <div class="card">
+        <div class="card-title">👤 Jugadores del grupo actual</div>
+        <div id="players-list"></div>
+      </div>
+
+      <!-- Mi cuenta -->
+      <div class="card">
+        <div class="card-title">🔐 Mi cuenta</div>
+        <div class="settings-row" style="flex-direction:column;align-items:flex-start;gap:.625rem">
+          <div>
+            <div class="settings-label" id="acc-name"></div>
+            <div class="settings-desc"  id="acc-email-display"></div>
+            <div class="settings-desc"  id="acc-since"></div>
+          </div>
+          <button class="btn btn-danger btn-sm" onclick="logoutUser()">Cerrar sesión</button>
+        </div>
+      </div>
+
+      <!-- Zona peligrosa -->
+      <div class="card">
+        <div class="card-title">⚠️ Zona peligrosa</div>
+        <p style="font-size:.8125rem;color:var(--muted);margin-bottom:.875rem">Borra todos los partidos del grupo actual.</p>
+        <button class="btn btn-danger" onclick="resetMatches()">🗑️ Borrar todos los partidos</button>
+      </div>
+
+      <p style="text-align:center;font-size:.68rem;color:var(--muted);margin-top:.5rem;padding-bottom:.5rem">
+        PadelTracker v3.0 · Datos guardados localmente
+        <br><button onclick="showAdminLogin()" style="background:none;border:none;color:var(--border);cursor:pointer;font-size:.65rem;margin-top:.25rem;font-family:inherit">Admin</button>
+      </p>
+    </div>
+
+  </main>
+
+  <nav class="tab-bar">
+    <button class="tab-btn active" id="tab-match"   onclick="switchTab('match')"><span class="ti">⚡</span>Partido</button>
+    <button class="tab-btn" id="tab-ranking"  onclick="switchTab('ranking')"><span class="ti">🏆</span>Clasificación</button>
+    <button class="tab-btn" id="tab-history"  onclick="switchTab('history')"><span class="ti">📋</span>Historial</button>
+    <button class="tab-btn" id="tab-settings" onclick="switchTab('settings')"><span class="ti">⚙️</span>Ajustes</button>
+  </nav>
+</div>
+
+<!-- Group Switcher Modal -->
+<div class="modal-overlay" id="group-modal" onclick="handleModalClick(event)">
+  <div class="modal-sheet">
+    <button class="modal-close" onclick="closeGroupModal()">✕</button>
+    <div class="modal-title">🏠 Cambiar de grupo</div>
+    <div id="group-modal-list"></div>
+    <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border)">
+      <p style="font-size:.8rem;color:var(--muted);margin-bottom:.625rem">Únete a un grupo nuevo:</p>
+      <div class="row">
+        <input type="text" id="modal-group-code" class="form-input flex1"
+               placeholder="Código del grupo" maxlength="20"
+               style="text-transform:uppercase;letter-spacing:.06em;font-weight:700">
+        <button class="btn btn-primary btn-sm" onclick="joinGroupFromModal()">Unirse</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+'use strict';
+
+// ══════════════════════════════════════════════════
+// FIREBASE INIT
+// ══════════════════════════════════════════════════
+const firebaseConfig = {
+  apiKey: "AIzaSyD8tm2jAbXy-YbkBKEGtmwfSnXJrvHpNvU",
+  authDomain: "padelapp-9e01c.firebaseapp.com",
+  projectId: "padelapp-9e01c",
+  storageBucket: "padelapp-9e01c.firebasestorage.app",
+  messagingSenderId: "1092011048276",
+  appId: "1:1092011048276:web:4f62ec8d277a4f61759cc1",
+  measurementId: "G-81D3JM91ZG"
+};
+firebase.initializeApp(firebaseConfig);
+const fbAuth = firebase.auth();
+
+// ══════════════════════════════════════════════════
+// STORAGE HELPERS
+// ══════════════════════════════════════════════════
+const USERS_KEY   = 'pdl_users';
+const SESSION_KEY = 'pdl_session_v3';
+const ADMIN_PW    = 'Admin1234!';   // Default admin password
+const ADMIN_EMAIL = 'admin@admin.es';
+
+function getUsers() {
+  try { return JSON.parse(localStorage.getItem(USERS_KEY)) || []; }
+  catch { return []; }
+}
+function saveUsers(users) { localStorage.setItem(USERS_KEY, JSON.stringify(users)); }
+
+function getSession() {
+  try { return JSON.parse(localStorage.getItem(SESSION_KEY)); }
+  catch { return null; }
+}
+function saveSession(s) { localStorage.setItem(SESSION_KEY, JSON.stringify(s)); }
+function clearSession()  { localStorage.removeItem(SESSION_KEY); }
+
+function gkey(code) {
+  return 'pdl_g_' + code.trim().toLowerCase().replace(/\s+/g,'_');
+}
+function loadGroupData(code) {
+  try {
+    const raw = localStorage.getItem(gkey(code));
+    const def = { players:[], matches:[], settings:{ win:3, draw:2, loss:1 } };
+    if (!raw) return def;
+    const d = JSON.parse(raw);
+    return { players: d.players||[], matches: d.matches||[], settings: Object.assign({},def.settings,d.settings||{}) };
+  } catch { return { players:[], matches:[], settings:{ win:3, draw:2, loss:1 } }; }
+}
+function saveGroupData(code, data) { localStorage.setItem(gkey(code), JSON.stringify(data)); }
+
+// ══════════════════════════════════════════════════
+// SCREEN MANAGEMENT
+// ══════════════════════════════════════════════════
+const screens = ['screen-register','screen-pending','screen-admin-login','screen-admin','screen-app'];
+
+function showScreen(id) {
+  screens.forEach(s => {
+    const el = document.getElementById(s);
+    if (!el) return;
+    el.classList.remove('active');
+    if (['screen-register','screen-pending','screen-admin-login'].includes(s)) {
+      el.style.display = 'none';
+    } else {
+      el.style.display = 'none';
+    }
+  });
+  const target = document.getElementById(id);
+  if (!target) return;
+  target.classList.add('active');
+  if (['screen-register','screen-pending','screen-admin-login'].includes(id)) {
+    target.style.display = 'flex';
+  } else {
+    target.style.display = 'block';
+  }
+}
+
+function showRegister() { showScreen('screen-register'); }
+function showAdminLogin() { showScreen('screen-admin-login'); }
+
+function showLogin() {
+  document.getElementById('login-form').style.display = 'block';
+  document.getElementById('login-email').focus();
+}
+
+// ══════════════════════════════════════════════════
+// GOOGLE SIGN-IN — Firebase Auth
+// ══════════════════════════════════════════════════
+function googleSignIn() {
+  const provider = new firebase.auth.GoogleAuthProvider();
+  provider.setCustomParameters({ prompt: 'select_account' });
+  fbAuth.signInWithPopup(provider)
+    .then(result => {
+      // We manage our own session; sign out of Firebase immediately
+      fbAuth.signOut();
+      const { email, displayName, photoURL } = result.user;
+      const parts = (displayName || '').trim().split(' ');
+      const firstname = parts[0] || email.split('@')[0];
+      const lastname  = parts.slice(1).join(' ');
+      handleGoogleAuth(email, firstname, lastname);
+    })
+    .catch(err => {
+      if (err.code !== 'auth/popup-closed-by-user' && err.code !== 'auth/cancelled-popup-request') {
+        toast('⚠️ Error Google: ' + err.message);
+      }
+    });
+}
+
+function handleGoogleAuth(email, firstname, lastname) {
+  if (email === ADMIN_EMAIL) { showAdminLogin(); return; }
+  const users = getUsers();
+  let user = users.find(u => u.email === email);
+  if (!user) {
+    // First time → register automatically with pending status
+    user = {
+      id:          String(Date.now()),
+      firstname,
+      lastname,
+      email,
+      password:    '',          // No password for Google users
+      status:      'pending',
+      createdAt:   new Date().toISOString(),
+      activatedAt: null,
+      groups:      [],
+      authProvider: 'google'
+    };
+    users.push(user);
+    saveUsers(users);
+  }
+  saveSession({ userId: user.id });
+  if (user.status === 'pending')  { showPending(user); return; }
+  if (user.status === 'inactive') { toast('❌ Tu cuenta ha sido desactivada.'); clearSession(); return; }
+  startApp(user);
+}
+
+// ══════════════════════════════════════════════════
+// REGISTER / LOGIN
+// ══════════════════════════════════════════════════
+function registerUser() {
+  const firstname = document.getElementById('reg-firstname').value.trim();
+  const lastname  = document.getElementById('reg-lastname').value.trim();
+  const email     = document.getElementById('reg-email').value.trim().toLowerCase();
+  const password  = document.getElementById('reg-password').value;
+
+  if (!firstname)        { toast('⚠️ Escribe tu nombre'); return; }
+  if (!lastname)         { toast('⚠️ Escribe tus apellidos'); return; }
+  if (!isValidEmail(email)) { toast('⚠️ Email no válido'); return; }
+  if (password.length < 6) { toast('⚠️ La contraseña debe tener mínimo 6 caracteres'); return; }
+
+  if (email === ADMIN_EMAIL) { toast('⚠️ Email reservado'); return; }
+
+  const users = getUsers();
+  if (users.find(u => u.email === email)) { toast('⚠️ Ya existe una cuenta con ese email'); return; }
+
+  const user = {
+    id:        String(Date.now()),
+    firstname,
+    lastname,
+    email,
+    password:  simpleHash(password),
+    status:    'pending',   // pending | active | inactive
+    createdAt: new Date().toISOString(),
+    activatedAt: null,
+    groups:    []
+  };
+  users.push(user);
+  saveUsers(users);
+
+  saveSession({ userId: user.id });
+  showPending(user);
+}
+
+function loginUser() {
+  const email    = document.getElementById('login-email').value.trim().toLowerCase();
+  const password = document.getElementById('login-password').value;
+
+  if (!isValidEmail(email)) { toast('⚠️ Email no válido'); return; }
+
+  const users = getUsers();
+  const user  = users.find(u => u.email === email);
+  if (!user || user.password !== simpleHash(password)) {
+    toast('⚠️ Email o contraseña incorrectos'); return;
+  }
+
+  if (user.status === 'pending')  { saveSession({ userId: user.id }); showPending(user); return; }
+  if (user.status === 'inactive') { toast('❌ Tu cuenta ha sido desactivada. Contacta al administrador.'); return; }
+
+  saveSession({ userId: user.id });
+  startApp(user);
+}
+
+function showPending(user) {
+  document.getElementById('pending-name').textContent  = user.firstname + ' ' + user.lastname;
+  document.getElementById('pending-email').textContent = user.email;
+  showScreen('screen-pending');
+}
+
+function checkActivation() {
+  const sess = getSession();
+  if (!sess) { showRegister(); return; }
+  const user = getUsers().find(u => u.id === sess.userId);
+  if (!user)  { clearSession(); showRegister(); return; }
+  if (user.status === 'active') {
+    startApp(user);
+  } else if (user.status === 'inactive') {
+    toast('❌ Tu cuenta ha sido desactivada.');
+    clearSession();
+    showRegister();
+  } else {
+    toast('⏳ Aún pendiente de aprobación');
+  }
+}
+
+function logoutPending() { clearSession(); showRegister(); }
+function logoutUser()    { clearSession(); showRegister(); }
+
+// ══════════════════════════════════════════════════
+// ADMIN
+// ══════════════════════════════════════════════════
+let adminTabActive = 'pending';
+
+function adminLogin() {
+  const pw = document.getElementById('admin-login-pw').value;
+  if (pw !== ADMIN_PW) { toast('⚠️ Contraseña incorrecta'); return; }
+  renderAdmin();
+  showScreen('screen-admin');
+}
+
+function adminLogout() { showRegister(); }
+
+function setAdminTab(tab) {
+  adminTabActive = tab;
+  document.querySelectorAll('.admin-tab').forEach(b => b.classList.remove('active'));
+  document.getElementById('atab-' + tab).classList.add('active');
+  renderAdminUsers();
+}
+
+function renderAdmin() {
+  const users = getUsers();
+  const pending  = users.filter(u => u.status === 'pending').length;
+  const active   = users.filter(u => u.status === 'active').length;
+  const inactive = users.filter(u => u.status === 'inactive').length;
+  document.getElementById('stat-pending').textContent  = pending;
+  document.getElementById('stat-active').textContent   = active;
+  document.getElementById('stat-inactive').textContent = inactive;
+  renderAdminUsers();
+}
+
+function renderAdminUsers() {
+  const users   = getUsers();
+  const filtered = users.filter(u => u.status === adminTabActive);
+  const el = document.getElementById('admin-user-list');
+
+  if (!filtered.length) {
+    el.innerHTML = `<div class="empty"><div class="empty-icon">${adminTabActive==='pending'?'⏳':adminTabActive==='active'?'✅':'❌'}</div><div class="empty-title">Sin usuarios ${adminTabActive==='pending'?'pendientes':adminTabActive==='active'?'activos':'inactivos'}</div></div>`;
+    return;
+  }
+
+  el.innerHTML = filtered.map(u => {
+    const statusClass = u.status === 'active' ? 'status-active' : u.status === 'inactive' ? 'status-inactive' : 'status-pending';
+    const statusLabel = u.status === 'active' ? '✅ Activo' : u.status === 'inactive' ? '❌ Inactivo' : '⏳ Pendiente';
+    const since = u.activatedAt ? 'Activo desde ' + fmtDate(u.activatedAt) : 'Registrado ' + fmtDate(u.createdAt);
+    const groups = u.groups && u.groups.length ? 'Grupos: ' + u.groups.join(', ') : 'Sin grupos';
+    return `
+    <div class="user-admin-card">
+      <div class="ua-top">
+        <div class="ua-avatar">${esc(u.firstname[0]).toUpperCase()}</div>
+        <div style="flex:1;min-width:0">
+          <div class="ua-name">${esc(u.firstname)} ${esc(u.lastname)}</div>
+          <div class="ua-email">${esc(u.email)}</div>
+          <div class="ua-meta">${since} · ${groups}</div>
+        </div>
+        <span class="status-pill ${statusClass}">${statusLabel}</span>
+      </div>
+      <div class="ua-actions">
+        ${u.status !== 'active'   ? `<button class="ua-btn activate"   onclick="adminActivate('${u.id}')">✅ Activar</button>` : ''}
+        ${u.status === 'active'   ? `<button class="ua-btn deactivate" onclick="adminDeactivate('${u.id}')">⏸ Desactivar</button>` : ''}
+        <button class="ua-btn reset-pw" onclick="adminResetPw('${u.id}')">🔑 Nueva contraseña</button>
+        <button class="ua-btn del"      onclick="adminDelete('${u.id}')">🗑️ Eliminar</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function adminActivate(id) {
+  const users = getUsers();
+  const u = users.find(u => u.id === id);
+  if (!u) return;
+  u.status = 'active';
+  u.activatedAt = new Date().toISOString();
+  saveUsers(users);
+  renderAdmin();
+  toast('✅ Usuario activado');
+}
+
+function adminDeactivate(id) {
+  if (!confirm('¿Desactivar este usuario? No podrá acceder a la app.')) return;
+  const users = getUsers();
+  const u = users.find(u => u.id === id);
+  if (!u) return;
+  u.status = 'inactive';
+  saveUsers(users);
+  renderAdmin();
+  toast('⏸ Usuario desactivado');
+}
+
+function adminResetPw(id) {
+  const newPw = prompt('Nueva contraseña para el usuario (mínimo 6 caracteres):');
+  if (!newPw || newPw.length < 6) { toast('⚠️ Contraseña demasiado corta'); return; }
+  const users = getUsers();
+  const u = users.find(u => u.id === id);
+  if (!u) return;
+  u.password = simpleHash(newPw);
+  saveUsers(users);
+  toast('🔑 Contraseña actualizada: ' + newPw);
+}
+
+function adminDelete(id) {
+  if (!confirm('¿Eliminar definitivamente este usuario? Esta acción no se puede deshacer.')) return;
+  const users = getUsers().filter(u => u.id !== id);
+  saveUsers(users);
+  renderAdmin();
+  toast('🗑️ Usuario eliminado');
+}
+
+// ══════════════════════════════════════════════════
+// APP BOOTSTRAP
+// ══════════════════════════════════════════════════
+let currentUser  = null;
+let currentGroup = null;  // group code string
+let ST = { players:[], matches:[], settings:{ win:3, draw:2, loss:1 } };
+let sets = [{ p1:0, p2:0 }];
+let deferredInstall = null;
+
+function startApp(user) {
+  currentUser = user;
+
+  // Auto-select last group or first group
+  const sess = getSession();
+  if (sess && sess.lastGroup && user.groups && user.groups.includes(sess.lastGroup)) {
+    currentGroup = sess.lastGroup;
+  } else {
+    currentGroup = user.groups && user.groups.length ? user.groups[0] : null;
+  }
+
+  updateSession();
+  loadGroup(currentGroup);
+  showScreen('screen-app');
+
+  document.getElementById('header-user').textContent = '👤 ' + user.firstname + ' ' + user.lastname;
+  document.getElementById('acc-name').textContent    = user.firstname + ' ' + user.lastname;
+  document.getElementById('acc-email-display').textContent = '✉️ ' + user.email;
+  document.getElementById('acc-since').textContent   = user.activatedAt ? 'Activo desde ' + fmtDate(user.activatedAt) : '';
+
+  updateGroupPill();
+  setDefaultDate();
+  refreshSelects();
+  renderSets();
+  renderPlayers();
+  loadSettingsUI();
+  renderRanking();
+  renderHistory();
+  renderMyGroups();
+
+  ['p1','p2','p3','p4'].forEach(id =>
+    document.getElementById(id).addEventListener('change', () => { updatePreview(); renderSets(); })
+  );
+
+  registerSW();
+  setupPWAInstall();
+}
+
+function loadGroup(code) {
+  if (!code) {
+    ST = { players:[], matches:[], settings:{ win:3, draw:2, loss:1 } };
+    return;
+  }
+  const data = loadGroupData(code);
+
+  // Make sure current user exists as player in the group
+  const me = currentUser;
+  const fullName = me.firstname + ' ' + me.lastname;
+  if (!data.players.find(p => p.email === me.email)) {
+    data.players.push({ id: me.id, name: fullName, email: me.email });
+    saveGroupData(code, data);
+  }
+
+  ST.players  = data.players;
+  ST.matches  = data.matches;
+  ST.settings = data.settings;
+}
+
+function persistGroup() {
+  if (!currentGroup) return;
+  saveGroupData(currentGroup, ST);
+}
+
+function updateSession() {
+  const sess = getSession() || {};
+  sess.userId    = currentUser.id;
+  sess.lastGroup = currentGroup;
+  saveSession(sess);
+}
+
+function setDefaultDate() {
+  const t = new Date();
+  document.getElementById('match-date').value =
+    `${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')}`;
+}
+
+// ══════════════════════════════════════════════════
+// GROUPS
+// ══════════════════════════════════════════════════
+function updateGroupPill() {
+  document.getElementById('group-pill-label').textContent = currentGroup || 'Sin grupo';
+}
+
+function joinGroup(codeOverride) {
+  const inputEl = document.getElementById('new-group-code');
+  const code = (codeOverride || inputEl.value.trim()).toUpperCase().replace(/[^A-Z0-9_\-]/g,'');
+  if (code.length < 2) { toast('⚠️ Código demasiado corto'); return; }
+
+  const users = getUsers();
+  const u = users.find(u => u.id === currentUser.id);
+  if (!u) return;
+  u.groups = u.groups || [];
+  if (u.groups.includes(code)) { toast('Ya estás en ese grupo'); return; }
+  u.groups.push(code);
+  saveUsers(users);
+  currentUser = u;
+
+  // Switch to new group
+  switchGroup(code);
+  if (inputEl) inputEl.value = '';
+  toast('✅ Unido al grupo ' + code);
+  renderMyGroups();
+}
+
+function joinGroupFromModal() {
+  const inputEl = document.getElementById('modal-group-code');
+  const code = inputEl.value.trim().toUpperCase().replace(/[^A-Z0-9_\-]/g,'');
+  if (code.length < 2) { toast('⚠️ Código demasiado corto'); return; }
+  inputEl.value = '';
+  closeGroupModal();
+  joinGroup(code);
+}
+
+function switchGroup(code) {
+  currentGroup = code;
+  updateSession();
+  loadGroup(code);
+  updateGroupPill();
+  refreshSelects();
+  renderSets();
+  renderPlayers();
+  loadSettingsUI();
+  renderRanking();
+  renderHistory();
+  renderMyGroups();
+}
+
+function renderMyGroups() {
+  const el = document.getElementById('my-groups-list');
+  const groups = currentUser.groups || [];
+  if (!groups.length) {
+    el.innerHTML = '<div style="font-size:.8125rem;color:var(--muted);padding:.5rem 0">No estás en ningún grupo todavía</div>';
+    return;
+  }
+  el.innerHTML = groups.map(g => `
+    <div class="settings-row">
+      <div>
+        <div class="settings-label" style="font-size:.875rem">🏠 ${esc(g)}</div>
+        ${g === currentGroup ? '<div class="settings-desc" style="color:var(--green)">Grupo activo</div>' : ''}
+      </div>
+      <div class="row">
+        ${g !== currentGroup ? `<button class="btn btn-outline btn-sm" onclick="switchGroup('${g}')">Ir</button>` : '<span style="color:var(--green);font-size:1.1rem">✓</span>'}
+        <button class="btn btn-danger-ghost btn-sm" onclick="leaveGroup('${g}')">Salir</button>
+      </div>
+    </div>`).join('');
+}
+
+function leaveGroup(code) {
+  if (!confirm(`¿Salir del grupo ${code}? Los datos del grupo se conservan.`)) return;
+  const users = getUsers();
+  const u = users.find(u => u.id === currentUser.id);
+  if (!u) return;
+  u.groups = (u.groups || []).filter(g => g !== code);
+  saveUsers(users);
+  currentUser = u;
+  if (currentGroup === code) {
+    const next = u.groups[0] || null;
+    switchGroup(next);
+  } else {
+    renderMyGroups();
+  }
+  toast('Saliste del grupo ' + code);
+}
+
+// Group Modal
+function openGroupModal() {
+  const list = document.getElementById('group-modal-list');
+  const groups = currentUser.groups || [];
+  if (!groups.length) {
+    list.innerHTML = '<div style="font-size:.8125rem;color:var(--muted);padding:.75rem 0">No estás en ningún grupo todavía</div>';
+  } else {
+    list.innerHTML = groups.map(g => `
+      <div class="group-option" onclick="selectGroupFromModal('${g}')">
+        <div class="group-option-icon${g === currentGroup ? ' active-g' : ''}">🏠</div>
+        <div>
+          <div class="group-option-name">${esc(g)}</div>
+          <div class="group-option-sub">${g === currentGroup ? 'Grupo activo' : 'Cambiar a este grupo'}</div>
+        </div>
+        ${g === currentGroup ? '<span class="group-option-check">✓</span>' : ''}
+      </div>`).join('');
+  }
+  document.getElementById('modal-group-code').value = '';
+  document.getElementById('group-modal').classList.add('open');
+}
+
+function selectGroupFromModal(code) {
+  closeGroupModal();
+  if (code !== currentGroup) switchGroup(code);
+}
+
+function closeGroupModal() { document.getElementById('group-modal').classList.remove('open'); }
+function handleModalClick(e) { if (e.target === document.getElementById('group-modal')) closeGroupModal(); }
+
+// ══════════════════════════════════════════════════
+// TABS
+// ══════════════════════════════════════════════════
+function switchTab(tab) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + tab).classList.add('active');
+  document.getElementById('tab-'  + tab).classList.add('active');
+  if (tab === 'ranking')  renderRanking();
+  if (tab === 'history')  renderHistory();
+  if (tab === 'settings') { renderPlayers(); loadSettingsUI(); renderMyGroups(); }
+}
+
+// ══════════════════════════════════════════════════
+// PLAYERS
+// ══════════════════════════════════════════════════
+function getPlayerName(id) {
+  if (!id) return '—';
+  const p = ST.players.find(pl => pl.id === id);
+  return p ? p.name : '—';
+}
+function getPlayerShort(id) {
+  const n = getPlayerName(id);
+  return (n === '—') ? '?' : n.split(' ')[0];
+}
+function refreshSelects() {
+  const opts = ST.players.map(p => `<option value="${p.id}">${esc(p.name)}</option>`).join('');
+  ['p1','p2','p3','p4'].forEach(id => {
+    const sel = document.getElementById(id);
+    const cur = sel.value;
+    sel.innerHTML = '<option value="">— Seleccionar —</option>' + opts;
+    if (cur && ST.players.find(p => p.id === cur)) sel.value = cur;
+  });
+  updatePreview();
+}
+function updatePreview() {
+  ['p1','p2','p3','p4'].forEach((id, i) => {
+    document.getElementById('prev-p' + (i+1)).textContent = getPlayerName(document.getElementById(id).value);
+  });
+}
+function renderPlayers() {
+  const el = document.getElementById('players-list');
+  if (!currentGroup) { el.innerHTML = '<div style="font-size:.8125rem;color:var(--muted);padding:.5rem 0">Selecciona o únete a un grupo primero</div>'; return; }
+  if (!ST.players.length) { el.innerHTML = '<div class="empty" style="padding:1rem 0"><div class="empty-icon" style="font-size:2rem">👤</div><div class="empty-sub">Sin jugadores</div></div>'; return; }
+  el.innerHTML = ST.players.map(p => {
+    const isMe = p.id === currentUser.id;
+    return `<div class="player-row">
+      <div class="avatar${isMe ? ' me' : ''}">${esc(p.name[0]).toUpperCase()}</div>
+      <span class="player-nm">${esc(p.name)}${isMe ? '<span class="player-you">(tú)</span>' : ''}</span>
+      ${!isMe ? `<button class="del-player-btn" onclick="deletePlayer('${p.id}')">🗑️</button>` : ''}
+    </div>`;
+  }).join('');
+}
+function deletePlayer(id) {
+  if (!confirm('¿Eliminar este jugador del grupo?')) return;
+  ST.players = ST.players.filter(p => p.id !== id);
+  persistGroup();
+  renderPlayers();
+  refreshSelects();
+  toast('🗑️ Jugador eliminado');
+}
+
+// ══════════════════════════════════════════════════
+// SET SCORER
+// ══════════════════════════════════════════════════
+function pairLabel(pair) {
+  const ids = pair === 1
+    ? [document.getElementById('p1').value, document.getElementById('p2').value]
+    : [document.getElementById('p3').value, document.getElementById('p4').value];
+  const a = getPlayerShort(ids[0]), b = getPlayerShort(ids[1]);
+  if (a === '?' && b === '?') return pair === 1 ? 'Pareja 1' : 'Pareja 2';
+  if (a === '?') return b; if (b === '?') return a;
+  return a + ' / ' + b;
+}
+function calcResult() {
+  let w1=0, w2=0;
+  sets.forEach(s => { if (s.p1 > s.p2) w1++; else if (s.p2 > s.p1) w2++; });
+  return { result: w1 > w2 ? 'pair1' : w2 > w1 ? 'pair2' : 'draw', w1, w2 };
+}
+function renderSets() {
+  const el  = document.getElementById('set-scorer');
+  const rb  = document.getElementById('result-box');
+  const rbs = document.getElementById('btn-remove-set');
+  const lbl1 = pairLabel(1), lbl2 = pairLabel(2);
+  const { result, w1, w2 } = calcResult();
+  el.innerHTML = sets.map((s, i) => {
+    const p1w = s.p1 > s.p2, p2w = s.p2 > s.p1;
+    return `<div class="set-item">
+      <div class="set-item-label">Set ${i+1}</div>
+      <div class="set-item-row">
+        <div class="stepper-box${p1w ? ' win-p1' : ''}">
+          <div class="stepper-name">${esc(lbl1)}</div>
+          <div class="stepper-controls">
+            <button class="step-btn dec" ontouchstart="" onclick="stepSet(${i},'p1',-1)">−</button>
+            <span class="step-score">${s.p1}</span>
+            <button class="step-btn inc" ontouchstart="" onclick="stepSet(${i},'p1',1)">+</button>
+          </div>
+        </div>
+        <div class="set-colon">:</div>
+        <div class="stepper-box${p2w ? ' win-p2' : ''}">
+          <div class="stepper-name">${esc(lbl2)}</div>
+          <div class="stepper-controls">
+            <button class="step-btn dec" ontouchstart="" onclick="stepSet(${i},'p2',-1)">−</button>
+            <span class="step-score">${s.p2}</span>
+            <button class="step-btn inc" ontouchstart="" onclick="stepSet(${i},'p2',1)">+</button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+  rbs.style.display = sets.length > 1 ? 'inline-block' : 'none';
+  const hasScores = sets.some(s => s.p1 > 0 || s.p2 > 0);
+  if (!hasScores) { rb.className = 'result-box rb-empty'; rb.textContent = 'Anota el marcador para ver el resultado'; return; }
+  if (result === 'pair1')      { rb.className = 'result-box rb-p1';   rb.innerHTML = `🏆 Gana <strong>${esc(lbl1)}</strong> &nbsp;(${w1}–${w2} en sets)`; }
+  else if (result === 'pair2') { rb.className = 'result-box rb-p2';   rb.innerHTML = `🏆 Gana <strong>${esc(lbl2)}</strong> &nbsp;(${w2}–${w1} en sets)`; }
+  else                         { rb.className = 'result-box rb-draw'; rb.innerHTML = `🤝 <strong>Empate</strong> &nbsp;(${w1}–${w2} en sets)`; }
+}
+function stepSet(i, team, delta) {
+  sets[i][team] = Math.max(0, Math.min(10, sets[i][team] + delta));
+  renderSets();
+}
+function addSet() {
+  if (sets.length >= 5) { toast('Máximo 5 sets'); return; }
+  sets.push({ p1:0, p2:0 }); renderSets();
+}
+function removeSet() {
+  if (sets.length <= 1) return;
+  sets.pop(); renderSets();
+}
+function setsToString() { return sets.map(s => `${s.p1}-${s.p2}`).join(', '); }
+
+// ══════════════════════════════════════════════════
+// SAVE MATCH
+// ══════════════════════════════════════════════════
+function saveMatch() {
+  if (!currentGroup) { toast('⚠️ Primero únete a un grupo'); switchTab('settings'); return; }
+  const date = document.getElementById('match-date').value;
+  const p1 = document.getElementById('p1').value, p2 = document.getElementById('p2').value;
+  const p3 = document.getElementById('p3').value, p4 = document.getElementById('p4').value;
+  if (!date)               { toast('⚠️ Selecciona una fecha'); return; }
+  if (!p1||!p2||!p3||!p4) { toast('⚠️ Selecciona los 4 jugadores'); return; }
+  if (new Set([p1,p2,p3,p4]).size < 4) { toast('⚠️ Jugadores deben ser distintos'); return; }
+  if (!sets.some(s => s.p1 > 0 || s.p2 > 0)) { toast('⚠️ Introduce el marcador'); return; }
+
+  const { result } = calcResult();
+  ST.matches.unshift({ id: String(Date.now()), date, pair1:[p1,p2], pair2:[p3,p4], result, score: setsToString(), sets: JSON.parse(JSON.stringify(sets)) });
+  persistGroup();
+  resetMatchForm();
+  toast('✅ Partido guardado');
+}
+function resetMatchForm() {
+  sets = [{ p1:0, p2:0 }];
+  ['p1','p2','p3','p4'].forEach(id => document.getElementById(id).value = '');
+  setDefaultDate(); updatePreview(); renderSets();
+}
+
+// ══════════════════════════════════════════════════
+// RANKING
+// ══════════════════════════════════════════════════
+function computeRanking() {
+  const map = {};
+  ST.players.forEach(p => { map[p.id] = { id:p.id, name:p.name, pj:0, g:0, e:0, d:0, pts:0 }; });
+  ST.matches.forEach(({ pair1, pair2, result }) => {
+    [...pair1,...pair2].forEach(id => { if (map[id]) map[id].pj++; });
+    if (result === 'pair1')      { pair1.forEach(id => { if (map[id]) { map[id].g++;  map[id].pts += ST.settings.win;  } }); pair2.forEach(id => { if (map[id]) { map[id].d++;  map[id].pts += ST.settings.loss; } }); }
+    else if (result === 'pair2') { pair2.forEach(id => { if (map[id]) { map[id].g++;  map[id].pts += ST.settings.win;  } }); pair1.forEach(id => { if (map[id]) { map[id].d++;  map[id].pts += ST.settings.loss; } }); }
+    else                         { [...pair1,...pair2].forEach(id => { if (map[id]) { map[id].e++; map[id].pts += ST.settings.draw; } }); }
+  });
+  return Object.values(map).filter(s => s.pj > 0).sort((a,b) => b.pts-a.pts || b.g-a.g || a.d-b.d);
+}
+function renderRanking() {
+  const data = computeRanking(), el = document.getElementById('ranking-body');
+  if (!data.length) { el.innerHTML = `<div class="empty"><div class="empty-icon">📊</div><div class="empty-title">Sin datos</div><div class="empty-sub">Registra partidos para ver la clasificación</div></div>`; return; }
+  const medals = ['🥇','🥈','🥉'];
+  el.innerHTML = `<table class="rank-table"><thead><tr><th style="text-align:left">Jugador</th><th>PJ</th><th>G</th><th>E</th><th>D</th><th>Pts</th></tr></thead><tbody>
+    ${data.map((s,i) => `<tr class="${i<3?'pos-'+(i+1):''}"><td><span class="pos-cell">${medals[i]||i+1}</span>&nbsp;<span class="name-cell">${esc(s.name)}</span></td><td>${s.pj}</td><td class="g-cell">${s.g}</td><td class="e-cell">${s.e}</td><td class="d-cell">${s.d}</td><td class="pts-cell">${s.pts}</td></tr>`).join('')}
+  </tbody></table><div class="pts-legend">Victoria +${ST.settings.win} · Empate +${ST.settings.draw} · Derrota +${ST.settings.loss} pts</div>`;
+}
+
+// ══════════════════════════════════════════════════
+// HISTORY
+// ══════════════════════════════════════════════════
+function pname(id) { const p = ST.players.find(pl => pl.id === id); return p ? p.name : 'Eliminado'; }
+function renderHistory() {
+  const el = document.getElementById('history-body');
+  if (!ST.matches.length) { el.innerHTML = `<div class="empty"><div class="empty-icon">📋</div><div class="empty-title">Sin partidos</div><div class="empty-sub">Guarda tu primer partido para verlo aquí</div></div>`; return; }
+  el.innerHTML = ST.matches.map(m => {
+    const p1n = m.pair1.map(id=>esc(pname(id))).join(' &amp; ');
+    const p2n = m.pair2.map(id=>esc(pname(id))).join(' &amp; ');
+    const resClass   = m.result==='pair1'?'res-p1':m.result==='pair2'?'res-p2':'res-draw';
+    const badgeClass = m.result==='pair1'?'badge-p1':m.result==='pair2'?'badge-p2':'badge-draw';
+    const resText    = m.result==='pair1'?`🏆 Ganó: ${p1n}`:m.result==='pair2'?`🏆 Ganó: ${p2n}`:'🤝 Empate';
+    let dateStr = '';
+    if (m.date) { const [y,mo,d]=m.date.split('-'); dateStr=new Date(+y,+mo-1,+d).toLocaleDateString('es-ES',{day:'numeric',month:'short',year:'numeric'}); }
+    let scoreHtml = '';
+    if (m.sets && m.sets.length) {
+      const pills = m.sets.map(s => { const cls=s.p1>s.p2?'p1':s.p2>s.p1?'p2':''; return `<span class="set-pill ${cls}">${s.p1}–${s.p2}</span>`; }).join('');
+      scoreHtml = `<div class="set-pills">${pills}</div>`;
+    }
+    return `<div class="match-card ${resClass}">
+      <button class="del-match-btn" onclick="deleteMatch('${m.id}')" aria-label="Eliminar">🗑️</button>
+      <div class="match-date">📅 ${dateStr}</div>
+      <div class="match-teams"><span class="match-pair p1">${p1n}</span><span class="match-vs">VS</span><span class="match-pair p2">${p2n}</span></div>
+      ${scoreHtml}
+      <div><span class="badge ${badgeClass}">${resText}</span></div>
+    </div>`;
+  }).join('');
+}
+function deleteMatch(id) {
+  if (!confirm('¿Eliminar este partido?')) return;
+  ST.matches = ST.matches.filter(m => m.id !== id);
+  persistGroup(); renderHistory(); toast('🗑️ Partido eliminado');
+}
+
+// ══════════════════════════════════════════════════
+// SETTINGS
+// ══════════════════════════════════════════════════
+function loadSettingsUI() {
+  document.getElementById('pts-win').value  = ST.settings.win;
+  document.getElementById('pts-draw').value = ST.settings.draw;
+  document.getElementById('pts-loss').value = ST.settings.loss;
+}
+function saveSettings() {
+  ST.settings = {
+    win:  Math.max(0, parseInt(document.getElementById('pts-win').value)  || 0),
+    draw: Math.max(0, parseInt(document.getElementById('pts-draw').value) || 0),
+    loss: Math.max(0, parseInt(document.getElementById('pts-loss').value) || 0)
+  };
+  persistGroup(); toast('✅ Configuración guardada');
+}
+function resetMatches() {
+  if (!confirm('¿Borrar TODOS los partidos del grupo actual? Esta acción no se puede deshacer.')) return;
+  ST.matches = []; persistGroup(); renderHistory(); renderRanking(); toast('🗑️ Partidos eliminados');
+}
+
+// ══════════════════════════════════════════════════
+// UTILS
+// ══════════════════════════════════════════════════
+function esc(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+function isValidEmail(e) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e); }
+function fmtDate(iso) {
+  try { return new Date(iso).toLocaleDateString('es-ES',{day:'numeric',month:'short',year:'numeric'}); }
+  catch { return iso; }
+}
+// Very simple (non-cryptographic) password obfuscation for localStorage
+// In a real app this would be done on the server with bcrypt
+function simpleHash(str) {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < str.length; i++) {
+    h ^= str.charCodeAt(i);
+    h = (h * 0x01000193) >>> 0;
+  }
+  return h.toString(16) + str.length.toString(16);
+}
+
+let toastTimer;
+function toast(msg, dur) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), dur || 2800);
+}
+
+// ══════════════════════════════════════════════════
+// PWA
+// ══════════════════════════════════════════════════
+function registerSW() {
+  if ('serviceWorker' in navigator)
+    navigator.serviceWorker.register('sw.js').catch(e => console.warn('SW', e));
+}
+function setupPWAInstall() {
+  window.addEventListener('beforeinstallprompt', e => {
+    e.preventDefault(); deferredInstall = e;
+    document.getElementById('install-banner').classList.add('visible');
+  });
+  document.getElementById('install-btn').addEventListener('click', async () => {
+    if (!deferredInstall) return;
+    deferredInstall.prompt();
+    await deferredInstall.userChoice;
+    deferredInstall = null;
+    document.getElementById('install-banner').classList.remove('visible');
+  });
+  document.getElementById('install-dismiss').addEventListener('click', () => {
+    document.getElementById('install-banner').classList.remove('visible');
+  });
+}
+
+// ══════════════════════════════════════════════════
+// BOOT
+// ══════════════════════════════════════════════════
+(function init() {
+  showScreen('screen-register');
+
+  const sess = getSession();
+  if (!sess) return;
+
+  const users = getUsers();
+  const user  = users.find(u => u.id === sess.userId);
+  if (!user)  return;
+
+  if (user.status === 'pending')  { showPending(user); return; }
+  if (user.status === 'inactive') { clearSession(); return; }
+  startApp(user);
+})();
+</script>
+</body>
+</html>
