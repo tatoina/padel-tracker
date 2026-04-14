@@ -830,6 +830,11 @@
         </div>
       </div>
 
+      <label style="display:flex;align-items:center;gap:.375rem;cursor:pointer;user-select:none;font-size:.6875rem;color:var(--muted);margin-bottom:.75rem">
+        <input type="checkbox" id="match-pachanga" style="width:.875rem;height:.875rem;cursor:pointer">
+        <span>🎉 Pachanga (no cuenta para clasificación)</span>
+      </label>
+
       <div class="card">
         <div class="card-title">👥 Jugadores</div>
         <div style="font-size:.8125rem;font-weight:700;color:var(--green);margin-bottom:.375rem">🟢 Pareja 1</div>
@@ -854,11 +859,6 @@
         </div>
         <div id="result-box" class="result-box rb-empty">Anota el marcador para ver el resultado</div>
       </div>
-
-      <label style="display:flex;align-items:center;gap:.375rem;cursor:pointer;user-select:none;font-size:.6875rem;color:var(--muted);margin-bottom:.75rem">
-        <input type="checkbox" id="match-pachanga" style="width:.875rem;height:.875rem;cursor:pointer">
-        <span>🎉 Pachanga (no cuenta para clasificación)</span>
-      </label>
 
       <button class="btn btn-primary" onclick="saveMatch()">💾 Guardar partido</button>
     </div>
@@ -2976,12 +2976,12 @@ async function onMatchGroupChange(code) {
 }
 
 function refreshSelects() {
-  const addNew = '<option value="__ADD_NEW__">➕ Añadir invitado...</option>';
+  const addNew = '<option value="__ADD_NEW__" style="font-size:.75rem;color:#999">➕ Añadir invitado...</option>';
   const opts = matchGroupPlayers.map(p => `<option value="${p.id}">${esc(p.name)}</option>`).join('');
   ['p1','p2','p3','p4'].forEach(id => {
     const sel = document.getElementById(id);
     const cur = sel.value;
-    sel.innerHTML = '<option value="">— Seleccionar —</option>' + addNew + opts;
+    sel.innerHTML = '<option value="">— Seleccionar —</option>' + opts + addNew;
     if (cur && matchGroupPlayers.find(p => p.id === cur)) sel.value = cur;
   });
 }
