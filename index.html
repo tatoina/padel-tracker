@@ -2,10 +2,11 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="theme-color" content="#16a34a">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="PadelTracker">
   <title>PadelTracker</title>
   <link rel="manifest" href="manifest.json">
@@ -41,13 +42,25 @@
       background: var(--bg); color: var(--text);
       min-height: 100vh; max-width: 480px; margin: 0 auto;
       position: relative; overscroll-behavior: none;
+      -webkit-user-select: none;
+      user-select: none;
     }
+    body::before, body::after { display: none !important; }
+    
+    /* Ocultar home indicator de iOS/Emuladores */
+    @supports (padding-bottom: env(safe-area-inset-bottom)) {
+      body { padding-bottom: 0 !important; }
+    }
+    html::after, body::after, 
+    div[style*="bottom"]::after,
+    *[class*="indicator"]::before,
+    *[class*="indicator"]::after { display: none !important; }
 
-    /* ─── SCREENS ─────────────────────────────────── */
+    /* --- SCREENS ----------------------------------- */
     .screen { display: none; }
     .screen.active { display: block; }
 
-    /* ─── SPLASH (gradient full) ──────────────────── */
+    /* --- SPLASH (gradient full) -------------------- */
     #screen-register, #screen-pending, #screen-admin-login {
       position: fixed; inset: 0; z-index: 900;
       background: linear-gradient(160deg, #16a34a 0%, #166534 55%, #14532d 100%);
@@ -59,7 +72,7 @@
     #screen-pending.active,
     #screen-admin-login.active { display: flex; }
 
-    .reg-hero { text-align: center; color: #fff; margin-bottom: 2rem; padding-top: env(safe-area-inset-top); }
+    .reg-hero { text-align: center; color: #fff; margin-bottom: 2rem; }
     .reg-logo  { line-height: 1; margin-bottom: 0.75rem; }
     .reg-logo img { width: 90px; height: 90px; object-fit: contain; border-radius: 18px; }
     .reg-title { font-size: 2.25rem; font-weight: 900; letter-spacing: -0.05em; }
@@ -88,7 +101,7 @@
     .or-divider { display: flex; align-items: center; gap: 0.5rem; margin: 1rem 0; color: var(--muted); font-size: 0.8rem; font-weight: 600; }
     .or-divider::before, .or-divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
 
-    /* ─── PENDING screen ──────────────────────────── */
+    /* --- PENDING screen ---------------------------- */
     .pending-card {
       background: #fff; border-radius: 20px;
       padding: 2rem 1.5rem; width: 100%; max-width: 380px;
@@ -98,11 +111,10 @@
     .pending-title { font-size: 1.25rem; font-weight: 800; color: var(--text); margin-bottom: 0.5rem; }
     .pending-sub   { font-size: 0.875rem; color: var(--muted); line-height: 1.5; margin-bottom: 1.5rem; }
 
-    /* ─── HEADER ──────────────────────────────────── */
+    /* --- HEADER ------------------------------------ */
     .header {
       background: linear-gradient(135deg, #16a34a, #166534);
       color: #fff; padding: 0.75rem 1rem;
-      padding-top: calc(0.75rem + env(safe-area-inset-top));
       display: flex; align-items: center; gap: 0.625rem;
       position: sticky; top: 0; z-index: 100;
       box-shadow: 0 2px 12px rgba(0,0,0,.18);
@@ -111,20 +123,6 @@
     .header-text  { flex: 1; min-width: 0; }
     .header-title { font-size: 1rem; font-weight: 800; letter-spacing: -0.02em; }
     .header-sub   { font-size: 0.65rem; opacity: 0.8; margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
-    /* Group switcher pill */
-    .group-pill {
-      display: flex; align-items: center; gap: 0.375rem;
-      background: rgba(255,255,255,.18); border-radius: 20px;
-      padding: 0.3rem 0.625rem 0.3rem 0.75rem;
-      font-size: 0.72rem; font-weight: 800;
-      cursor: pointer; border: none; color: #fff;
-      flex-shrink: 0; white-space: nowrap;
-      -webkit-tap-highlight-color: transparent;
-      max-width: 130px; overflow: hidden; text-overflow: ellipsis;
-    }
-    .group-pill:active { background: rgba(255,255,255,.28); }
-    .group-pill-arrow { opacity: 0.7; font-size: 0.6rem; flex-shrink: 0; }
 
     /* Avatar header button */
     .avatar-btn {
@@ -142,7 +140,7 @@
     }
     #account-dropdown.open { display: block; }
     .account-sheet {
-      position: absolute; top: calc(56px + env(safe-area-inset-top)); right: .75rem;
+      position: absolute; top: 56px; right: .75rem;
       background: #fff; border-radius: 14px; box-shadow: 0 8px 32px rgba(0,0,0,.18);
       min-width: 220px; overflow: hidden; z-index: 701;
     }
@@ -160,8 +158,44 @@
       font-family: inherit; color: #dc2626;
     }
     .account-sheet-btn:active { background: #fef2f2; }
+    .account-sheet-btn.edit-btn { color: var(--text); }
+    .account-sheet-btn.edit-btn:active { background: #f1f5f9; }
 
-    /* ─── GROUP SWITCHER MODAL ────────────────────── */
+    /* --- PROFILE MODAL ---------------------------- */
+    #profile-overlay {
+      display: none; position: fixed; inset: 0; z-index: 900;
+      background: rgba(0,0,0,.45); align-items: flex-end; justify-content: center;
+    }
+    #profile-overlay.open { display: flex; animation: fadeIn .15s ease; }
+    .profile-sheet {
+      background: #fff; border-radius: 20px 20px 0 0;
+      width: 100%; max-width: 480px;
+      padding: 1.25rem 1.25rem 1.5rem;
+      animation: slideUp .22s cubic-bezier(.34,1.56,.64,1);
+    }
+    .profile-sheet h3 { font-size: 1rem; font-weight: 800; margin-bottom: 1.1rem; color: var(--text); }
+    .profile-field { margin-bottom: .875rem; }
+    .profile-field label { display: block; font-size: .78rem; font-weight: 700; color: var(--muted); margin-bottom: .3rem; }
+    .profile-field input {
+      width: 100%; border: 1.5px solid var(--border); border-radius: 10px;
+      padding: .6rem .875rem; font-size: .9375rem; font-family: inherit;
+      background: #fff; color: var(--text); outline: none;
+    }
+    .profile-field input:focus { border-color: #1e293b; }
+    .profile-field input:read-only { background: #f8fafc; color: var(--muted); cursor: default; border-style: dashed; }
+    .profile-save-btn {
+      width: 100%; padding: .75rem; border: none; border-radius: 12px;
+      background: #1e293b; color: #fff; font-size: .9375rem; font-weight: 800;
+      font-family: inherit; cursor: pointer; margin-top: .25rem;
+    }
+    .profile-save-btn:active { background: #0f172a; }
+    .profile-cancel-btn {
+      width: 100%; padding: .65rem; border: none; border-radius: 12px;
+      background: none; color: var(--muted); font-size: .875rem; font-weight: 700;
+      font-family: inherit; cursor: pointer; margin-top: .4rem;
+    }
+
+    /* --- GROUP SWITCHER MODAL ---------------------- */
     .modal-overlay {
       display: none; position: fixed; inset: 0; z-index: 800;
       background: rgba(0,0,0,.45); align-items: flex-end;
@@ -173,7 +207,7 @@
     .modal-sheet {
       background: #fff; border-radius: 20px 20px 0 0;
       width: 100%; max-width: 480px;
-      padding: 1.25rem 1.25rem calc(1.25rem + env(safe-area-inset-bottom));
+      padding: 1.25rem;
       animation: slideUp .22s cubic-bezier(.34,1.56,.64,1);
       max-height: 80vh; overflow-y: auto;
     }
@@ -195,16 +229,14 @@
     .group-option-sub  { font-size: 0.72rem; color: var(--muted); }
     .group-option-check { margin-left: auto; color: var(--green); font-size: 1.2rem; }
 
-    /* ─── MAIN / TAB BAR / PAGES ─────────────────── */
-    .main { padding: 1rem; padding-bottom: calc(var(--tab-h) + 1.25rem + env(safe-area-inset-bottom)); }
+    /* --- MAIN / TAB BAR / PAGES ------------------- */
+    .main { padding: 1rem; padding-bottom: calc(var(--tab-h) + 1.25rem); }
     .tab-bar {
       position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
       width: 100%; max-width: 480px;
-      height: calc(var(--tab-h) + env(safe-area-inset-bottom));
-      padding-bottom: env(safe-area-inset-bottom);
+      height: var(--tab-h);
       background: var(--card); border-top: 1px solid var(--border);
       display: flex; z-index: 200;
-      box-shadow: 0 -4px 20px rgba(0,0,0,.07);
     }
     .tab-btn {
       flex: 1; display: flex; flex-direction: column; align-items: center;
@@ -213,7 +245,9 @@
       color: var(--muted); font-size: 0.65rem; font-weight: 600;
       padding: 0.5rem 0 0; transition: color .18s;
       -webkit-tap-highlight-color: transparent;
+      outline: none;
     }
+    .tab-btn:focus { outline: none; }
     .tab-btn.active { color: var(--green); }
     .tab-btn .ti { font-size: 1.4rem; line-height: 1; }
 
@@ -221,13 +255,13 @@
     .page.active { display: block; animation: fadeUp .2s ease; }
     @keyframes fadeUp { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
 
-    /* ─── CARDS ───────────────────────────────────── */
+    /* --- CARDS ------------------------------------- */
     .card { background: var(--card); border-radius: var(--radius); padding: 1rem 1rem 1.25rem; box-shadow: var(--shadow); margin-bottom: 0.875rem; }
     .card-title { font-size: 0.72rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 0.875rem; }
     .divider-text { display: flex; align-items: center; gap: 0.5rem; color: var(--muted); font-size: 0.72rem; font-weight: 700; margin: 0.875rem 0; }
     .divider-text::before, .divider-text::after { content: ''; flex: 1; height: 1px; background: var(--border); }
 
-    /* ─── FORM ELEMENTS ───────────────────────────── */
+    /* --- FORM ELEMENTS ----------------------------- */
     .form-group  { margin-bottom: 0.875rem; }
     .form-label  { display: block; font-size: 0.8125rem; font-weight: 600; margin-bottom: 0.3rem; }
     .form-hint   { font-size: 0.75rem; color: var(--muted); margin-top: 0.375rem; line-height: 1.4; }
@@ -249,7 +283,7 @@
     }
     .form-select:focus { border-color: var(--green); box-shadow: 0 0 0 3px rgba(22,163,74,.12); }
 
-    /* ─── PAIR PREVIEW ────────────────────────────── */
+    /* --- PAIR PREVIEW ------------------------------ */
     .pair-vs-grid { display: grid; grid-template-columns: 1fr 32px 1fr; gap: 0.5rem; align-items: stretch; }
     .pair-box { background: var(--green-light); border-radius: 10px; padding: 0.625rem 0.75rem; border: 1.5px solid rgba(22,163,74,.2); }
     .pair-box.p2 { background: var(--amber-light); border-color: rgba(217,119,6,.2); }
@@ -258,28 +292,22 @@
     .pair-player-name { font-size: 0.8rem; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .vs-circle { background: var(--text); color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; font-weight: 800; align-self: center; }
 
-    /* ─── SET SCORER ──────────────────────────────── */
-    .set-item { margin-bottom: 0.875rem; }
-    .set-item-label { font-size: 0.72rem; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 0.4rem; }
-    .set-item-row { display: grid; grid-template-columns: 1fr 24px 1fr; gap: 0.375rem; align-items: center; }
-    .stepper-box { border: 2px solid var(--border); border-radius: 12px; padding: 0.5rem 0.375rem 0.625rem; text-align: center; transition: border-color .18s, background .18s; background: #fff; }
-    .stepper-box.win-p1 { border-color: var(--green); background: var(--green-light); }
-    .stepper-box.win-p2 { border-color: var(--amber);  background: var(--amber-light); }
-    .stepper-name { font-size: 0.68rem; font-weight: 700; color: var(--muted); margin-bottom: 0.4rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .stepper-box.win-p1 .stepper-name { color: var(--green-dark); }
-    .stepper-box.win-p2 .stepper-name { color: #92400e; }
-    .set-num-input {
-      width: 100%; border: none; background: transparent;
-      font-size: 2.5rem; font-weight: 900; text-align: center;
-      color: var(--text); outline: none; padding: 0;
+    /* --- SET SCORER -------------------------------- */
+    .set-item { margin-bottom: 0.5rem; }
+    .set-item-label { font-size: 0.72rem; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 0.3rem; }
+    .set-item-row { display: flex; align-items: center; justify-content: center; gap: 0.5rem; }
+    .set-score-input { 
+      width: 50px; height: 50px; border: 2px solid var(--border); border-radius: 8px; 
+      text-align: center; font-size: 1.75rem; font-weight: 900; 
+      background: #fff; color: var(--text); outline: none;
       -webkit-appearance: none; -moz-appearance: textfield;
-      font-family: inherit; line-height: 1;
+      transition: border-color .18s, background .18s;
     }
-    .set-num-input::-webkit-outer-spin-button,
-    .set-num-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-    .stepper-box.win-p1 .set-num-input { color: var(--green-dark); }
-    .stepper-box.win-p2 .set-num-input { color: #92400e; }
-    .set-colon { font-size: 1.5rem; font-weight: 900; color: var(--muted); text-align: center; padding-top: 1.375rem; }
+    .set-score-input::-webkit-outer-spin-button,
+    .set-score-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+    .set-score-input.win-p1 { border-color: var(--green); background: var(--green-light); color: var(--green-dark); }
+    .set-score-input.win-p2 { border-color: var(--amber); background: var(--amber-light); color: #92400e; }
+    .set-vs { font-size: 1rem; font-weight: 900; color: var(--muted); }
     .set-actions { display: flex; gap: 0.5rem; margin: 0.25rem 0 0.125rem; }
     .result-box { border-radius: 10px; padding: 0.8rem 1rem; text-align: center; font-size: 0.9375rem; font-weight: 700; margin-top: 0.875rem; }
     .rb-empty { background: var(--bg); color: var(--muted); }
@@ -291,7 +319,7 @@
     .set-pill.p1 { background: var(--green-light); border-color: rgba(22,163,74,.3); color: var(--green-dark); }
     .set-pill.p2 { background: var(--amber-light);  border-color: rgba(217,119,6,.3); color: #92400e; }
 
-    /* ─── BUTTONS ─────────────────────────────────── */
+    /* --- BUTTONS ----------------------------------- */
     .btn { display: block; width: 100%; padding: 0.8rem 1rem; border: none; border-radius: 10px; font-size: 0.9375rem; font-weight: 700; font-family: inherit; cursor: pointer; transition: all .18s; text-align: center; -webkit-tap-highlight-color: transparent; }
     .btn:active        { transform: scale(0.97); }
     .btn-primary       { background: var(--green); color: #fff; }
@@ -302,7 +330,7 @@
     .btn-danger-ghost  { background: var(--bg); color: var(--red); }
     .btn-sm            { padding: 0.45rem 0.875rem; font-size: 0.8125rem; width: auto; display: inline-block; }
 
-    /* ─── RANKING TABLE ───────────────────────────── */
+    /* --- RANKING TABLE ----------------------------- */
     .rank-table { width: 100%; border-collapse: collapse; }
     .rank-table th { font-size: 0.68rem; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; padding: 0.35rem 0.4rem; text-align: center; border-bottom: 2px solid var(--border); }
     .rank-table th:first-child { text-align: left; padding-left: 0; }
@@ -321,7 +349,7 @@
     .d-cell    { color: var(--red);    font-weight: 700; }
     .pts-legend { font-size: 0.68rem; color: var(--muted); text-align: center; margin-top: 0.875rem; padding-top: 0.75rem; border-top: 1px solid var(--border); }
 
-    /* ─── HISTORY CARDS ───────────────────────────── */
+    /* --- HISTORY CARDS ----------------------------- */
     .match-card { background: var(--card); border-radius: 12px; padding: 0.875rem; margin-bottom: 0.625rem; box-shadow: var(--shadow); border-left: 4px solid var(--border); position: relative; }
     .match-card.res-p1   { border-left-color: var(--green); }
     .match-card.res-draw { border-left-color: var(--indigo); }
@@ -339,7 +367,7 @@
     .badge-draw { background: var(--indigo-light); color: #3730a3; }
     .badge-p2   { background: var(--amber-light);  color: #92400e; }
 
-    /* ─── PLAYERS LIST ────────────────────────────── */
+    /* --- PLAYERS LIST ------------------------------ */
     .player-row { display: flex; align-items: center; padding: 0.6rem 0; border-bottom: 1px solid var(--border); }
     .player-row:last-child { border-bottom: none; }
     .avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--green); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.875rem; margin-right: 0.75rem; flex-shrink: 0; }
@@ -348,7 +376,7 @@
     .player-you { font-size: 0.68rem; color: var(--indigo); font-weight: 700; margin-left: 0.375rem; }
     .del-player-btn { background: none; border: none; color: var(--red); cursor: pointer; font-size: 1.1rem; padding: 0.25rem 0.375rem; opacity: 0.7; -webkit-tap-highlight-color: transparent; }
 
-    /* ─── SETTINGS ────────────────────────────────── */
+    /* --- SETTINGS ---------------------------------- */
     .settings-row { display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 0; border-bottom: 1px solid var(--border); }
     .settings-row:last-child { border-bottom: none; }
     .settings-label { font-weight: 700; font-size: 0.9375rem; }
@@ -356,14 +384,14 @@
     .pts-input { width: 68px; padding: 0.4rem 0.5rem; border: 1.5px solid var(--border); border-radius: 8px; font-size: 1.125rem; font-weight: 800; text-align: center; color: var(--green); outline: none; font-family: inherit; -webkit-appearance: none; }
     .pts-input:focus { border-color: var(--green); box-shadow: 0 0 0 3px rgba(22,163,74,.12); }
 
-    /* ─── ADMIN PANEL ─────────────────────────────── */
+    /* --- ADMIN PANEL ------------------------------- */
     #screen-admin { display: none; }
     #screen-admin.active { display: block; }
 
     .admin-header {
       background: linear-gradient(135deg, #1e293b, #0f172a);
       color: #fff; padding: 0.875rem 1rem;
-      padding-top: calc(0.875rem + env(safe-area-inset-top));
+      padding-top: 0.875rem;
       display: flex; align-items: center; gap: 0.75rem;
       position: sticky; top: 0; z-index: 100;
       box-shadow: 0 2px 12px rgba(0,0,0,.3);
@@ -397,6 +425,14 @@
     .ua-group-pill button { background: none; border: none; cursor: pointer; color: #0369a1; font-size: 0.85rem; line-height: 1; padding: 0; margin-left: 0.1rem; font-weight: 900; }
     .ua-group-select { border: 1.5px solid var(--border); border-radius: 8px; padding: 0.3rem 0.5rem; font-size: 0.8rem; font-family: inherit; background: #fff; cursor: pointer; }
 
+    /* Admin section nav */
+    .admin-section-nav { display: flex; background: #f1f5f9; border-bottom: 1px solid #e2e8f0; position: sticky; top: 56px; z-index: 90; }
+    .admin-section-btn { flex: 1; padding: .7rem .5rem; font-size: .82rem; font-weight: 800; border: none; background: none; cursor: pointer; color: var(--muted); font-family: inherit; border-bottom: 3px solid transparent; transition: all .15s; -webkit-tap-highlight-color: transparent; }
+    .admin-section-btn.active { color: #1e293b; border-bottom-color: #1e293b; background: #fff; }
+    .admin-section-pane { display: none; }
+    .admin-section-pane.active { display: block; }
+
+    /* User status tabs (inside Usuarios pane) */
     .admin-tabs { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
     .admin-tab { flex: 1; padding: 0.6rem; text-align: center; border-radius: 10px; border: 2px solid var(--border); background: #fff; font-size: 0.8125rem; font-weight: 700; cursor: pointer; color: var(--muted); transition: all .15s; font-family: inherit; -webkit-tap-highlight-color: transparent; }
     .admin-tab.active { border-color: #1e293b; background: #1e293b; color: #fff; }
@@ -409,32 +445,104 @@
     .stat-box.s-active  .stat-num  { color: var(--green); }
     .stat-box.s-inactive .stat-num { color: var(--red); }
 
-    /* ─── MISC ────────────────────────────────────── */
+    /* --- MISC -------------------------------------- */
     .empty { text-align: center; padding: 2.5rem 1rem; color: var(--muted); }
     .empty-icon  { font-size: 2.75rem; margin-bottom: 0.625rem; }
     .empty-title { font-weight: 700; margin-bottom: 0.25rem; color: var(--text); }
     .empty-sub   { font-size: 0.8125rem; }
 
-    .toast { position: fixed; bottom: calc(var(--tab-h) + env(safe-area-inset-bottom) + 1rem); left: 50%; transform: translateX(-50%) translateY(80px); background: #1e293b; color: #fff; padding: 0.7rem 1.125rem; border-radius: 10px; font-size: 0.875rem; font-weight: 600; z-index: 999; transition: transform .28s cubic-bezier(.34,1.56,.64,1); white-space: nowrap; box-shadow: 0 4px 16px rgba(0,0,0,.22); pointer-events: none; }
+    .toast { position: fixed; bottom: calc(var(--tab-h) + 1rem); left: 50%; transform: translateX(-50%) translateY(80px); background: #1e293b; color: #fff; padding: 0.7rem 1.125rem; border-radius: 10px; font-size: 0.875rem; font-weight: 600; z-index: 999; transition: transform .28s cubic-bezier(.34,1.56,.64,1); white-space: nowrap; box-shadow: 0 4px 16px rgba(0,0,0,.22); pointer-events: none; }
     .toast.show { transform: translateX(-50%) translateY(0); }
     .toast-admin { bottom: 2rem; }
-
-    #install-banner { display: none; background: linear-gradient(135deg,#16a34a,#166534); color: #fff; padding: 0.75rem 1rem; align-items: center; justify-content: space-between; gap: 0.75rem; font-size: 0.8125rem; font-weight: 600; }
-    #install-banner.visible { display: flex; }
-    #install-btn { background: #fff; color: var(--green); border: none; border-radius: 20px; padding: 0.4rem 1.1rem; font-weight: 800; cursor: pointer; font-size: .85rem; white-space:nowrap; }
-    #install-dismiss { background: none; border: none; color: rgba(255,255,255,.75); cursor: pointer; font-size: 1.25rem; padding: 0 0.25rem; }
 
     .row   { display: flex; gap: 0.5rem; align-items: center; }
     .flex1 { flex: 1; }
     .mt-2  { margin-top: 1rem; }
     .mb-0  { margin-bottom: 0 !important; }
+
+    /* -- GROUP CARDS ------------------------------------------ */
+    .group-card { background: #fff; border: 1.5px solid var(--border); border-radius: 14px; padding: .85rem 1rem; margin-bottom: .625rem; transition: border-color .15s; }
+    .group-card.active-group { border-color: var(--green); background: #f0fdf4; }
+    .group-card-top { display: flex; align-items: center; gap: .75rem; }
+    .group-card-icon { width: 40px; height: 40px; border-radius: 10px; background: linear-gradient(135deg,#1e293b,#334155); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0; }
+    .group-card.active-group .group-card-icon { background: linear-gradient(135deg,#16a34a,#15803d); }
+    .group-card-name { font-size: .95rem; font-weight: 800; color: var(--text); }
+    .group-card-meta { font-size: .73rem; color: var(--muted); margin-top: .1rem; }
+    .group-card-active-badge { font-size: .68rem; font-weight: 800; color: var(--green); background: #dcfce7; border-radius: 20px; padding: .15rem .5rem; margin-left: auto; flex-shrink: 0; }
+    .group-card-actions { display: flex; flex-wrap: wrap; gap: .375rem; margin-top: .7rem; padding-top: .65rem; border-top: 1px solid var(--border); }
+    .group-card.active-group .group-card-actions { border-top-color: #bbf7d0; }
+
+    /* -- PWA INSTALL BANNER --------------------------------- */
+    #install-banner { 
+      position: fixed; 
+      top: 4.5rem; 
+      left: 50%; 
+      transform: translateX(-50%);
+      width: calc(100% - 2rem); 
+      max-width: 448px;
+      background: linear-gradient(135deg,#16a34a,#166534); 
+      color: #fff; 
+      padding: 0.75rem 1rem; 
+      align-items: center; 
+      justify-content: space-between; 
+      gap: 0.75rem; 
+      font-size: 0.8125rem; 
+      font-weight: 600;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+      z-index: 500;
+      display: none !important;
+    }
+    #install-banner.visible { display: flex !important; }
+    #install-btn { background: #fff; color: var(--green); border: none; border-radius: 20px; padding: 0.4rem 1.1rem; font-weight: 800; cursor: pointer; font-size: .85rem; white-space:nowrap; }
+    #install-dismiss { background: none; border: none; color: #fff; font-size: 1.5rem; cursor: pointer; line-height: 1; padding: 0 0.25rem; }
+
+    /* -- NEWS PAGE ------------------------------------------- */
+    #page-news { background: #f1f5f9; padding: 0; }
+    .news-header { background: linear-gradient(135deg,#1e3a5f,#0f172a); color:#fff; padding: 1.1rem 1rem .9rem; display:flex; align-items:center; gap:.75rem; }
+    .news-header-title { font-size:1.15rem; font-weight:900; letter-spacing:-.01em; }
+    .news-header-sub   { font-size:.78rem; color:rgba(255,255,255,.65); margin-top:.1rem; }
+    .news-feed { padding: .875rem 1rem 1.5rem; max-width: 480px; margin: 0 auto; }
+
+    .news-card { background:#fff; border-radius:16px; overflow:hidden; box-shadow:0 2px 12px rgba(0,0,0,.09); margin-bottom:1rem; animation:fadeSlide .3s ease; }
+    @keyframes fadeSlide { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+    .news-card-img { width:100%; height:190px; object-fit:cover; display:block; }
+    .news-card-body { padding: .85rem 1rem .9rem; }
+    .news-cat { display:inline-flex; align-items:center; gap:.25rem; border-radius:20px; padding:.22rem .7rem; font-size:.69rem; font-weight:800; letter-spacing:.02em; margin-bottom:.45rem; }
+    .news-cat.general { background:#eff6ff; color:#1d4ed8; }
+    .news-cat.partido { background:#f0fdf4; color:#15803d; }
+    .news-cat.torneo  { background:#fef9c3; color:#854d0e; }
+    .news-cat.aviso   { background:#fef2f2; color:#b91c1c; }
+    .news-card-title { font-size:.97rem; font-weight:800; color:#0f172a; margin-bottom:.35rem; line-height:1.35; }
+    .news-card-text  { font-size:.84rem; color:#374151; line-height:1.65; white-space:pre-wrap; margin-bottom:.5rem; }
+    .news-card-footer { display:flex; align-items:center; justify-content:space-between; margin-top:.35rem; }
+    .news-card-date  { font-size:.73rem; color:#94a3b8; }
+
+    /* -- ADMIN NEWS ------------------------------------------- */
+    .admin-noticia-form { background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:.9rem; margin-bottom:1rem; }
+    .admin-noticia-form select { width:100%; margin-bottom:.5rem; padding:.5rem .7rem; border:1px solid #e2e8f0; border-radius:8px; font-size:.85rem; background:#fff; }
+    #admin-noticia-body { width:100%; box-sizing:border-box; min-height:140px; padding:.6rem .75rem; border:1.5px solid #e2e8f0; border-radius:8px; font-size:.88rem; font-family:inherit; line-height:1.6; resize:vertical; background:#fff; margin-bottom:.5rem; transition:border-color .15s; }
+    #admin-noticia-body:focus { outline:none; border-color:#6366f1; }
+    .admin-noticia-form .img-section { background:#fff; border:1px dashed #cbd5e1; border-radius:8px; padding:.65rem; margin-bottom:.5rem; }
+    .admin-noticia-form .img-section label { font-size:.75rem; font-weight:700; color:var(--muted); display:block; margin-bottom:.3rem; }
+    .img-preview { width:100%; max-height:150px; object-fit:cover; border-radius:8px; margin-top:.4rem; display:none; }
+    .file-pick-btn { display:flex; align-items:center; justify-content:center; gap:.4rem; background:#f1f5f9; border:1.5px dashed #94a3b8; border-radius:8px; padding:.55rem; font-size:.82rem; font-weight:700; color:#475569; cursor:pointer; width:100%; box-sizing:border-box; margin-bottom:.4rem; transition:background .15s; }
+    .file-pick-btn:hover { background:#e2e8f0; }
+
+    .admin-news-card { background:#fff; border:1px solid #e2e8f0; border-radius:10px; padding:.7rem; display:flex; gap:.75rem; align-items:flex-start; margin-bottom:.5rem; }
+    .admin-news-thumb { width:52px; height:52px; border-radius:8px; object-fit:cover; flex-shrink:0; background:#f1f5f9; display:flex; align-items:center; justify-content:center; font-size:1.4rem; overflow:hidden; }
+    .admin-news-thumb img { width:100%; height:100%; object-fit:cover; }
+    .admin-news-info { flex:1; min-width:0; }
+    .admin-news-info-title { font-size:.83rem; font-weight:700; color:#0f172a; margin-top:.25rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .admin-news-info-meta  { font-size:.72rem; color:#94a3b8; margin-top:.15rem; }
+    .noticia-del-btn { background:none; border:none; cursor:pointer; font-size:.9rem; padding:.15rem; line-height:1; }
   </style>
 </head>
 <body>
 
-<!-- ══════════════════════════════════════════════════
+<!-- --------------------------------------------------
      PANTALLA: REGISTRO
-══════════════════════════════════════════════════ -->
+-------------------------------------------------- -->
 <div id="screen-register" class="active">
   <div class="reg-hero">
     <div class="reg-logo"><img src="icon-512.png" alt="PadelTracker"></div>
@@ -503,9 +611,9 @@
   </div>
 </div>
 
-<!-- ══════════════════════════════════════════════════
+<!-- --------------------------------------------------
      PANTALLA: PENDIENTE DE APROBACIÓN
-══════════════════════════════════════════════════ -->
+-------------------------------------------------- -->
 <div id="screen-pending">
   <div class="reg-hero" style="margin-bottom:1.5rem">
     <div class="reg-logo"><img src="icon-512.png" alt="PadelTracker"></div>
@@ -525,12 +633,12 @@
   </div>
 </div>
 
-<!-- ══════════════════════════════════════════════════
+<!-- --------------------------------------------------
      PANTALLA: ADMIN LOGIN
-══════════════════════════════════════════════════ -->
+-------------------------------------------------- -->
 <div id="screen-admin-login">
   <div class="reg-hero">
-    <div class="reg-logo">🔐</div>
+    <div class="reg-logo">�</div>
     <div class="reg-title">Admin</div>
     <div class="reg-sub">Panel de administración</div>
   </div>
@@ -547,64 +655,90 @@
     <div style="margin-top:1rem">
       <button class="btn btn-primary" onclick="adminLogin()">Entrar como admin</button>
     </div>
-    <button onclick="showRegister()" style="display:block;margin-top:.75rem;background:none;border:none;color:var(--muted);cursor:pointer;font-size:.8125rem;width:100%;text-align:center;font-family:inherit">← Volver al registro</button>
+    <button onclick="showRegister()" style="display:block;margin-top:.75rem;background:none;border:none;color:var(--muted);cursor:pointer;font-size:.8125rem;width:100%;text-align:center;font-family:inherit">? Volver al registro</button>
   </div>
 </div>
 
-<!-- ══════════════════════════════════════════════════
+<!-- --------------------------------------------------
      PANTALLA: PANEL ADMIN
-══════════════════════════════════════════════════ -->
+-------------------------------------------------- -->
 <div id="screen-admin">
   <div class="admin-header">
-    <span style="font-size:1.4rem">🛡️</span>
+    <span style="font-size:1.4rem">�</span>
     <div class="admin-header-title">Panel de Administración</div>
     <button class="admin-logout-btn" onclick="adminLogout()">Salir</button>
   </div>
-  <div class="admin-main">
-    <div class="admin-stats">
-      <div class="stat-box s-pending">
-        <div class="stat-num" id="stat-pending">0</div>
-        <div class="stat-lbl">Pendientes</div>
-      </div>
-      <div class="stat-box s-active">
-        <div class="stat-num" id="stat-active">0</div>
-        <div class="stat-lbl">Activos</div>
-      </div>
-      <div class="stat-box s-inactive">
-        <div class="stat-num" id="stat-inactive">0</div>
-        <div class="stat-lbl">Inactivos</div>
-      </div>
-    </div>
 
-    <div class="admin-tabs">
-      <button class="admin-tab active" id="atab-pending"  onclick="setAdminTab('pending')">⏳ Pendientes</button>
-      <button class="admin-tab" id="atab-active"   onclick="setAdminTab('active')">✅ Activos</button>
-      <button class="admin-tab" id="atab-inactive" onclick="setAdminTab('inactive')">❌ Inactivos</button>
+  <!-- Section nav -->
+  <nav class="admin-section-nav">
+    <button class="admin-section-btn active" id="asec-usuarios" onclick="setAdminSection('usuarios')">👥 Usuarios</button>
+    <button class="admin-section-btn" id="asec-noticias" onclick="setAdminSection('noticias')">📢 Noticias</button>
+  </nav>
+
+  <!-- PANE: Usuarios -->
+  <div class="admin-section-pane active" id="apane-usuarios">
+    <div class="admin-main">
+      <div class="admin-stats">
+        <div class="stat-box s-pending">
+          <div class="stat-num" id="stat-pending">0</div>
+          <div class="stat-lbl">Pendientes</div>
+        </div>
+        <div class="stat-box s-active">
+          <div class="stat-num" id="stat-active">0</div>
+          <div class="stat-lbl">Activos</div>
+        </div>
+        <div class="stat-box s-inactive">
+          <div class="stat-num" id="stat-inactive">0</div>
+          <div class="stat-lbl">Inactivos</div>
+        </div>
+      </div>
+      <div class="admin-tabs">
+        <button class="admin-tab active" id="atab-pending"  onclick="setAdminTab('pending')">⏳ Pendientes</button>
+        <button class="admin-tab" id="atab-active"   onclick="setAdminTab('active')">✅ Activos</button>
+        <button class="admin-tab" id="atab-inactive" onclick="setAdminTab('inactive')">🚫 Inactivos</button>
+      </div>
+      <div class="admin-search">
+        <span style="font-size:1rem;color:var(--muted)">📍</span>
+        <input type="text" id="admin-search-input" placeholder="Buscar por nombre..." oninput="filterAdminUsers(this.value)">
+        <button onclick="document.getElementById('admin-search-input').value='';filterAdminUsers('')" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:1rem;padding:0;line-height:1" title="Limpiar">&times;</button>
+      </div>
+      <div id="admin-user-list"></div>
     </div>
-    <div class="admin-search">
-      <span style="font-size:1rem;color:var(--muted)">🔍</span>
-      <input type="text" id="admin-search-input" placeholder="Buscar por nombre..." oninput="filterAdminUsers(this.value)">
-      <button onclick="document.getElementById('admin-search-input').value='';filterAdminUsers('')" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:1rem;padding:0;line-height:1" title="Limpiar">&times;</button>
+  </div>
+
+  <!-- PANE: Noticias -->
+  <div class="admin-section-pane" id="apane-noticias">
+    <div class="admin-main">
+      <div style="font-weight:800;font-size:.95rem;margin-bottom:.75rem;color:var(--text)">📝 Publicar noticia</div>
+      <div class="admin-noticia-form">
+        <select id="admin-noticia-cat">
+          <option value="general">📰 General</option>
+          <option value="partido">� Partido</option>
+          <option value="torneo">🏆 Torneo</option>
+          <option value="aviso">⚠️ Aviso</option>
+        </select>
+        <input type="text" id="admin-noticia-title" class="form-input" placeholder="Título" style="margin-bottom:.5rem">
+        <textarea id="admin-noticia-body" placeholder="Escribe la noticia o aviso..."></textarea>
+        <div style="margin:.5rem 0">
+          <label style="font-size:.78rem;font-weight:700;color:var(--muted);display:block;margin-bottom:.3rem">Imagen (opcional)</label>
+          <label class="file-pick-btn">
+            🖼️ Seleccionar imagen
+            <input type="file" id="admin-noticia-img-file" accept="image/*" onchange="previewNoticiaImg(this)" style="display:none">
+          </label>
+          <img id="admin-noticia-img-preview" class="img-preview" alt="">
+          <input type="text" id="admin-noticia-img-url" class="form-input" placeholder="O pega una URL de imagen..." style="margin-top:.35rem;font-size:.81rem" oninput="previewNoticiaUrl(this.value)">
+        </div>
+        <button class="btn btn-primary" style="width:100%;padding:.65rem" onclick="adminPublishNoticia()">📢 Publicar</button>
+      </div>
+      <div id="admin-noticias-list"></div>
     </div>
-    <div id="admin-user-list"></div>
   </div>
 </div>
 
-<!-- ══════════════════════════════════════════════════
+<!-- --------------------------------------------------
      APP PRINCIPAL
-══════════════════════════════════════════════════ -->
+-------------------------------------------------- -->
 <div id="screen-app">
-
-  <div id="install-banner">
-    <div style="display:flex;flex-direction:column;gap:1px">
-      <span style="font-weight:800;font-size:.9rem">📲 Instalar PadelTracker</span>
-      <span style="font-size:.72rem;opacity:.85">Añádela a tu pantalla de inicio</span>
-    </div>
-    <div class="row" style="gap:.5rem;flex-shrink:0">
-      <button id="install-btn">Instalar</button>
-      <button id="install-dismiss" aria-label="Cerrar">✕</button>
-    </div>
-  </div>
 
   <header class="header">
     <button class="avatar-btn" id="header-avatar" onclick="toggleAccountDropdown()">?</button>
@@ -612,10 +746,7 @@
       <div class="header-title">PadelTracker</div>
       <div class="header-sub" id="header-user">—</div>
     </div>
-    <button class="group-pill" id="group-pill-btn" onclick="openGroupModal()">
-      <span id="group-pill-label">Sin grupo</span>
-      <span class="group-pill-arrow">▼</span>
-    </button>
+
   </header>
 
   <!-- Account dropdown -->
@@ -626,7 +757,45 @@
         <div class="account-sheet-email" id="acc-email-display"></div>
         <div class="account-sheet-since" id="acc-since"></div>
       </div>
+      <button class="account-sheet-btn edit-btn" onclick="closeAccountDropdown();openProfile()">✏️ Editar perfil</button>
       <button class="account-sheet-btn" onclick="logoutUser()">🚪 Cerrar sesión</button>
+    </div>
+  </div>
+
+  <!-- Profile modal -->
+  <div id="profile-overlay" onclick="closeProfile()">
+    <div class="profile-sheet" onclick="event.stopPropagation()">
+      <h3>✏️ Editar perfil</h3>
+      <div class="profile-field">
+        <label>Nombre</label>
+        <input type="text" id="prof-firstname" placeholder="Tu nombre" autocomplete="given-name">
+      </div>
+      <div class="profile-field">
+        <label>Apellidos</label>
+        <input type="text" id="prof-lastname" placeholder="Tus apellidos" autocomplete="family-name">
+      </div>
+      <div class="profile-field">
+        <label>Teléfono</label>
+        <input type="tel" id="prof-phone" placeholder="+34 600 000 000" autocomplete="tel">
+      </div>
+      <div class="profile-field">
+        <label>Email</label>
+        <input type="email" id="prof-email" readonly>
+      </div>
+      <button class="profile-save-btn" onclick="saveProfile()">Guardar cambios</button>
+      <button class="profile-cancel-btn" onclick="closeProfile()">Cancelar</button>
+    </div>
+  </div>
+
+  <!-- PWA Install Banner -->
+  <div id="install-banner" style="display:none">
+    <div style="display:flex;flex-direction:column;gap:1px">
+      <span style="font-weight:800;font-size:.9rem">📲 Instalar PadelTracker</span>
+      <span style="font-size:.72rem;opacity:.85">Añádela a tu pantalla de inicio</span>
+    </div>
+    <div class="row" style="gap:.5rem;flex-shrink:0">
+      <button id="install-btn">Instalar</button>
+      <button id="install-dismiss" aria-label="Cerrar">×</button>
     </div>
   </div>
 
@@ -635,57 +804,41 @@
     <!-- PARTIDO -->
     <div id="page-match" class="page active">
       <div class="card">
-        <div class="card-title">📅 Fecha del partido</div>
-        <div class="form-group" style="margin-bottom:0">
-          <input type="date" id="match-date" class="form-input">
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="card-title">👥 Selecciona los jugadores</div>
-        <div class="card-title" style="margin-bottom:.5rem">🟢 Pareja 1</div>
-        <div class="form-group">
-          <label class="form-label">Jugador 1</label>
-          <select id="p1" class="form-select"><option value="">— Seleccionar —</option></select>
-        </div>
-        <div class="form-group" style="margin-bottom:0">
-          <label class="form-label">Jugador 2</label>
-          <select id="p2" class="form-select"><option value="">— Seleccionar —</option></select>
-        </div>
-        <div class="divider-text">VS</div>
-        <div class="card-title" style="margin-bottom:.5rem">🟠 Pareja 2</div>
-        <div class="form-group">
-          <label class="form-label">Jugador 3</label>
-          <select id="p3" class="form-select"><option value="">— Seleccionar —</option></select>
-        </div>
-        <div class="form-group" style="margin-bottom:0">
-          <label class="form-label">Jugador 4</label>
-          <select id="p4" class="form-select"><option value="">— Seleccionar —</option></select>
-        </div>
-        <div style="margin-top:1rem">
-          <div class="card-title">Vista previa</div>
-          <div class="pair-vs-grid">
-            <div class="pair-box">
-              <div class="pair-box-label">Pareja 1</div>
-              <div class="pair-player-name" id="prev-p1">—</div>
-              <div class="pair-player-name" id="prev-p2">—</div>
-            </div>
-            <div class="vs-circle">VS</div>
-            <div class="pair-box p2">
-              <div class="pair-box-label">Pareja 2</div>
-              <div class="pair-player-name" id="prev-p3">—</div>
-              <div class="pair-player-name" id="prev-p4">—</div>
-            </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem">
+          <div>
+            <div class="card-title" style="margin-bottom:.5rem">🏠 Grupo</div>
+            <select id="match-group-sel" class="form-select" onchange="onMatchGroupChange(this.value)">
+              <option value="">— Selecciona un grupo</option>
+            </select>
+          </div>
+          <div>
+            <div class="card-title" style="margin-bottom:.5rem">📅 Fecha</div>
+            <input type="date" id="match-date" class="form-input">
           </div>
         </div>
       </div>
 
       <div class="card">
-        <div class="card-title">🎾 Marcador por sets</div>
+        <div class="card-title">👥 Jugadores</div>
+        <div style="font-size:.8125rem;font-weight:700;color:var(--green);margin-bottom:.375rem">🟢 Pareja 1</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-bottom:.5rem">
+          <select id="p1" class="form-select"><option value="">— Jugador 1 —</option></select>
+          <select id="p2" class="form-select"><option value="">— Jugador 2 —</option></select>
+        </div>
+        <div class="divider-text" style="margin:.25rem 0">VS</div>
+        <div style="font-size:.8125rem;font-weight:700;color:var(--amber);margin-bottom:.375rem">🟠 Pareja 2</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem">
+          <select id="p3" class="form-select"><option value="">— Jugador 3 —</option></select>
+          <select id="p4" class="form-select"><option value="">— Jugador 4 —</option></select>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">� Marcador por sets</div>
         <div id="set-scorer"></div>
         <div class="set-actions">
-          <button class="btn btn-outline btn-sm" onclick="addSet()">＋ Añadir set</button>
-          <button class="btn btn-danger-ghost btn-sm" id="btn-remove-set" onclick="removeSet()" style="display:none">− Quitar último</button>
+          <button class="btn btn-outline" style="padding:.4rem .75rem;font-size:.8125rem" onclick="addSet()">＋ Añadir set</button>
+          <button class="btn btn-danger-ghost" style="padding:.4rem .75rem;font-size:.8125rem;display:none" id="btn-remove-set" onclick="removeSet()">− Quitar último</button>
         </div>
         <div id="result-box" class="result-box rb-empty">Anota el marcador para ver el resultado</div>
       </div>
@@ -706,53 +859,68 @@
       <div id="history-body"></div>
     </div>
 
+    <!-- NOTICIAS -->
+    <div id="page-news" class="page">
+      <div class="news-header">
+        <div>
+          <div class="news-header-title">📢 Noticias</div>
+          <div class="news-header-sub">Novedades, partidos y torneos</div>
+        </div>
+      </div>
+      <div class="news-feed" id="news-body"></div>
+    </div>
+
     <!-- AJUSTES -->
     <div id="page-settings" class="page">
 
-      <!-- Puntuación: solo visible cuando hay grupo activo -->
-      <div class="card" id="settings-pts-card" style="display:none">
-        <div class="card-title">⚙️ Sistema de puntuación</div>
-        <div class="settings-row">
-          <div><div class="settings-label">🏆 Victoria</div><div class="settings-desc">Puntos por ganar</div></div>
-          <input type="number" id="pts-win"  class="pts-input" min="0" max="99" value="3">
+      <!-- Crear o unirse a un grupo (siempre arriba) -->
+      <div class="card">
+        <div class="card-title">➕ Crear o unirse a un grupo</div>
+        <div class="row form-group mb-0">
+          <input type="text" id="new-group-code" class="form-input flex1"
+                 placeholder="Nombre o código (ej: AMIGOS)" maxlength="20"
+                 style="text-transform:uppercase;letter-spacing:.06em;font-weight:700">
+          <button class="btn btn-primary btn-sm" onclick="startGroupCreation()">Continuar</button>
         </div>
-        <div class="settings-row">
-          <div><div class="settings-label">🤝 Empate</div><div class="settings-desc">Puntos por empatar</div></div>
-          <input type="number" id="pts-draw" class="pts-input" min="0" max="99" value="2">
-        </div>
-        <div class="settings-row">
-          <div><div class="settings-label">❌ Derrota</div><div class="settings-desc">Puntos por perder</div></div>
-          <input type="number" id="pts-loss" class="pts-input" min="0" max="99" value="1">
-        </div>
-        <button class="btn btn-primary mt-2" onclick="saveSettings()">Guardar puntuación</button>
+        <div class="form-hint">Si el grupo ya existe te unirás. Si es nuevo, podrás configurarlo y añadir miembros.</div>
       </div>
 
       <!-- Mis grupos -->
       <div class="card">
         <div class="card-title">🏠 Mis grupos</div>
         <div id="my-groups-list"></div>
-        <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border)">
-          <p style="font-weight:700;font-size:.875rem;margin-bottom:.5rem">➕ Crear o unirse a un grupo</p>
-          <div class="row form-group mb-0">
-            <input type="text" id="new-group-code" class="form-input flex1"
-                   placeholder="Nombre o código (ej: AMIGOS)" maxlength="20"
-                   style="text-transform:uppercase;letter-spacing:.06em;font-weight:700">
-            <button class="btn btn-primary btn-sm" onclick="startGroupCreation()">Continuar</button>
+      </div>
+
+      <!-- Jugadores del grupo activo (se muestra dentro del card de grupo vía JS) -->
+      <div class="card" id="players-card" style="display:none">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem">
+          <div class="card-title" style="margin-bottom:0">👤 <span id="players-card-title">Jugadores del grupo</span></div>
+          <button onclick="toggleAddMemberPanel()" id="btn-add-member" style="background:var(--green);color:#fff;border:none;border-radius:50%;width:28px;height:28px;font-size:1.2rem;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center">+</button>
+        </div>
+        <div id="players-list"></div>
+        <!-- Quick add panel -->
+        <div id="add-member-panel" style="display:none;margin-top:.875rem;padding-top:.875rem;border-top:1px solid var(--border)">
+          <div class="form-group">
+            <label class="form-label">Añadir usuario registrado</label>
+            <div class="row" style="gap:.5rem">
+              <select id="quick-add-user-sel" class="form-select" style="flex:1"><option value="">— Seleccionar —</option></select>
+              <button class="btn btn-primary btn-sm" onclick="quickAddUser()">Añadir</button>
+            </div>
           </div>
-          <div class="form-hint">Si el grupo ya existe te unirás. Si es nuevo, podrás configurarlo y añadir miembros.</div>
+          <div class="form-group" style="margin-bottom:0">
+            <label class="form-label">Añadir sin cuenta (invitado)</label>
+            <div class="row" style="gap:.5rem">
+              <input type="text" id="quick-add-guest-name" class="form-input" placeholder="Nombre del invitado" style="flex:1">
+              <button class="btn btn-outline btn-sm" onclick="quickAddGuest()">Añadir</button>
+            </div>
+          </div>
         </div>
       </div>
 
-      <!-- Jugadores del grupo actual -->
-      <div class="card">
-        <div class="card-title">👤 Jugadores del grupo actual</div>
-        <div id="players-list"></div>
-      </div>
-
       <!-- Zona peligrosa -->
-      <div class="card">
+      <div class="card" id="danger-card" style="display:none">
         <div class="card-title">⚠️ Zona peligrosa</div>
-        <p style="font-size:.8125rem;color:var(--muted);margin-bottom:.875rem">Borra todos los partidos del grupo actual.</p>
+        <p style="font-size:.8125rem;color:var(--muted);margin-bottom:.875rem">Borra todos los partidos del grupo activo.</p>
         <button class="btn btn-danger" onclick="resetMatches()">🗑️ Borrar todos los partidos</button>
       </div>
 
@@ -766,6 +934,7 @@
   <nav class="tab-bar">
     <button class="tab-btn active" id="tab-match"   onclick="switchTab('match')"><span class="ti">⚡</span>Partido</button>
     <button class="tab-btn" id="tab-ranking"  onclick="switchTab('ranking')"><span class="ti">🏆</span>Clasificación</button>
+    <button class="tab-btn" id="tab-news"     onclick="switchTab('news')"><span class="ti">📢</span>Noticias</button>
     <button class="tab-btn" id="tab-history"  onclick="switchTab('history')"><span class="ti">📋</span>Historial</button>
     <button class="tab-btn" id="tab-settings" onclick="switchTab('settings')"><span class="ti">⚙️</span>Ajustes</button>
   </nav>
@@ -825,11 +994,88 @@
   </div>
 </div>
 
+<!-- Edit Group Modal -->
+<div class="modal-overlay" id="edit-group-modal" onclick="if(event.target===this)closeEditGroupModal()">
+  <div class="modal-sheet" style="max-height:92vh;overflow-y:auto">
+    <button class="modal-close" onclick="closeEditGroupModal()">✕</button>
+    <div class="modal-title">✏️ Gestionar grupo</div>
+    <input type="hidden" id="edit-group-code">
+
+    <!-- Nombre -->
+    <div class="form-group">
+      <label class="form-label">Nombre del grupo</label>
+      <input type="text" id="edit-group-name" class="form-input" maxlength="20"
+             style="text-transform:uppercase;letter-spacing:.06em;font-weight:700;font-size:1.05rem;background:#f8fafc" readonly>
+    </div>
+
+    <!-- Puntuación -->
+    <div style="margin-bottom:1.25rem">
+      <div class="card-title" style="margin-bottom:.75rem">⚖️ Puntuación</div>
+      <div class="settings-row">
+        <div><div class="settings-label">🏆 Victoria</div></div>
+        <input type="number" id="edit-pts-win"  class="pts-input" min="0" max="99">
+      </div>
+      <div class="settings-row">
+        <div><div class="settings-label">🤝 Empate</div></div>
+        <input type="number" id="edit-pts-draw" class="pts-input" min="0" max="99">
+      </div>
+      <div class="settings-row">
+        <div><div class="settings-label">❌ Derrota</div></div>
+        <input type="number" id="edit-pts-loss" class="pts-input" min="0" max="99">
+      </div>
+      <button class="btn btn-primary btn-sm mt-2" onclick="saveEditGroup()">💾 Guardar puntuación</button>
+    </div>
+
+    <!-- Miembros actuales -->
+    <div style="margin-bottom:1.25rem">
+      <div class="card-title" style="margin-bottom:.6rem">👥 Miembros del grupo</div>
+      <div id="edit-members-list"></div>
+    </div>
+
+    <!-- Añadir usuario registrado -->
+    <div style="margin-bottom:1.25rem">
+      <div class="card-title" style="margin-bottom:.5rem">➕ Añadir usuario registrado</div>
+      <div class="row mb-0">
+        <select id="edit-add-user-sel" class="form-input flex1" style="font-size:.85rem">
+          <option value="">— Selecciona un usuario</option>
+        </select>
+        <button class="btn btn-primary btn-sm" onclick="editGroupAddUser()">Añadir</button>
+      </div>
+    </div>
+
+    <!-- Añadir invitado -->
+    <div style="margin-bottom:1.5rem">
+      <div class="card-title" style="margin-bottom:.5rem">👻 Añadir invitado (sin cuenta)</div>
+      <div class="row mb-0">
+        <input type="text" id="edit-guest-name" class="form-input flex1" placeholder="Nombre del invitado" maxlength="40">
+        <button class="btn btn-primary btn-sm" onclick="editGroupAddGuest()">Añadir</button>
+      </div>
+      <div class="form-hint">Aparece en partidos y clasificación, pero no tiene acceso a la app.</div>
+    </div>
+
+    <!-- Compartir -->
+    <div style="margin-bottom:1.5rem">
+      <div class="card-title" style="margin-bottom:.5rem">🔗 Invitar al grupo</div>
+      <div class="row">
+        <button class="btn btn-ghost btn-sm flex1" onclick="copyGroupLink(document.getElementById('edit-group-code').value)">🔗 Copiar enlace</button>
+        <button class="btn btn-ghost btn-sm flex1" onclick="shareGroupWhatsApp(document.getElementById('edit-group-code').value)">💬 WhatsApp</button>
+      </div>
+    </div>
+
+    <!-- Zona peligrosa -->
+    <div style="border-top:1px solid var(--border);padding-top:1rem">
+      <div class="card-title" style="margin-bottom:.4rem;color:var(--red)">⚠️ Zona peligrosa</div>
+      <p style="font-size:.78rem;color:var(--muted);margin-bottom:.75rem">Esto borrará el grupo y todos sus partidos permanentemente.</p>
+      <button class="btn btn-danger" style="width:100%" onclick="deleteGroup(document.getElementById('edit-group-code').value)">🗑️ Eliminar grupo</button>
+    </div>
+  </div>
+</div>
+
 <!-- Group Switcher Modal -->
 <div class="modal-overlay" id="group-modal" onclick="handleModalClick(event)">
   <div class="modal-sheet">
     <button class="modal-close" onclick="closeGroupModal()">✕</button>
-    <div class="modal-title">🏠 Cambiar de grupo</div>
+    <div class="modal-title">🔄 Cambiar de grupo</div>
     <div id="group-modal-list"></div>
     <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border)">
       <p style="font-size:.8rem;color:var(--muted);margin-bottom:.625rem">Nombre o código de grupo:</p>
@@ -856,9 +1102,9 @@
 <script>
 'use strict';
 
-// ══════════════════════════════════════════════════
+// --------------------------------------------------
 // FIREBASE INIT
-// ══════════════════════════════════════════════════
+// --------------------------------------------------
 const firebaseConfig = {
   apiKey: "AIzaSyD8tm2jAbXy-YbkBKEGtmwfSnXJrvHpNvU",
   authDomain: "padelapp-9e01c.firebaseapp.com",
@@ -874,32 +1120,56 @@ const db     = firebase.firestore();
 db.enablePersistence({ synchronizeTabs: true }).catch(() => {});
 
 
-// ══════════════════════════════════════════════════
+// --------------------------------------------------
 // CONSTANTS & STATE
-// ══════════════════════════════════════════════════
+// --------------------------------------------------
 const ADMIN_EMAIL = 'admin@admin.es';
 
-// ── EmailJS (notificación nuevo usuario) ──────────────
+// -- EmailJS (notificación nuevo usuario) --------------
 const EMAILJS_PUBLIC_KEY  = 'FZ2LxvvBnzjVgMhRK';
 const EMAILJS_SERVICE_ID  = 'service_0a4twxt';
 const EMAILJS_TEMPLATE_ID = 'template_tbtz2tv';
 try { emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY }); } catch(e) {}
 const ADMIN_PW    = 'Admin1234!';
 
+let deferredInstall = null;
 let currentFbUser = null;
 let currentUser   = null;   // Firestore doc data + id
 let currentGroup  = null;   // group code string
+let matchGroupCode = '';    // group selected in the match form
+let matchGroupPlayers = []; // players for the match form
 let ST = { players: [], matches: [], settings: { win:3, draw:2, loss:1 } };
-let sets = [{ p1:0, p2:0 }];
-let deferredInstall = null;
+let sets = [{ p1:0, p2:0 }, { p1:0, p2:0 }];
 let adminTabActive = 'pending';
 let adminUsers = [];
 let adminGroups = [];
 
-// Capture install prompt as early as possible (before auth)
+// Service Worker registration with auto-update
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js').catch(e => console.warn('SW', e));
+  navigator.serviceWorker.register('sw.js').then(reg => {
+    console.log('SW registered');
+    
+    // Check for updates every 30 seconds
+    setInterval(() => reg.update(), 30000);
+    
+    // Listen for new service worker
+    reg.addEventListener('updatefound', () => {
+      const newWorker = reg.installing;
+      console.log('New SW found, installing...');
+      
+      newWorker.addEventListener('statechange', () => {
+        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+          console.log('New SW installed, reloading...');
+          // New version available, force reload
+          setTimeout(() => {
+            window.location.reload(true);
+          }, 1000);
+        }
+      });
+    });
+  }).catch(e => console.warn('SW error:', e));
 }
+
 window.addEventListener('beforeinstallprompt', e => {
   e.preventDefault();
   deferredInstall = e;
@@ -910,15 +1180,15 @@ window.addEventListener('appinstalled', () => {
   document.getElementById('install-banner').classList.remove('visible');
 });
 
-// ══════════════════════════════════════════════════
+// --------------------------------------------------
 // LOADING
-// ══════════════════════════════════════════════════
+// --------------------------------------------------
 function showLoading() { document.getElementById('loading-overlay').style.display = 'flex'; }
 function hideLoading() { document.getElementById('loading-overlay').style.display = 'none'; }
 
-// ══════════════════════════════════════════════════
+// --------------------------------------------------
 // SCREEN MANAGEMENT
-// ══════════════════════════════════════════════════
+// --------------------------------------------------
 const screens = ['screen-register','screen-pending','screen-admin-login','screen-admin','screen-app'];
 
 function showScreen(id) {
@@ -945,9 +1215,9 @@ function showLogin() {
   document.getElementById('login-email').focus();
 }
 
-// ══════════════════════════════════════════════════
+// --------------------------------------------------
 // AUTH STATE — main entry point
-// ══════════════════════════════════════════════════
+// --------------------------------------------------
 fbAuth.onAuthStateChanged(async fbUser => {
   if (!fbUser) {
     currentFbUser = null;
@@ -990,11 +1260,16 @@ fbAuth.onAuthStateChanged(async fbUser => {
       // Notificar por email al admin
       try {
         await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+          name:       fn + ' ' + ln,
           user_name:  fn + ' ' + ln,
           user_email: fbUser.email,
           admin_url:  'https://padelapp-9e01c.web.app',
+          to_name:    'Admin',
+          from_name:  fn + ' ' + ln,
+          message:    'Nuevo usuario: ' + fn + ' ' + ln + ' (' + fbUser.email + ')',
+          reply_to:   fbUser.email,
         });
-      } catch(e) { console.warn('EmailJS:', e); }
+      } catch(e) { console.warn('EmailJS error:', e); }
       showPending(currentUser);
       hideLoading();
       return;
@@ -1004,7 +1279,7 @@ fbAuth.onAuthStateChanged(async fbUser => {
     currentUser = userData;
 
     if (userData.status === 'pending')  { showPending(userData); hideLoading(); return; }
-    if (userData.status === 'inactive') { await fbAuth.signOut(); toast('❌ Cuenta desactivada.'); hideLoading(); return; }
+    if (userData.status === 'inactive') { await fbAuth.signOut(); toast('? Cuenta desactivada.'); hideLoading(); return; }
 
     await startApp(userData);
     hideLoading();
@@ -1023,9 +1298,9 @@ function tsToStr(obj) {
   return o;
 }
 
-// ══════════════════════════════════════════════════
+// --------------------------------------------------
 // REGISTER — Firebase Auth email/password
-// ══════════════════════════════════════════════════
+// --------------------------------------------------
 async function registerUser() {
   const firstname = document.getElementById('reg-firstname').value.trim();
   const lastname  = document.getElementById('reg-lastname').value.trim();
@@ -1054,9 +1329,9 @@ async function registerUser() {
   }
 }
 
-// ══════════════════════════════════════════════════
+// --------------------------------------------------
 // LOGIN — Firebase Auth email/password
-// ══════════════════════════════════════════════════
+// --------------------------------------------------
 async function loginUser() {
   const email    = document.getElementById('login-email').value.trim().toLowerCase();
   const password = document.getElementById('login-password').value;
@@ -1075,9 +1350,9 @@ async function loginUser() {
   }
 }
 
-// ══════════════════════════════════════════════════
+// --------------------------------------------------
 // GOOGLE SIGN-IN
-// ══════════════════════════════════════════════════
+// --------------------------------------------------
 function googleSignIn() {
   const provider = new firebase.auth.GoogleAuthProvider();
   provider.setCustomParameters({ prompt: 'select_account' });
@@ -1090,9 +1365,9 @@ function googleSignIn() {
   });
 }
 
-// ══════════════════════════════════════════════════
+// --------------------------------------------------
 // LOGOUT
-// ══════════════════════════════════════════════════
+// --------------------------------------------------
 function logoutUser()    { closeAccountDropdown(); fbAuth.signOut(); }
 function toggleAccountDropdown() {
   const d = document.getElementById('account-dropdown');
@@ -1101,12 +1376,44 @@ function toggleAccountDropdown() {
 function closeAccountDropdown() {
   document.getElementById('account-dropdown').classList.remove('open');
 }
+
+function openProfile() {
+  document.getElementById('prof-firstname').value = currentUser.firstname || '';
+  document.getElementById('prof-lastname').value  = currentUser.lastname  || '';
+  document.getElementById('prof-phone').value     = currentUser.phone     || '';
+  document.getElementById('prof-email').value     = currentUser.email     || '';
+  document.getElementById('profile-overlay').classList.add('open');
+}
+function closeProfile() {
+  document.getElementById('profile-overlay').classList.remove('open');
+}
+async function saveProfile() {
+  const firstname = document.getElementById('prof-firstname').value.trim();
+  const lastname  = document.getElementById('prof-lastname').value.trim();
+  const phone     = document.getElementById('prof-phone').value.trim();
+  if (!firstname) { toast('⚠️ Escribe tu nombre'); return; }
+  if (!lastname)  { toast('⚠️ Escribe tus apellidos'); return; }
+  showLoading();
+  try {
+    await db.collection('users').doc(currentFbUser.uid).update({ firstname, lastname, phone });
+    currentUser.firstname = firstname;
+    currentUser.lastname  = lastname;
+    currentUser.phone     = phone;
+    // Update header UI
+    document.getElementById('header-user').textContent   = firstname + ' ' + lastname;
+    document.getElementById('header-avatar').textContent = firstname[0].toUpperCase();
+    document.getElementById('acc-name').textContent      = firstname + ' ' + lastname;
+    closeProfile();
+    toast('? Perfil actualizado');
+  } catch(err) { toast('⚠️ ' + err.message); }
+  hideLoading();
+}
 function logoutPending() { fbAuth.signOut(); }
 function adminLogout()   { fbAuth.signOut(); }
 
-// ══════════════════════════════════════════════════
+// --------------------------------------------------
 // PENDING screen
-// ══════════════════════════════════════════════════
+// --------------------------------------------------
 function showPending(user) {
   document.getElementById('pending-name').textContent  = user.firstname + ' ' + user.lastname;
   document.getElementById('pending-email').textContent = user.email;
@@ -1125,7 +1432,7 @@ async function checkActivation() {
       await startApp(u);
     } else if (u.status === 'inactive') {
       await fbAuth.signOut();
-      toast('❌ Cuenta desactivada');
+      toast('? Cuenta desactivada');
     } else {
       toast('⏳ Aún pendiente de aprobación');
     }
@@ -1135,9 +1442,9 @@ async function checkActivation() {
   hideLoading();
 }
 
-// ══════════════════════════════════════════════════
+// --------------------------------------------------
 // ADMIN LOGIN — signs in via Firebase Auth
-// ══════════════════════════════════════════════════
+// --------------------------------------------------
 async function adminLogin() {
   const pw = document.getElementById('admin-login-pw').value;
   if (pw !== ADMIN_PW) { toast('⚠️ Contraseña incorrecta'); return; }
@@ -1157,9 +1464,9 @@ async function adminLogin() {
   }
 }
 
-// ══════════════════════════════════════════════════
+// --------------------------------------------------
 // ADMIN PANEL
-// ══════════════════════════════════════════════════
+// --------------------------------------------------
 async function renderAdmin() {
   try {
     const [usersSnap, groupsSnap] = await Promise.all([
@@ -1175,6 +1482,7 @@ async function renderAdmin() {
     document.getElementById('stat-active').textContent   = active;
     document.getElementById('stat-inactive').textContent = inactive;
     renderAdminUsers(adminUsers, adminGroups);
+    renderAdminNoticias();
   } catch (err) {
     toast('\u26a0\ufe0f Error cargando datos: ' + err.message);
   }
@@ -1218,10 +1526,18 @@ function renderAdminUsers(users, groups) {
         ${u.status !== 'active'  ? `<button class="ua-btn activate"   onclick="adminActivate('${u.id}')">\u2705 Activar</button>` : ''}
         ${u.status === 'active'  ? `<button class="ua-btn deactivate" onclick="adminDeactivate('${u.id}')">\u23f8 Desactivar</button>` : ''}
         <button class="ua-btn reset-pw" onclick="adminResetPw('${esc(u.email)}')">📧 Reset contrase\u00f1a</button>
-        <button class="ua-btn del"      onclick="adminDelete('${u.id}')">🗑️ Eliminar</button>
+        <button class="ua-btn del"      onclick="adminDelete('${u.id}')">🗑️? Eliminar</button>
       </div>
     </div>`;
   }).join('');
+}
+
+function setAdminSection(sec) {
+  document.querySelectorAll('.admin-section-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.admin-section-pane').forEach(p => p.classList.remove('active'));
+  document.getElementById('asec-' + sec).classList.add('active');
+  document.getElementById('apane-' + sec).classList.add('active');
+  if (sec === 'noticias') renderAdminNoticias();
 }
 
 function setAdminTab(tab) {
@@ -1247,11 +1563,138 @@ async function adminTogglePago(uid, paid) {
   } catch (err) { toast('\u26a0\ufe0f ' + err.message); }
 }
 
+// --- NOTICIAS -----------------------------------------------
+const CAT_LABELS = { general:'📰 General', partido:'� Partido', torneo:'🏆 Torneo', aviso:'⚠️ Aviso' };
+
+function previewNoticiaImg(input) {
+  const file = input.files[0];
+  if (!file) return;
+  if (file.size > 800 * 1024) { toast('⚠️ Imagen muy grande (máx. 800 KB)'); input.value = ''; return; }
+  const lbl = input.closest('.file-pick-btn');
+  if (lbl) lbl.firstChild.textContent = '? ' + file.name;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const prev = document.getElementById('admin-noticia-img-preview');
+    prev.src = e.target.result;
+    prev.style.display = 'block';
+    document.getElementById('admin-noticia-img-url').value = '';
+  };
+  reader.readAsDataURL(file);
+}
+function previewNoticiaUrl(url) {
+  const prev = document.getElementById('admin-noticia-img-preview');
+  if (url) {
+    prev.src = url; prev.style.display = 'block';
+    document.getElementById('admin-noticia-img-file').value = '';
+  } else {
+    prev.src = ''; prev.style.display = 'none';
+  }
+}
+
+async function renderNoticias() {
+  const el = document.getElementById('news-body');
+  if (!el) return;
+  el.innerHTML = '<div class="empty"><div class="empty-icon" style="font-size:2rem">?</div></div>';
+  try {
+    const snap = await db.collection('noticias').orderBy('createdAt', 'desc').limit(30).get();
+    if (snap.empty) {
+      el.innerHTML = '<div class="empty"><div class="empty-icon">⏳</div><div class="empty-title">Sin noticias</div><div class="empty-sub">El administrador publicará aquí los avisos, partidos y torneos.</div></div>';
+      return;
+    }
+    el.innerHTML = snap.docs.map(d => {
+      const n = d.data();
+      const cat   = n.category || 'general';
+      const label = CAT_LABELS[cat] || '📰 General';
+      const date  = n.createdAt ? fmtDate(n.createdAt.toDate ? n.createdAt.toDate().toISOString() : n.createdAt) : '';
+      const imgHtml = n.image ? `<img class="news-card-img" src="${esc(n.image)}" alt="" loading="lazy" onerror="this.style.display='none'">` : '';
+      return `<div class="news-card">
+        ${imgHtml}
+        <div class="news-card-body">
+          <div class="news-cat ${cat}">${label}</div>
+          ${n.title ? `<div class="news-card-title">${esc(n.title)}</div>` : ''}
+          <div class="news-card-text">${esc(n.body)}</div>
+          <div class="news-card-footer">
+            <span class="news-card-date">📅 ${date}</span>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+  } catch(e) { el.innerHTML = '<div class="empty">Error cargando noticias</div>'; }
+}
+
+async function renderAdminNoticias() {
+  const el = document.getElementById('admin-noticias-list');
+  if (!el) return;
+  try {
+    const snap = await db.collection('noticias').orderBy('createdAt', 'desc').limit(20).get();
+    if (snap.empty) { el.innerHTML = '<p style="font-size:.8rem;color:var(--muted)">No hay noticias publicadas todavía.</p>'; return; }
+    el.innerHTML = snap.docs.map(d => {
+      const n = d.data();
+      const cat   = n.category || 'general';
+      const label = CAT_LABELS[cat] || '📰 General';
+      const date  = n.createdAt ? fmtDate(n.createdAt.toDate ? n.createdAt.toDate().toISOString() : n.createdAt) : '';
+      const thumb = n.image
+        ? `<div class="admin-news-thumb"><img src="${esc(n.image)}" onerror="this.parentElement.textContent='📰'"></div>`
+        : `<div class="admin-news-thumb">${cat === 'partido' ? '�' : cat === 'torneo' ? '🏆' : cat === 'aviso' ? '⚠️' : '📰'}</div>`;
+      return `<div class="admin-news-card">
+        ${thumb}
+        <div class="admin-news-info">
+          <div style="display:flex;align-items:center;gap:.4rem;margin-bottom:.2rem">
+            <span class="news-cat ${cat}" style="font-size:.63rem;padding:.15rem .5rem">${label}</span>
+            <button class="noticia-del-btn" onclick="adminDeleteNoticia('${d.id}')" style="float:none;margin:0">🗑️</button>
+          </div>
+          <div class="admin-news-info-title">${n.title ? esc(n.title) : '<em style="color:var(--muted);font-style:normal">Sin título</em>'}</div>
+          <div class="admin-news-info-meta">${date}</div>
+        </div>
+      </div>`;
+    }).join('');
+  } catch(e) {}
+}
+
+async function adminPublishNoticia() {
+  const title = (document.getElementById('admin-noticia-title').value || '').trim();
+  const body  = (document.getElementById('admin-noticia-body').value  || '').trim();
+  const cat   = document.getElementById('admin-noticia-cat').value || 'general';
+  const urlField = (document.getElementById('admin-noticia-img-url').value || '').trim();
+  const prevSrc  = document.getElementById('admin-noticia-img-preview').src || '';
+  // image = base64 (from file) or URL
+  const image = urlField || (prevSrc.startsWith('data:') ? prevSrc : '');
+  if (!body) { toast('⚠️ Escribe algo antes de publicar'); return; }
+  showLoading();
+  try {
+    await db.collection('noticias').add({
+      title, body, category: cat,
+      image: image || null,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    document.getElementById('admin-noticia-title').value = '';
+    document.getElementById('admin-noticia-body').value  = '';
+    document.getElementById('admin-noticia-img-url').value = '';
+    document.getElementById('admin-noticia-img-file').value = '';
+    document.getElementById('admin-noticia-img-preview').style.display = 'none';
+    document.getElementById('admin-noticia-img-preview').src = '';
+    toast('? Noticia publicada');
+    renderAdminNoticias();
+  } catch(e) { toast('⚠️ ' + e.message); }
+  hideLoading();
+}
+
+async function adminDeleteNoticia(id) {
+  if (!confirm('¿Eliminar esta noticia?')) return;
+  showLoading();
+  try {
+    await db.collection('noticias').doc(id).delete();
+    toast('⚠️? Noticia eliminada');
+    renderAdminNoticias();
+  } catch(e) { toast('⚠️ ' + e.message); }
+  hideLoading();
+}
+
 async function adminActivate(uid) {
   showLoading();
   try {
     await db.collection('users').doc(uid).update({ status: 'active', activatedAt: firebase.firestore.FieldValue.serverTimestamp() });
-    toast('✅ Usuario activado');
+    toast('? Usuario activado');
     await renderAdmin();
   } catch (err) { toast('⚠️ ' + err.message); }
   hideLoading();
@@ -1262,7 +1705,7 @@ async function adminDeactivate(uid) {
   showLoading();
   try {
     await db.collection('users').doc(uid).update({ status: 'inactive' });
-    toast('⏸ Usuario desactivado');
+    toast('? Usuario desactivado');
     await renderAdmin();
   } catch (err) { toast('⚠️ ' + err.message); }
   hideLoading();
@@ -1273,7 +1716,7 @@ async function adminResetPw(email) {
   showLoading();
   try {
     await fbAuth.sendPasswordResetEmail(email);
-    toast('📧 Email de recuperación enviado');
+    toast('⚠️ Email de recuperación enviado');
   } catch (err) { toast('⚠️ ' + err.message); }
   hideLoading();
 }
@@ -1283,7 +1726,7 @@ async function adminDelete(uid) {
   showLoading();
   try {
     await db.collection('users').doc(uid).delete();
-    toast('🗑️ Usuario eliminado');
+    toast('⚠️? Usuario eliminado');
     await renderAdmin();
   } catch (err) { toast('\u26a0\ufe0f ' + err.message); }
   hideLoading();
@@ -1311,15 +1754,15 @@ async function adminRemoveGroup(uid, code) {
     await db.collection('users').doc(uid).update({
       groups: firebase.firestore.FieldValue.arrayRemove(code)
     });
-    toast('🗑️ Eliminado del grupo ' + code);
+    toast('⚠️? Eliminado del grupo ' + code);
     await renderAdmin();
   } catch (err) { toast('\u26a0\ufe0f ' + err.message); }
   hideLoading();
 }
 
-// ══════════════════════════════════════════════════
+// --------------------------------------------------
 // APP BOOTSTRAP
-// ══════════════════════════════════════════════════
+// --------------------------------------------------
 async function startApp(user) {
   currentUser = user;
 
@@ -1332,12 +1775,19 @@ async function startApp(user) {
     history.replaceState(null, '', window.location.pathname);
   }
 
-  // Refresh user from Firestore (with fallback to passed-in data)
+  // Refresh user from Firestore (force server read to get latest groups)
   try {
-    const freshSnap = await db.collection('users').doc(currentFbUser.uid).get({ source: 'server' }).catch(() => db.collection('users').doc(currentFbUser.uid).get());
-    if (freshSnap.exists) currentUser = tsToStr({ id: freshSnap.id, ...freshSnap.data() });
+    const freshSnap = await db.collection('users').doc(currentFbUser.uid).get({ source: 'server' });
+    if (freshSnap.exists) {
+      currentUser = tsToStr({ id: freshSnap.id, ...freshSnap.data() });
+    }
   } catch(err) {
-    console.warn('Could not refresh user doc:', err);
+    console.warn('Could not refresh user doc from server:', err.message);
+    // Fallback to cache
+    const cacheSnap = await db.collection('users').doc(currentFbUser.uid).get();
+    if (cacheSnap.exists) {
+      currentUser = tsToStr({ id: cacheSnap.id, ...cacheSnap.data() });
+    }
   }
 
   // Pick last used group or first group
@@ -1366,18 +1816,26 @@ async function startApp(user) {
   document.getElementById('acc-email-display').textContent = currentUser.email;
   document.getElementById('acc-since').textContent         = currentUser.activatedAt ? 'Activo desde ' + fmtDate(currentUser.activatedAt) : '';
 
-  updateGroupPill();
   setDefaultDate();
+
+  // Pre-load match tab with the active group so it's ready from the start
+  matchGroupCode    = currentGroup || '';
+  matchGroupPlayers = ST.players.slice();
+
   refreshSelects();
   renderSets();
   renderPlayers();
   loadSettingsUI();
   renderRanking();
   renderHistory();
-  renderMyGroups();
+  
+  await renderMyGroups();
+  
+  // Initialize match group selector on startup since match tab is active by default
+  await initMatchGroupSelector();
 
   ['p1','p2','p3','p4'].forEach(id =>
-    document.getElementById(id).addEventListener('change', () => { updatePreview(); renderSets(); })
+    document.getElementById(id).addEventListener('change', () => { renderSets(); })
   );
 
   registerSW();
@@ -1393,9 +1851,9 @@ async function startApp(user) {
   }
 }
 
-// ══════════════════════════════════════════════════
+// --------------------------------------------------
 // LOAD GROUP STATE from Firestore
-// ══════════════════════════════════════════════════
+// --------------------------------------------------
 async function loadGroupState(code) {
   if (!code) {
     ST = { players: [], matches: [], settings: { win:3, draw:2, loss:1 } };
@@ -1416,9 +1874,14 @@ async function loadGroupState(code) {
       ? groupSnap.data().settings
       : { win:3, draw:2, loss:1 };
 
+    const guests = (groupSnap.exists && groupSnap.data().guests) ? groupSnap.data().guests : [];
+
     ST.players = usersSnap.docs
-      .filter(d => d.data().email !== ADMIN_EMAIL)
+      .filter(d => d.data().email !== ADMIN_EMAIL && (d.data().groups || []).includes(code))
       .map(d => ({ id: d.id, name: d.data().firstname + ' ' + d.data().lastname, email: d.data().email }));
+
+    // Merge guest players (no account)
+    guests.forEach(g => { if (!ST.players.find(p => p.id === g.id)) ST.players.push({ id: g.id, name: g.name, guest: true }); });
   } catch (err) {
     console.error('loadGroupState players error:', err);
     toast('\u26a0\ufe0f Error cargando jugadores: ' + err.message);
@@ -1471,7 +1934,6 @@ async function switchGroup(code) {
   currentGroup = code;
   sessionStorage.setItem('lastGroup_' + currentFbUser.uid, code);
   await loadGroupState(code);
-  updateGroupPill();
   refreshSelects();
   renderSets();
   renderPlayers();
@@ -1482,13 +1944,10 @@ async function switchGroup(code) {
   hideLoading();
 }
 
-function updateGroupPill() {
-  document.getElementById('group-pill-label').textContent = currentGroup || 'Sin grupo';
-}
 
-// ══════════════════════════════════════════════════
+// --------------------------------------------------
 // GROUP CREATION FLOW
-// ══════════════════════════════════════════════════
+// --------------------------------------------------
 async function startGroupCreation() {
   const inputEl = document.getElementById('new-group-code');
   const code = (inputEl ? inputEl.value.trim() : '').toUpperCase().replace(/[^A-Z0-9_\-]/g, '');
@@ -1587,7 +2046,7 @@ async function confirmCreateGroup() {
     const inp = document.getElementById('new-group-code');
     if (inp) inp.value = '';
     await switchGroup(code);
-    toast('✅ Grupo "' + code + '" creado');
+    toast('? Grupo "' + code + '" creado');
   } catch (err) {
     hideLoading();
     toast('⚠️ ' + err.message);
@@ -1627,7 +2086,7 @@ async function joinGroup(codeOverride) {
     await joinGroupDb(code);
     if (inputEl) inputEl.value = '';
     await switchGroup(code);
-    toast('✅ Unido al grupo ' + code);
+    toast('? Unido al grupo ' + code);
   } catch (err) {
     hideLoading();
     toast('⚠️ ' + err.message);
@@ -1647,7 +2106,7 @@ async function joinGroupFromModal() {
     if (snap.exists) {
       await joinGroupDb(code);
       await switchGroup(code);
-      toast('✅ Unido al grupo ' + code);
+      toast('? Unido al grupo ' + code);
     } else {
       openCreateGroupModal(code);
     }
@@ -1668,7 +2127,6 @@ async function switchGroup(code) {
   currentGroup = code;
   sessionStorage.setItem('lastGroup_' + currentFbUser.uid, code);
   await loadGroupState(code);
-  updateGroupPill();
   refreshSelects();
   renderSets();
   renderPlayers();
@@ -1679,13 +2137,10 @@ async function switchGroup(code) {
   hideLoading();
 }
 
-function updateGroupPill() {
-  document.getElementById('group-pill-label').textContent = currentGroup || 'Sin grupo';
-}
 
-// ══════════════════════════════════════════════════
+// --------------------------------------------------
 // GROUP CREATION FLOW
-// ══════════════════════════════════════════════════
+// --------------------------------------------------
 async function startGroupCreation() {
   const inputEl = document.getElementById('new-group-code');
   const code = (inputEl ? inputEl.value.trim() : '').toUpperCase().replace(/[^A-Z0-9_\-]/g, '');
@@ -1784,7 +2239,7 @@ async function confirmCreateGroup() {
     const inp = document.getElementById('new-group-code');
     if (inp) inp.value = '';
     await switchGroup(code);
-    toast('✅ Grupo "' + code + '" creado');
+    toast('? Grupo "' + code + '" creado');
   } catch (err) {
     hideLoading();
     toast('⚠️ ' + err.message);
@@ -1824,7 +2279,7 @@ async function joinGroup(codeOverride) {
     await joinGroupDb(code);
     if (inputEl) inputEl.value = '';
     await switchGroup(code);
-    toast('✅ Unido al grupo ' + code);
+    toast('? Unido al grupo ' + code);
   } catch (err) {
     hideLoading();
     toast('⚠️ ' + err.message);
@@ -1842,16 +2297,16 @@ async function leaveGroup(code) {
     } else {
       currentGroup = null;
       ST = { players:[], matches:[], settings:{ win:3, draw:2, loss:1 } };
-      updateGroupPill(); refreshSelects(); renderSets(); renderPlayers(); loadSettingsUI(); renderRanking(); renderHistory(); renderMyGroups();
+      refreshSelects(); renderSets(); renderPlayers(); loadSettingsUI(); renderRanking(); renderHistory(); renderMyGroups();
     }
     toast('Saliste del grupo ' + code);
   } catch (err) { toast('⚠️ ' + err.message); }
   hideLoading();
 }
 
-// ══════════════════════════════════════════════════
+// --------------------------------------------------
 // GROUP MODAL
-// ══════════════════════════════════════════════════
+// --------------------------------------------------
 function openGroupModal() {
   const list   = document.getElementById('group-modal-list');
   const groups = currentUser.groups || [];
@@ -1865,7 +2320,7 @@ function openGroupModal() {
           <div class="group-option-name">${esc(g)}</div>
           <div class="group-option-sub">${g === currentGroup ? 'Grupo activo' : 'Cambiar a este grupo'}</div>
         </div>
-        ${g === currentGroup ? '<span class="group-option-check">✓</span>' : ''}
+        ${g === currentGroup ? '<span class="group-option-check">?</span>' : ''}
       </div>`).join('');
   }
   document.getElementById('modal-group-code').value = '';
@@ -1888,40 +2343,301 @@ function copyGroupLink(code) {
 }
 function shareGroupWhatsApp(code) {
   const url  = groupInviteUrl(code);
-  const text = encodeURIComponent('¡Únete a nuestro grupo de pádel "' + code + '"! Entra aquí: ' + url);
+  const text = encodeURIComponent('Únete a nuestro grupo de pádel "' + code + '"! Entra aquí: ' + url);
   window.open('https://wa.me/?text=' + text, '_blank');
 }
 
-// ══════════════════════════════════════════════════
+// --------------------------------------------------
 // MY GROUPS RENDER
-// ══════════════════════════════════════════════════
-function renderMyGroups() {
-  const el     = document.getElementById('my-groups-list');
+// --------------------------------------------------
+async function renderMyGroups() {
+  const el = document.getElementById('my-groups-list');
   const groups = currentUser.groups || [];
+
+  // Show/hide players and danger cards
+  const hasGroup = !!currentGroup;
+  const playersCard = document.getElementById('players-card');
+  const dangerCard  = document.getElementById('danger-card');
+  if (playersCard) playersCard.style.display = hasGroup ? 'block' : 'none';
+  if (dangerCard)  dangerCard.style.display  = hasGroup ? 'block' : 'none';
+  if (hasGroup && document.getElementById('players-card-title'))
+    document.getElementById('players-card-title').textContent = 'Jugadores del grupo: ' + currentGroup;
+
   if (!groups.length) {
     el.innerHTML = '<div style="font-size:.8125rem;color:var(--muted);padding:.5rem 0">No estás en ningún grupo todavía</div>';
     return;
   }
-  el.innerHTML = groups.map(g => `
-    <div class="settings-row" style="flex-wrap:wrap;gap:.5rem">
-      <div style="flex:1;min-width:0">
-        <div class="settings-label" style="font-size:.875rem">🏠 ${esc(g)}</div>
-        ${g === currentGroup ? '<div class="settings-desc" style="color:var(--green)">Grupo activo</div>' : ''}
+
+  // Load group docs to get createdBy
+  let groupDocs = {};
+  try {
+    const snaps = await Promise.all(groups.map(g => db.collection('groups').doc(g).get()));
+    snaps.forEach(s => { if (s.exists) groupDocs[s.id] = s.data(); });
+  } catch(e) {}
+
+  el.innerHTML = groups.map(g => {
+    const isActive = g === currentGroup;
+    const data = groupDocs[g] || {};
+    const isOwner = data.createdBy === currentFbUser.uid;
+    return `<div class="group-card${isActive ? ' active-group' : ''}">
+      <div class="group-card-top">
+        <div class="group-card-icon">${isActive ? '✅' : '📁'}</div>
+        <div style="flex:1;min-width:0">
+          <div class="group-card-name">${esc(g)}</div>
+          <div class="group-card-meta">${isOwner ? '👑 Propietario' : '👤 Miembro'}</div>
+        </div>
+        ${isActive ? '<span class="group-card-active-badge">ACTIVO</span>' : ''}
       </div>
-      <div class="row" style="flex-wrap:wrap;gap:.375rem">
-        ${g !== currentGroup ? `<button class="btn btn-outline btn-sm" onclick="switchGroup('${g}')">Ir</button>` : '<span style="color:var(--green);font-size:1.1rem">✓</span>'}
-        <button class="btn btn-ghost btn-sm" onclick="copyGroupLink('${g}')">🔗 Copiar</button>
+      <div class="group-card-actions">
+        ${!isActive ? `<button class="btn btn-primary btn-sm" onclick="switchGroup('${g}')">Activar</button>` : ''}
+        <button class="btn btn-ghost btn-sm" onclick="copyGroupLink('${g}')">🔗 Invitar</button>
         <button class="btn btn-ghost btn-sm" onclick="shareGroupWhatsApp('${g}')">💬 WhatsApp</button>
-        <button class="btn btn-danger-ghost btn-sm" onclick="leaveGroup('${g}')">Salir</button>
+        ${isOwner
+          ? `<button class="btn btn-outline btn-sm" onclick="openEditGroupModal('${g}')">⏳ Editar</button>`
+          : `<button class="btn btn-danger-ghost btn-sm" onclick="leaveGroup('${g}')">Salir</button>`
+        }
       </div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 
-// ══════════════════════════════════════════════════
+async function openEditGroupModal(code) {
+  showLoading();
+  try {
+    const [groupSnap, usersSnap] = await Promise.all([
+      db.collection('groups').doc(code).get(),
+      db.collection('users').where('status', '==', 'active').get()
+    ]);
+    const data = groupSnap.exists ? groupSnap.data() : {};
+    const ADMIN_EMAIL_LOCAL = 'admin@admin.es';
+
+    document.getElementById('edit-group-code').value  = code;
+    document.getElementById('edit-group-name').value  = code;
+    document.getElementById('edit-pts-win').value     = data.settings?.win  ?? 3;
+    document.getElementById('edit-pts-draw').value    = data.settings?.draw ?? 2;
+    document.getElementById('edit-pts-loss').value    = data.settings?.loss ?? 1;
+
+    // All active users (not admin)
+    const allUsers = usersSnap.docs
+      .map(d => ({ id: d.id, ...d.data() }))
+      .filter(u => u.email !== ADMIN_EMAIL_LOCAL);
+
+    // Members = users who have this group
+    const members = allUsers.filter(u => (u.groups || []).includes(code));
+    const nonMembers = allUsers.filter(u => !(u.groups || []).includes(code));
+
+    // Guests from group doc
+    const guests = data.guests || [];
+
+    // Render members list
+    const membersEl = document.getElementById('edit-members-list');
+    const rows = [
+      ...members.map(u => {
+        const isMe = u.id === currentFbUser.uid;
+        return `<div class="player-row" style="justify-content:space-between">
+          <div style="display:flex;align-items:center;gap:.6rem">
+            <div class="avatar${isMe ? ' me' : ''}" style="width:32px;height:32px;font-size:.8rem">${esc((u.firstname||'?')[0]).toUpperCase()}</div>
+            <div>
+              <div style="font-size:.85rem;font-weight:700">${esc(u.firstname)} ${esc(u.lastname)}</div>
+              <div style="font-size:.72rem;color:var(--muted)">${esc(u.email)}${isMe ? ' — tú' : ''}</div>
+            </div>
+          </div>
+          ${!isMe ? `<button onclick="editGroupRemoveMember('${u.id}','${code}')" style="background:none;border:none;color:#ef4444;cursor:pointer;font-size:1.1rem;padding:.2rem" title="Quitar del grupo">?</button>` : '<span style="font-size:.7rem;color:var(--muted)">propietario</span>'}
+        </div>`;
+      }),
+      ...guests.map(g => `<div class="player-row" style="justify-content:space-between">
+        <div style="display:flex;align-items:center;gap:.6rem">
+          <div class="avatar" style="width:32px;height:32px;font-size:.8rem;background:#94a3b8">👤</div>
+          <div>
+            <div style="font-size:.85rem;font-weight:700">${esc(g.name)}</div>
+            <div style="font-size:.72rem;color:var(--muted)">Sin cuenta</div>
+          </div>
+        </div>
+        <button onclick="editGroupRemoveGuest('${g.id}','${code}')" style="background:none;border:none;color:#ef4444;cursor:pointer;font-size:1.1rem;padding:.2rem" title="Quitar">?</button>
+      </div>`)
+    ];
+    membersEl.innerHTML = rows.length ? rows.join('') : '<div style="font-size:.8rem;color:var(--muted)">No hay miembros a-n.</div>';
+
+    // Populate add-user selector
+    const sel = document.getElementById('edit-add-user-sel');
+    sel.innerHTML = nonMembers.length
+      ? `<option value="">— Selecciona un usuario -</option>` + nonMembers.map(u => `<option value="${u.id}">${esc(u.firstname)} ${esc(u.lastname)} (${esc(u.email)})</option>`).join('')
+      : `<option value="">— Todos los usuarios ya est-n -</option>`;
+
+  } catch(e) { toast('⚠️ ' + e.message); hideLoading(); return; }
+  hideLoading();
+  document.getElementById('edit-group-modal').classList.add('open');
+}
+
+function closeEditGroupModal() {
+  document.getElementById('edit-group-modal').classList.remove('open');
+}
+
+async function saveEditGroup() {
+  const code = document.getElementById('edit-group-code').value;
+  const settings = {
+    win:  Math.max(0, parseInt(document.getElementById('edit-pts-win').value)  || 0),
+    draw: Math.max(0, parseInt(document.getElementById('edit-pts-draw').value) || 0),
+    loss: Math.max(0, parseInt(document.getElementById('edit-pts-loss').value) || 0)
+  };
+  showLoading();
+  try {
+    await db.collection('groups').doc(code).set({ settings }, { merge: true });
+    if (code === currentGroup) { ST.settings = settings; renderRanking(); }
+    toast('? Puntuación guardada');
+  } catch(e) { toast('⚠️ ' + e.message); }
+  hideLoading();
+}
+
+async function toggleAddMemberPanel() {
+  const panel = document.getElementById('add-member-panel');
+  const isOpen = panel.style.display !== 'none';
+  if (isOpen) { panel.style.display = 'none'; return; }
+  // Populate user select with users NOT already in the group
+  const sel = document.getElementById('quick-add-user-sel');
+  sel.innerHTML = '<option value="">— Cargando...</option>';
+  panel.style.display = 'block';
+  try {
+    const usersSnap = await db.collection('users').where('status', '==', 'active').get();
+    const existing = (currentUser.groups || []).length > 0 ? ST.players.map(p => p.id) : [];
+    const opts = usersSnap.docs
+      .filter(d => d.data().email !== ADMIN_EMAIL && !existing.includes(d.id))
+      .map(d => `<option value="${d.id}">${esc(d.data().firstname + ' ' + d.data().lastname)}</option>`);
+    sel.innerHTML = '<option value="">— Seleccionar —</option>' + opts.join('');
+  } catch(e) { sel.innerHTML = '<option value="">— Error -</option>'; }
+}
+
+async function quickAddUser() {
+  const uid = document.getElementById('quick-add-user-sel').value;
+  if (!uid) { toast('⚠️ Selecciona un usuario'); return; }
+  if (!currentGroup) { toast('⚠️ No hay grupo activo'); return; }
+  showLoading();
+  try {
+    await db.collection('users').doc(uid).update({ groups: firebase.firestore.FieldValue.arrayUnion(currentGroup) });
+    toast('? Usuario añadido al grupo');
+    await loadGroupState(currentGroup);
+    document.getElementById('add-member-panel').style.display = 'none';
+    renderPlayers(); refreshSelects();
+  } catch(e) { toast('⚠️ ' + e.message); }
+  hideLoading();
+}
+
+async function quickAddGuest() {
+  const name = document.getElementById('quick-add-guest-name').value.trim();
+  if (!name) { toast('⚠️ Escribe un nombre'); return; }
+  if (!currentGroup) { toast('⚠️ No hay grupo activo'); return; }
+  const id = 'guest_' + Date.now();
+  showLoading();
+  try {
+    const snap = await db.collection('groups').doc(currentGroup).get();
+    const guests = (snap.exists && snap.data().guests) ? snap.data().guests : [];
+    guests.push({ id, name });
+    await db.collection('groups').doc(currentGroup).set({ guests }, { merge: true });
+    ST.players.push({ id, name, guest: true });
+    document.getElementById('quick-add-guest-name').value = '';
+    document.getElementById('add-member-panel').style.display = 'none';
+    toast('? Invitado añadido');
+    renderPlayers(); refreshSelects();
+  } catch(e) { toast('⚠️ ' + e.message); }
+  hideLoading();
+}
+
+async function editGroupAddUser() {
+  const code = document.getElementById('edit-group-code').value;
+  const sel  = document.getElementById('edit-add-user-sel');
+  const uid  = sel.value;
+  if (!uid) { toast('⚠️ Selecciona un usuario'); return; }
+  showLoading();
+  try {
+    await db.collection('users').doc(uid).update({ groups: firebase.firestore.FieldValue.arrayUnion(code) });
+    toast('? Usuario añadido al grupo');
+    await openEditGroupModal(code); // reload modal
+    if (code === currentGroup) await loadGroupState(code); renderPlayers();
+  } catch(e) { toast('⚠️ ' + e.message); }
+  hideLoading();
+}
+
+async function editGroupRemoveMember(uid, code) {
+  if (!confirm('¿Quitar a este usuario del grupo?')) return;
+  showLoading();
+  try {
+    await db.collection('users').doc(uid).update({ groups: firebase.firestore.FieldValue.arrayRemove(code) });
+    toast('? Usuario eliminado del grupo');
+    await openEditGroupModal(code);
+    if (code === currentGroup) { await loadGroupState(code); renderPlayers(); refreshSelects(); }
+  } catch(e) { toast('⚠️ ' + e.message); }
+  hideLoading();
+}
+
+async function editGroupAddGuest() {
+  const code = document.getElementById('edit-group-code').value;
+  const name = document.getElementById('edit-guest-name').value.trim();
+  if (!name) { toast('⚠️ Escribe un nombre'); return; }
+  const id = 'guest_' + Date.now();
+  showLoading();
+  try {
+    const snap = await db.collection('groups').doc(code).get();
+    const currentGuests = (snap.exists && snap.data().guests) ? snap.data().guests : [];
+    currentGuests.push({ id, name });
+    await db.collection('groups').doc(code).set({ guests: currentGuests }, { merge: true });
+    document.getElementById('edit-guest-name').value = '';
+    toast('? Invitado añadido');
+    await openEditGroupModal(code);
+    if (code === currentGroup) { ST.players.push({ id, name, guest: true }); refreshSelects(); renderPlayers(); }
+  } catch(e) { toast('⚠️ ' + e.message); }
+  hideLoading();
+}
+
+async function editGroupRemoveGuest(guestId, code) {
+  if (!confirm('¿Eliminar este jugador invitado?')) return;
+  showLoading();
+  try {
+    const snap = await db.collection('groups').doc(code).get();
+    const updatedGuests = ((snap.exists && snap.data().guests) ? snap.data().guests : []).filter(g => g.id !== guestId);
+    await db.collection('groups').doc(code).set({ guests: updatedGuests }, { merge: true });
+    toast('⚠️? Invitado eliminado');
+    await openEditGroupModal(code);
+    if (code === currentGroup) { ST.players = ST.players.filter(p => p.id !== guestId); refreshSelects(); renderPlayers(); }
+  } catch(e) { toast('⚠️ ' + e.message); }
+  hideLoading();
+}
+
+async function deleteGroup(code) {
+  if (!confirm(`¿Eliminar el grupo "${code}"? Se borraránn todos sus partidos. Esta acción no se puede deshacer.`)) return;
+  showLoading();
+  try {
+    // Delete all matches
+    const matchesSnap = await db.collection('groups').doc(code).collection('matches').get();
+    const batch = db.batch();
+    matchesSnap.docs.forEach(d => batch.delete(d.ref));
+    batch.delete(db.collection('groups').doc(code));
+    await batch.commit();
+    // Remove from all users' groups array
+    const usersSnap = await db.collection('users').where('groups', 'array-contains', code).get();
+    const batch2 = db.batch();
+    usersSnap.docs.forEach(d => batch2.update(d.ref, { groups: firebase.firestore.FieldValue.arrayRemove(code) }));
+    await batch2.commit();
+    // Update local state
+    currentUser.groups = (currentUser.groups || []).filter(g => g !== code);
+    if (currentGroup === code) {
+      currentGroup = currentUser.groups[0] || null;
+      sessionStorage.removeItem('lastGroup_' + currentFbUser.uid);
+      if (currentGroup) await loadGroupState(currentGroup);
+      else ST = { players: [], matches: [], settings: { win:3, draw:2, loss:1 } };
+    }
+    closeEditGroupModal();
+    renderMyGroups();
+    renderPlayers();
+    toast('⚠️? Grupo eliminado');
+  } catch(e) { toast('⚠️ ' + e.message); }
+  hideLoading();
+}
+
+// --------------------------------------------------
 // SAVE MATCH — Firestore subcollection
-// ══════════════════════════════════════════════════
+// --------------------------------------------------
 async function saveMatch() {
-  if (!currentGroup) { toast('⚠️ Primero únete a un grupo'); switchTab('settings'); return; }
+  if (!matchGroupCode) { toast('⚠️ Selecciona un grupo'); return; }
   const date = document.getElementById('match-date').value;
   const p1 = document.getElementById('p1').value, p2 = document.getElementById('p2').value;
   const p3 = document.getElementById('p3').value, p4 = document.getElementById('p4').value;
@@ -1940,12 +2656,14 @@ async function saveMatch() {
 
   showLoading();
   try {
-    const docRef = await db.collection('groups').doc(currentGroup).collection('matches').add(matchData);
-    ST.matches.unshift({ id: docRef.id, ...matchData, createdAt: new Date().toISOString() });
+    const docRef = await db.collection('groups').doc(matchGroupCode).collection('matches').add(matchData);
+    if (matchGroupCode === currentGroup) {
+      ST.matches.unshift({ id: docRef.id, ...matchData, createdAt: new Date().toISOString() });
+      renderHistory();
+      renderRanking();
+    }
     resetMatchForm();
-    renderHistory();
-    renderRanking();
-    toast('✅ Partido guardado');
+    toast('? Partido guardado en ' + matchGroupCode);
   } catch (err) {
     toast('⚠️ Error guardando: ' + err.message);
   }
@@ -1953,14 +2671,14 @@ async function saveMatch() {
 }
 
 function resetMatchForm() {
-  sets = [{ p1:0, p2:0 }];
+  sets = [{ p1:0, p2:0 }, { p1:0, p2:0 }];
   ['p1','p2','p3','p4'].forEach(id => document.getElementById(id).value = '');
-  setDefaultDate(); updatePreview(); renderSets();
+  setDefaultDate(); renderSets();
 }
 
-// ══════════════════════════════════════════════════
+// --------------------------------------------------
 // DELETE MATCH
-// ══════════════════════════════════════════════════
+// --------------------------------------------------
 async function deleteMatch(id) {
   if (!confirm('¿Eliminar este partido?')) return;
   showLoading();
@@ -1968,22 +2686,66 @@ async function deleteMatch(id) {
     await db.collection('groups').doc(currentGroup).collection('matches').doc(id).delete();
     ST.matches = ST.matches.filter(m => m.id !== id);
     renderHistory(); renderRanking();
-    toast('🗑️ Partido eliminado');
+    toast('⚠️? Partido eliminado');
   } catch (err) { toast('⚠️ ' + err.message); }
   hideLoading();
 }
 
-// ══════════════════════════════════════════════════
+// --------------------------------------------------
 // SETTINGS
-// ══════════════════════════════════════════════════
-function loadSettingsUI() {
-  const hasGroup = !!currentGroup;
-  document.getElementById('settings-pts-card').style.display = hasGroup ? 'block' : 'none';
-  if (hasGroup) {
-    document.getElementById('pts-win').value  = ST.settings.win;
-    document.getElementById('pts-draw').value = ST.settings.draw;
-    document.getElementById('pts-loss').value = ST.settings.loss;
-  }
+// --------------------------------------------------
+function loadSettingsUI() {}
+
+function renderGuests() {
+  const el = document.getElementById('guests-list');
+  const guests = ST.players.filter(p => p.guest);
+  if (!guests.length) { el.innerHTML = '<div style="font-size:.8rem;color:var(--muted)">Ningún invitado por ahora.</div>'; return; }
+  el.innerHTML = guests.map(g => `
+    <div class="player-row" style="justify-content:space-between">
+      <div style="display:flex;align-items:center;gap:.6rem">
+        <div class="avatar" style="background:#94a3b8;font-size:.8rem">👤</div>
+        <span class="player-nm">${esc(g.name)}<span class="player-you">invitado</span></span>
+      </div>
+      <button onclick="removeGuestPlayer('${g.id}')" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:1.1rem;line-height:1;padding:.2rem">?</button>
+    </div>`).join('');
+}
+
+async function addGuestPlayer() {
+  if (!currentGroup) return;
+  const inp = document.getElementById('guest-name-input');
+  const name = inp.value.trim();
+  if (!name) { toast('⚠️ Escribe un nombre'); return; }
+  const id = 'guest_' + Date.now();
+  const newGuest = { id, name };
+  const currentGuests = ST.players.filter(p => p.guest).map(({ id, name }) => ({ id, name }));
+  currentGuests.push(newGuest);
+  showLoading();
+  try {
+    await db.collection('groups').doc(currentGroup).set({ guests: currentGuests }, { merge: true });
+    ST.players.push({ id, name, guest: true });
+    inp.value = '';
+    renderGuests();
+    refreshSelects();
+    renderPlayers();
+    toast('? Invitado añadido');
+  } catch(e) { toast('⚠️ ' + e.message); }
+  hideLoading();
+}
+
+async function removeGuestPlayer(id) {
+  if (!currentGroup) return;
+  if (!confirm('¿Eliminar este jugador invitado?')) return;
+  const updatedGuests = ST.players.filter(p => p.guest && p.id !== id).map(({ id, name }) => ({ id, name }));
+  showLoading();
+  try {
+    await db.collection('groups').doc(currentGroup).set({ guests: updatedGuests }, { merge: true });
+    ST.players = ST.players.filter(p => p.id !== id);
+    renderGuests();
+    refreshSelects();
+    renderPlayers();
+    toast('⚠️? Invitado eliminado');
+  } catch(e) { toast('⚠️ ' + e.message); }
+  hideLoading();
 }
 
 async function saveSettings() {
@@ -1996,7 +2758,7 @@ async function saveSettings() {
   try {
     await db.collection('groups').doc(currentGroup).set({ settings: ST.settings }, { merge: true });
     renderRanking();
-    toast('✅ Configuración guardada');
+    toast('? Configuración guardada');
   } catch (err) { toast('⚠️ ' + err.message); }
   hideLoading();
 }
@@ -2011,31 +2773,31 @@ async function resetMatches() {
     await batch.commit();
     ST.matches = [];
     renderHistory(); renderRanking();
-    toast('🗑️ Partidos eliminados');
+    toast('⚠️? Partidos eliminados');
   } catch (err) { toast('⚠️ ' + err.message); }
   hideLoading();
 }
 
-// ══════════════════════════════════════════════════
+// --------------------------------------------------
 // TABS
-// ══════════════════════════════════════════════════
+// --------------------------------------------------
 function switchTab(tab) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('page-' + tab).classList.add('active');
   document.getElementById('tab-'  + tab).classList.add('active');
   if (tab === 'match') {
-    if (!currentGroup) { toast('⚠️ Primero crea o únete a un grupo'); switchTab('settings'); return; }
-    refreshSelects(); renderSets();
+    initMatchGroupSelector();
   }
   if (tab === 'ranking')  renderRanking();
   if (tab === 'history')  renderHistory();
+  if (tab === 'news')     renderNoticias();
   if (tab === 'settings') { renderPlayers(); loadSettingsUI(); renderMyGroups(); }
 }
 
-// ══════════════════════════════════════════════════
+// --------------------------------------------------
 // PLAYERS
-// ══════════════════════════════════════════════════
+// --------------------------------------------------
 function getPlayerName(id) {
   if (!id) return '—';
   const p = ST.players.find(pl => pl.id === id);
@@ -2045,27 +2807,115 @@ function getPlayerShort(id) {
   const n = getPlayerName(id);
   return (n === '—') ? '?' : n.split(' ')[0];
 }
+async function loadMatchPlayers(code) {
+  if (!code) { matchGroupPlayers = []; return; }
+  try {
+    const [groupSnap, usersSnap] = await Promise.all([
+      db.collection('groups').doc(code).get(),
+      db.collection('users').where('status', '==', 'active').get()
+    ]);
+    const guests = (groupSnap.exists && groupSnap.data().guests) ? groupSnap.data().guests : [];
+    matchGroupPlayers = usersSnap.docs
+      .filter(d => d.data().email !== ADMIN_EMAIL && (d.data().groups || []).includes(code))
+      .map(d => ({ id: d.id, name: d.data().firstname + ' ' + d.data().lastname, email: d.data().email }));
+    guests.forEach(g => { if (!matchGroupPlayers.find(p => p.id === g.id)) matchGroupPlayers.push({ id: g.id, name: g.name, guest: true }); });
+    if (currentUser && !matchGroupPlayers.find(p => p.id === currentUser.id))
+      matchGroupPlayers.push({ id: currentUser.id, name: currentUser.firstname + ' ' + currentUser.lastname });
+  } catch(e) {
+    console.error('loadMatchPlayers:', e);
+    matchGroupPlayers = [];
+  }
+}
+
+async function initMatchGroupSelector() {
+  const sel = document.getElementById('match-group-sel');
+
+  // Always fetch fresh from Firestore to get latest groups
+  try {
+    const snap = await db.collection('users').doc(currentFbUser.uid).get({ source: 'server' });
+    if (snap.exists && snap.data().groups) {
+      currentUser.groups = snap.data().groups;
+    }
+  } catch(e) { 
+    console.warn('initMatchGroupSelector fetch error, trying cache:', e);
+    try {
+      const snap = await db.collection('users').doc(currentFbUser.uid).get();
+      if (snap.exists && snap.data().groups) {
+        currentUser.groups = snap.data().groups;
+      }
+    } catch(e2) { console.error('Could not load groups:', e2); }
+  }
+
+  const groups = currentUser.groups || [];
+  if (!groups.length) {
+    sel.innerHTML = '<option value="">— Sin grupos -</option>';
+    return;
+  }
+
+  // Keep current selection if valid, otherwise default to active group
+  if (!matchGroupCode || !groups.includes(matchGroupCode))
+    matchGroupCode = currentGroup || groups[0] || '';
+
+  sel.innerHTML = '<option value="">— Selecciona un grupo -</option>' +
+    groups.map(g => `<option value="${esc(g)}"${g === matchGroupCode ? ' selected' : ''}>${esc(g)}</option>`).join('');
+
+  // Only reload players if group changed or not loaded yet
+  if (!matchGroupPlayers.length || sel.dataset.loadedFor !== matchGroupCode) {
+    showLoading();
+    await loadMatchPlayers(matchGroupCode);
+    hideLoading();
+    sel.dataset.loadedFor = matchGroupCode;
+  }
+  refreshSelects();
+  renderSets();
+}
+
+async function onMatchGroupChange(code) {
+  matchGroupCode = code;
+  ['p1','p2','p3','p4'].forEach(id => document.getElementById(id).value = '');
+  showLoading();
+  await loadMatchPlayers(code);
+  hideLoading();
+  refreshSelects();
+}
+
 function refreshSelects() {
-  const opts = ST.players.map(p => `<option value="${p.id}">${esc(p.name)}</option>`).join('');
+  const opts = matchGroupPlayers.map(p => `<option value="${p.id}">${esc(p.name)}</option>`).join('');
   ['p1','p2','p3','p4'].forEach(id => {
     const sel = document.getElementById(id);
     const cur = sel.value;
     sel.innerHTML = '<option value="">— Seleccionar —</option>' + opts;
-    if (cur && ST.players.find(p => p.id === cur)) sel.value = cur;
-  });
-  updatePreview();
-}
-function updatePreview() {
-  ['p1','p2','p3','p4'].forEach((id, i) => {
-    document.getElementById('prev-p' + (i+1)).textContent = getPlayerName(document.getElementById(id).value);
+    if (cur && matchGroupPlayers.find(p => p.id === cur)) sel.value = cur;
   });
 }
+// updatePreview removed - preview UI eliminated for compact design
 function renderPlayers() {
+  // Show/hide the players-card and danger-card based on currentGroup
+  const playersCard = document.getElementById('players-card');
+  const dangerCard  = document.getElementById('danger-card');
+  if (playersCard) playersCard.style.display = currentGroup ? 'block' : 'none';
+  if (dangerCard)  dangerCard.style.display  = currentGroup ? 'block' : 'none';
+  if (currentGroup) {
+    const titleEl = document.getElementById('players-card-title');
+    if (titleEl) titleEl.textContent = 'Jugadores del grupo: ' + currentGroup;
+  }
+
   const el = document.getElementById('players-list');
-  if (!currentGroup) { el.innerHTML = '<div style="font-size:.8125rem;color:var(--muted);padding:.5rem 0">Selecciona o únete a un grupo primero</div>'; return; }
+  if (!currentGroup) {
+    return;
+  }
   if (!ST.players.length) { el.innerHTML = '<div class="empty" style="padding:1rem 0"><div class="empty-icon" style="font-size:2rem">👤</div><div class="empty-sub">Sin jugadores</div></div>'; return; }
   el.innerHTML = ST.players.map(p => {
     const isMe = p.id === currentUser.id;
+    if (p.guest) {
+      return `<div class="player-row" style="justify-content:space-between">
+        <div style="display:flex;align-items:center;gap:.6rem">
+          <div class="avatar" style="background:#94a3b8;font-size:.9rem">📲</div>
+          <span class="player-nm">${esc(p.name)}<span class="player-you">sin cuenta</span></span>
+        </div>
+        <button onclick="removeGuestPlayer('${p.id}')" style="background:none;border:none;color:#ef4444;cursor:pointer;font-size:1.1rem;line-height:1;padding:.2rem" title="Eliminar">?</button>
+      </div>`;
+    }
     return `<div class="player-row">
       <div class="avatar${isMe ? ' me' : ''}">${esc(p.name[0]).toUpperCase()}</div>
       <span class="player-nm">${esc(p.name)}${isMe ? '<span class="player-you">(tú)</span>' : ''}</span>
@@ -2073,9 +2923,9 @@ function renderPlayers() {
   }).join('');
 }
 
-// ══════════════════════════════════════════════════
+// --------------------------------------------------
 // SET SCORER
-// ══════════════════════════════════════════════════
+// --------------------------------------------------
 function pairLabel(pair) {
   const ids = pair === 1
     ? [document.getElementById('p1').value, document.getElementById('p2').value]
@@ -2101,15 +2951,15 @@ function renderSets() {
     return `<div class="set-item">
       <div class="set-item-label">Set ${i+1}</div>
       <div class="set-item-row">
-        <div class="stepper-box${p1w ? ' win-p1' : ''}">
-          <div class="stepper-name">${esc(lbl1)}</div>
-          <input class="set-num-input" type="number" min="0" max="9" inputmode="numeric"
+        <div style="display:flex;flex-direction:column;align-items:center;gap:.25rem">
+          <div style="font-size:.68rem;font-weight:700;color:var(--green)">${esc(lbl1)}</div>
+          <input class="set-score-input${p1w ? ' win-p1' : ''}" type="number" min="0" max="9" inputmode="numeric"
             value="${s.p1}" oninput="onSetInput(${i},'p1',this.value)">
         </div>
-        <div class="set-colon">:</div>
-        <div class="stepper-box${p2w ? ' win-p2' : ''}">
-          <div class="stepper-name">${esc(lbl2)}</div>
-          <input class="set-num-input" type="number" min="0" max="9" inputmode="numeric"
+        <div class="set-vs">-</div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:.25rem">
+          <div style="font-size:.68rem;font-weight:700;color:var(--amber)">${esc(lbl2)}</div>
+          <input class="set-score-input${p2w ? ' win-p2' : ''}" type="number" min="0" max="9" inputmode="numeric"
             value="${s.p2}" oninput="onSetInput(${i},'p2',this.value)">
         </div>
       </div>
@@ -2118,9 +2968,9 @@ function renderSets() {
   rbs.style.display = sets.length > 1 ? 'inline-block' : 'none';
   const hasScores = sets.some(s => s.p1 > 0 || s.p2 > 0);
   if (!hasScores) { rb.className = 'result-box rb-empty'; rb.textContent = 'Anota el marcador para ver el resultado'; return; }
-  if (result === 'pair1')      { rb.className = 'result-box rb-p1';   rb.innerHTML = `🏆 Gana <strong>${esc(lbl1)}</strong> &nbsp;(${w1}–${w2} en sets)`; }
-  else if (result === 'pair2') { rb.className = 'result-box rb-p2';   rb.innerHTML = `🏆 Gana <strong>${esc(lbl2)}</strong> &nbsp;(${w2}–${w1} en sets)`; }
-  else                         { rb.className = 'result-box rb-draw'; rb.innerHTML = `🤝 <strong>Empate</strong> &nbsp;(${w1}–${w2} en sets)`; }
+  if (result === 'pair1')      { rb.className = 'result-box rb-p1';   rb.innerHTML = `🏆 Gana <strong>${esc(lbl1)}</strong> &nbsp;(${w1}-${w2} en sets)`; }
+  else if (result === 'pair2') { rb.className = 'result-box rb-p2';   rb.innerHTML = `🏆 Gana <strong>${esc(lbl2)}</strong> &nbsp;(${w2}-${w1} en sets)`; }
+  else                         { rb.className = 'result-box rb-draw'; rb.innerHTML = `🤝 <strong>Empate</strong> &nbsp;(${w1}-${w2} en sets)`; }
 }
 function onSetInput(i, team, val) {
   const n = Math.max(0, Math.min(9, parseInt(val) || 0));
@@ -2136,17 +2986,17 @@ function onSetInput(i, team, val) {
   });
   const hasScores = sets.some(s => s.p1 > 0 || s.p2 > 0);
   if (!hasScores) { rb.className = 'result-box rb-empty'; rb.textContent = 'Anota el marcador para ver el resultado'; return; }
-  if (result === 'pair1')      { rb.className = 'result-box rb-p1';   rb.innerHTML = `🏆 Gana <strong>${esc(lbl1)}</strong> &nbsp;(${w1}–${w2} en sets)`; }
-  else if (result === 'pair2') { rb.className = 'result-box rb-p2';   rb.innerHTML = `🏆 Gana <strong>${esc(lbl2)}</strong> &nbsp;(${w2}–${w1} en sets)`; }
-  else                         { rb.className = 'result-box rb-draw'; rb.innerHTML = `🤝 <strong>Empate</strong> &nbsp;(${w1}–${w2} en sets)`; }
+  if (result === 'pair1')      { rb.className = 'result-box rb-p1';   rb.innerHTML = `🏆 Gana <strong>${esc(lbl1)}</strong> &nbsp;(${w1}-${w2} en sets)`; }
+  else if (result === 'pair2') { rb.className = 'result-box rb-p2';   rb.innerHTML = `🏆 Gana <strong>${esc(lbl2)}</strong> &nbsp;(${w2}-${w1} en sets)`; }
+  else                         { rb.className = 'result-box rb-draw'; rb.innerHTML = `🤝 <strong>Empate</strong> &nbsp;(${w1}-${w2} en sets)`; }
 }
 function addSet()  { if (sets.length >= 5) { toast('Máximo 5 sets'); return; } sets.push({ p1:0, p2:0 }); renderSets(); }
 function removeSet() { if (sets.length <= 1) return; sets.pop(); renderSets(); }
 function setsToString() { return sets.map(s => `${s.p1}-${s.p2}`).join(', '); }
 
-// ══════════════════════════════════════════════════
+// --------------------------------------------------
 // RANKING
-// ══════════════════════════════════════════════════
+// --------------------------------------------------
 function computeRanking() {
   const map = {};
   ST.players.forEach(p => { map[p.id] = { id:p.id, name:p.name, pj:0, g:0, e:0, d:0, pts:0 }; });
@@ -2160,20 +3010,20 @@ function computeRanking() {
 }
 function renderRanking() {
   const data = computeRanking(), el = document.getElementById('ranking-body');
-  if (!data.length) { el.innerHTML = `<div class="empty"><div class="empty-icon">📊</div><div class="empty-title">Sin datos</div><div class="empty-sub">Registra partidos para ver la clasificación</div></div>`; return; }
+  if (!data.length) { el.innerHTML = `<div class="empty"><div class="empty-icon">⏳</div><div class="empty-title">Sin datos</div><div class="empty-sub">Registra partidos para ver la clasificación</div></div>`; return; }
   const medals = ['🥇','🥈','🥉'];
   el.innerHTML = `<table class="rank-table"><thead><tr><th style="text-align:left">Jugador</th><th>PJ</th><th>G</th><th>E</th><th>D</th><th>Pts</th></tr></thead><tbody>
     ${data.map((s,i) => `<tr class="${i<3?'pos-'+(i+1):''}"><td><span class="pos-cell">${medals[i]||i+1}</span>&nbsp;<span class="name-cell">${esc(s.name)}</span></td><td>${s.pj}</td><td class="g-cell">${s.g}</td><td class="e-cell">${s.e}</td><td class="d-cell">${s.d}</td><td class="pts-cell">${s.pts}</td></tr>`).join('')}
   </tbody></table><div class="pts-legend">Victoria +${ST.settings.win} · Empate +${ST.settings.draw} · Derrota +${ST.settings.loss} pts</div>`;
 }
 
-// ══════════════════════════════════════════════════
+// --------------------------------------------------
 // HISTORY
-// ══════════════════════════════════════════════════
+// --------------------------------------------------
 function pname(id) { const p = ST.players.find(pl => pl.id === id); return p ? p.name : 'Eliminado'; }
 function renderHistory() {
   const el = document.getElementById('history-body');
-  if (!ST.matches.length) { el.innerHTML = `<div class="empty"><div class="empty-icon">📋</div><div class="empty-title">Sin partidos</div><div class="empty-sub">Guarda tu primer partido para verlo aquí</div></div>`; return; }
+  if (!ST.matches.length) { el.innerHTML = `<div class="empty"><div class="empty-icon">⏳</div><div class="empty-title">Sin partidos</div><div class="empty-sub">Guarda tu primer partido para verlo aquí</div></div>`; return; }
   el.innerHTML = ST.matches.map(m => {
     const p1n = m.pair1.map(id => esc(pname(id))).join(' &amp; ');
     const p2n = m.pair2.map(id => esc(pname(id))).join(' &amp; ');
@@ -2184,11 +3034,11 @@ function renderHistory() {
     if (m.date) { const [y,mo,d]=m.date.split('-'); dateStr = new Date(+y,+mo-1,+d).toLocaleDateString('es-ES',{day:'numeric',month:'short',year:'numeric'}); }
     let scoreHtml = '';
     if (m.sets && m.sets.length) {
-      const pills = m.sets.map(s => { const cls=s.p1>s.p2?'p1':s.p2>s.p1?'p2':''; return `<span class="set-pill ${cls}">${s.p1}–${s.p2}</span>`; }).join('');
+      const pills = m.sets.map(s => { const cls=s.p1>s.p2?'p1':s.p2>s.p1?'p2':''; return `<span class="set-pill ${cls}">${s.p1}-${s.p2}</span>`; }).join('');
       scoreHtml = `<div class="set-pills">${pills}</div>`;
     }
     return `<div class="match-card ${resClass}">
-      <button class="del-match-btn" onclick="deleteMatch('${m.id}')" aria-label="Eliminar">🗑️</button>
+      <button class="del-match-btn" onclick="deleteMatch('${m.id}')" aria-label="Eliminar">🗑️?</button>
       <div class="match-date">📅 ${dateStr}</div>
       <div class="match-teams"><span class="match-pair p1">${p1n}</span><span class="match-vs">VS</span><span class="match-pair p2">${p2n}</span></div>
       ${scoreHtml}
@@ -2197,9 +3047,9 @@ function renderHistory() {
   }).join('');
 }
 
-// ══════════════════════════════════════════════════
+// --------------------------------------------------
 // UTILS
-// ══════════════════════════════════════════════════
+// --------------------------------------------------
 function esc(str) {
   return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
@@ -2227,10 +3077,11 @@ function toast(msg, dur) {
   toastTimer = setTimeout(() => el.classList.remove('show'), dur || 2800);
 }
 
-// ══════════════════════════════════════════════════
+// --------------------------------------------------
 // PWA
-// ══════════════════════════════════════════════════
+// --------------------------------------------------
 function registerSW() { /* already registered at startup */ }
+
 function setupPWAInstall() {
   document.getElementById('install-btn').addEventListener('click', async () => {
     if (!deferredInstall) return;
@@ -2244,9 +3095,9 @@ function setupPWAInstall() {
   });
 }
 
-// ══════════════════════════════════════════════════
+// --------------------------------------------------
 // BOOT
-// ══════════════════════════════════════════════════
+// --------------------------------------------------
 (function init() {
   showScreen('screen-register');
   showLoading();

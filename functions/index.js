@@ -40,7 +40,7 @@ exports.notificarNuevoUsuario = functions
       subject: `[PadelTracker] Nuevo usuario: ${firstname} ${lastname}`,
       html: `
         <div style="font-family:sans-serif;max-width:480px;margin:0 auto">
-          <h2 style="margin-bottom:8px">🎾 Nuevo usuario registrado</h2>
+          <h2 style="margin-bottom:8px">� Nuevo usuario registrado</h2>
           <table style="border-collapse:collapse;width:100%">
             <tr>
               <td style="padding:8px 16px 8px 0;color:#555;white-space:nowrap">Nombre</td>
