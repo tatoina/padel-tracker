@@ -696,6 +696,7 @@
   <nav class="admin-section-nav">
     <button class="admin-section-btn active" id="asec-usuarios" onclick="setAdminSection('usuarios')">👥 Usuarios</button>
     <button class="admin-section-btn" id="asec-grupos" onclick="setAdminSection('grupos')">📊 Grupos</button>
+    <button class="admin-section-btn" id="asec-partidos" onclick="setAdminSection('partidos')">🎾 Partidos</button>
     <button class="admin-section-btn" id="asec-noticias" onclick="setAdminSection('noticias')">📢 Noticias</button>
   </nav>
 
@@ -763,6 +764,85 @@
     <div class="admin-main">
       <div style="font-weight:800;font-size:.95rem;margin-bottom:.75rem;color:var(--text)">📊 Grupos existentes</div>
       <div id="admin-grupos-list"></div>
+    </div>
+  </div>
+
+  <!-- PANE: Partidos -->
+  <div class="admin-section-pane" id="apane-partidos">
+    <div class="admin-main">
+      <div style="font-weight:800;font-size:.95rem;margin-bottom:.75rem;color:var(--text)">🎾 Todos los partidos</div>
+      
+      <!-- Filtros -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-bottom:1rem">
+        <select id="admin-matches-filter-group" class="form-select" style="font-size:.8125rem" onchange="renderAdminMatches()">
+          <option value="">— Todos los grupos —</option>
+        </select>
+        <select id="admin-matches-filter-type" class="form-select" style="font-size:.8125rem" onchange="renderAdminMatches()">
+          <option value="all">Todos los partidos</option>
+          <option value="normal">Solo normales</option>
+          <option value="pachanga">Solo pachangas</option>
+        </select>
+      </div>
+      
+      <div id="admin-matches-list">Cargando...</div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Editar Partido (Admin) -->
+<div class="modal-overlay" id="admin-edit-match-modal">
+  <div class="modal-sheet" style="max-width:600px;max-height:85vh;overflow-y:auto">
+    <button class="modal-close" onclick="closeAdminEditMatch()">✕</button>
+    <div class="modal-title">✏️ Editar Partido</div>
+    
+    <div class="form-group">
+      <label class="form-label">🏠 Grupo</label>
+      <input type="text" id="edit-match-group" class="form-input" readonly style="background:var(--surface)">
+    </div>
+    
+    <div class="form-group">
+      <label class="form-label">📅 Fecha</label>
+      <input type="date" id="edit-match-date" class="form-input">
+    </div>
+    
+    <div style="margin-bottom:1rem">
+      <div class="card-title" style="margin-bottom:.75rem">👥 Jugadores</div>
+      <div style="margin-bottom:.75rem">
+        <div style="font-size:.75rem;font-weight:700;color:var(--green);margin-bottom:.375rem">🟢 Pareja 1</div>
+        <select id="edit-match-p1" class="form-select" style="font-size:.8125rem;margin-bottom:.375rem"></select>
+        <select id="edit-match-p2" class="form-select" style="font-size:.8125rem"></select>
+      </div>
+      <div>
+        <div style="font-size:.75rem;font-weight:700;color:var(--amber);margin-bottom:.375rem">🟠 Pareja 2</div>
+        <select id="edit-match-p3" class="form-select" style="font-size:.8125rem;margin-bottom:.375rem"></select>
+        <select id="edit-match-p4" class="form-select" style="font-size:.8125rem"></select>
+      </div>
+    </div>
+    
+    <div class="form-group">
+      <label class="form-label">🏆 Resultado</label>
+      <select id="edit-match-result" class="form-select">
+        <option value="pair1">🟢 Ganó Pareja 1</option>
+        <option value="pair2">🟠 Ganó Pareja 2</option>
+        <option value="draw">🤝 Empate</option>
+      </select>
+    </div>
+    
+    <div class="form-group">
+      <label class="form-label">📊 Marcador (texto)</label>
+      <input type="text" id="edit-match-score" class="form-input" placeholder="Ej: 6-4, 3-6, 7-5">
+    </div>
+    
+    <div style="margin-bottom:1rem">
+      <label style="display:flex;align-items:center;gap:.5rem;cursor:pointer;user-select:none">
+        <input type="checkbox" id="edit-match-pachanga" style="width:1rem;height:1rem;cursor:pointer">
+        <span style="font-size:.875rem;font-weight:600">🎉 PACHANGA (no cuenta para clasificación)</span>
+      </label>
+    </div>
+    
+    <div style="display:flex;gap:.5rem">
+      <button class="btn btn-primary" onclick="saveAdminEditMatch()" style="flex:1">💾 Guardar cambios</button>
+      <button class="btn btn-outline" onclick="closeAdminEditMatch()" style="flex:1">Cancelar</button>
     </div>
   </div>
 </div>
@@ -1244,6 +1324,8 @@ let adminTabActive = 'pending';
 let adminUsers = [];
 let adminGroups = [];
 let adminActiveGroupCode = null; // For group detail modal
+let adminAllMatches = []; // For matches section
+let adminEditingMatch = null; // Currently editing match
 
 // Service Worker registration with auto-update
 if ('serviceWorker' in navigator) {
@@ -1659,6 +1741,7 @@ function setAdminSection(sec) {
   document.getElementById('apane-' + sec).classList.add('active');
   if (sec === 'noticias') renderAdminNoticias();
   if (sec === 'grupos') renderAdminGroups();
+  if (sec === 'partidos') loadAdminMatches();
 }
 
 function setAdminTab(tab) {
@@ -2200,6 +2283,235 @@ async function deleteAdminGroup() {
     toast('⚠️ Error: ' + err.message);
   }
   hideLoading();
+}
+
+// --------------------------------------------------
+// ADMIN: GESTIÓN GLOBAL DE PARTIDOS
+// --------------------------------------------------
+async function loadAdminMatches() {
+  const el = document.getElementById('admin-matches-list');
+  el.innerHTML = '<p style="text-align:center;color:var(--muted);padding:2rem">Cargando partidos...</p>';
+  
+  try {
+    const groupsSnap = await db.collection('groups').get();
+    const usersSnap = await db.collection('users').where('status', '==', 'active').get();
+    
+    // Populate group filter
+    const groupFilter = document.getElementById('admin-matches-filter-group');
+    groupFilter.innerHTML = '<option value="">— Todos los grupos —</option>' + 
+      groupsSnap.docs.map(d => `<option value="${d.id}">${esc(d.id)}</option>`).join('');
+    
+    adminAllMatches = [];
+    
+    for (const groupDoc of groupsSnap.docs) {
+      const groupCode = groupDoc.id;
+      const groupData = groupDoc.data();
+      const matchesSnap = await db.collection('groups').doc(groupCode).collection('matches').get();
+      
+      const members = usersSnap.docs
+        .filter(d => (d.data().groups || []).includes(groupCode))
+        .map(d => ({ id: d.id, name: `${d.data().firstname} ${d.data().lastname}`, email: d.data().email }));
+      const guests = groupData.guests || [];
+      const allPlayers = [...members, ...guests];
+      
+      matchesSnap.docs.forEach(doc => {
+        adminAllMatches.push({
+          id: doc.id,
+          groupCode,
+          data: doc.data(),
+          players: allPlayers
+        });
+      });
+    }
+    
+    // Sort by date descending
+    adminAllMatches.sort((a, b) => {
+      const dateA = a.data.date || '';
+      const dateB = b.data.date || '';
+      return dateB.localeCompare(dateA);
+    });
+    
+    renderAdminMatches();
+  } catch (err) {
+    el.innerHTML = '<p style="color:var(--danger)">Error cargando partidos</p>';
+    console.error(err);
+  }
+}
+
+function renderAdminMatches() {
+  const el = document.getElementById('admin-matches-list');
+  const groupFilter = document.getElementById('admin-matches-filter-group').value;
+  const typeFilter = document.getElementById('admin-matches-filter-type').value;
+  
+  let filtered = adminAllMatches;
+  
+  if (groupFilter) {
+    filtered = filtered.filter(m => m.groupCode === groupFilter);
+  }
+  
+  if (typeFilter === 'normal') {
+    filtered = filtered.filter(m => !m.data.isPachanga);
+  } else if (typeFilter === 'pachanga') {
+    filtered = filtered.filter(m => m.data.isPachanga);
+  }
+  
+  if (filtered.length === 0) {
+    el.innerHTML = '<p style="text-align:center;color:var(--muted);padding:2rem">No hay partidos que mostrar</p>';
+    return;
+  }
+  
+  const pname = (players, id) => {
+    const p = players.find(pl => pl.id === id);
+    return p ? (p.name || `${p.firstname || ''} ${p.lastname || ''}`.trim()) : 'Eliminado';
+  };
+  
+  el.innerHTML = filtered.map(m => {
+    const p1n = (m.data.pair1 || []).map(id => esc(pname(m.players, id))).join(' & ');
+    const p2n = (m.data.pair2 || []).map(id => esc(pname(m.players, id))).join(' & ');
+    const date = m.data.date || '';
+    const dateStr = date ? new Date(date).toLocaleDateString('es-ES', {day:'2-digit', month:'2-digit', year:'numeric'}) : 'Sin fecha';
+    const pachangaBadge = m.data.isPachanga ? ' <span style="background:#ff6600;color:white;font-size:.65rem;padding:.125rem .375rem;border-radius:.25rem">🎉 PACHANGA</span>' : '';
+    const resultText = m.data.result === 'pair1' ? '🟢 Ganó P1' : m.data.result === 'pair2' ? '🟠 Ganó P2' : '🤝 Empate';
+    
+    return `
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:.5rem;padding:1rem;margin-bottom:.75rem">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem">
+          <div>
+            <span style="background:var(--green);color:white;font-size:.7rem;padding:.25rem .5rem;border-radius:.25rem;font-weight:700">${esc(m.groupCode)}</span>
+            <span style="font-size:.75rem;color:var(--muted);margin-left:.5rem">📅 ${dateStr}</span>
+            ${pachangaBadge}
+          </div>
+          <span style="font-size:.75rem;font-weight:700;color:var(--text)">${resultText}</span>
+        </div>
+        <div style="font-size:.875rem;margin-bottom:.5rem">
+          <strong>🟢</strong> ${p1n} <span style="color:var(--muted)">vs</span> <strong>🟠</strong> ${p2n}
+        </div>
+        <div style="font-size:.75rem;color:var(--muted);margin-bottom:.75rem">Marcador: ${m.data.score || 'N/A'}</div>
+        <div style="display:flex;gap:.5rem">
+          <button onclick="openAdminEditMatch('${m.groupCode}', '${m.id}')" style="background:var(--green);color:white;border:none;padding:.4rem .75rem;border-radius:.375rem;font-size:.75rem;font-weight:700;cursor:pointer;flex:1">✏️ Editar</button>
+          <button onclick="deleteAdminMatchGlobal('${m.groupCode}', '${m.id}')" style="background:var(--danger);color:white;border:none;padding:.4rem .75rem;border-radius:.375rem;font-size:.75rem;font-weight:700;cursor:pointer">🗑️</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+async function openAdminEditMatch(groupCode, matchId) {
+  showLoading();
+  
+  try {
+    const [matchSnap, groupSnap, usersSnap] = await Promise.all([
+      db.collection('groups').doc(groupCode).collection('matches').doc(matchId).get(),
+      db.collection('groups').doc(groupCode).get(),
+      db.collection('users').where('status', '==', 'active').get()
+    ]);
+    
+    if (!matchSnap.exists) {
+      toast('⚠️ Partido no encontrado');
+      hideLoading();
+      return;
+    }
+    
+    const matchData = matchSnap.data();
+    const groupData = groupSnap.data();
+    
+    const members = usersSnap.docs
+      .filter(d => (d.data().groups || []).includes(groupCode))
+      .map(d => ({ id: d.id, name: `${d.data().firstname} ${d.data().lastname}` }));
+    const guests = (groupData.guests || []).map(g => ({ id: g.id, name: g.name }));
+    const allPlayers = [...members, ...guests];
+    
+    adminEditingMatch = { groupCode, matchId, players: allPlayers };
+    
+    // Populate modal
+    document.getElementById('edit-match-group').value = groupCode;
+    document.getElementById('edit-match-date').value = matchData.date || '';
+    document.getElementById('edit-match-result').value = matchData.result || 'draw';
+    document.getElementById('edit-match-score').value = matchData.score || '';
+    document.getElementById('edit-match-pachanga').checked = matchData.isPachanga || false;
+    
+    // Populate player selects
+    const playerOptions = '<option value="">— Seleccionar —</option>' + 
+      allPlayers.map(p => `<option value="${p.id}">${esc(p.name)}</option>`).join('');
+    
+    ['edit-match-p1', 'edit-match-p2', 'edit-match-p3', 'edit-match-p4'].forEach(id => {
+      document.getElementById(id).innerHTML = playerOptions;
+    });
+    
+    // Set current values
+    if (matchData.pair1 && matchData.pair1.length >= 2) {
+      document.getElementById('edit-match-p1').value = matchData.pair1[0] || '';
+      document.getElementById('edit-match-p2').value = matchData.pair1[1] || '';
+    }
+    if (matchData.pair2 && matchData.pair2.length >= 2) {
+      document.getElementById('edit-match-p3').value = matchData.pair2[0] || '';
+      document.getElementById('edit-match-p4').value = matchData.pair2[1] || '';
+    }
+    
+    document.getElementById('admin-edit-match-modal').style.display = 'flex';
+    hideLoading();
+  } catch (err) {
+    toast('⚠️ Error: ' + err.message);
+    hideLoading();
+  }
+}
+
+async function saveAdminEditMatch() {
+  if (!adminEditingMatch) return;
+  
+  const { groupCode, matchId } = adminEditingMatch;
+  const date = document.getElementById('edit-match-date').value;
+  const p1 = document.getElementById('edit-match-p1').value;
+  const p2 = document.getElementById('edit-match-p2').value;
+  const p3 = document.getElementById('edit-match-p3').value;
+  const p4 = document.getElementById('edit-match-p4').value;
+  const result = document.getElementById('edit-match-result').value;
+  const score = document.getElementById('edit-match-score').value.trim();
+  const isPachanga = document.getElementById('edit-match-pachanga').checked;
+  
+  if (!date) { toast('⚠️ Selecciona una fecha'); return; }
+  if (!p1 || !p2 || !p3 || !p4) { toast('⚠️ Selecciona los 4 jugadores'); return; }
+  if (new Set([p1, p2, p3, p4]).size < 4) { toast('⚠️ Los jugadores deben ser distintos'); return; }
+  if (!score) { toast('⚠️ Introduce un marcador'); return; }
+  
+  showLoading();
+  try {
+    await db.collection('groups').doc(groupCode).collection('matches').doc(matchId).update({
+      date,
+      pair1: [p1, p2],
+      pair2: [p3, p4],
+      result,
+      score,
+      isPachanga
+    });
+    
+    closeAdminEditMatch();
+    toast('✓ Partido actualizado');
+    await loadAdminMatches(); // Reload all matches
+  } catch (err) {
+    toast('⚠️ Error: ' + err.message);
+    hideLoading();
+  }
+}
+
+function closeAdminEditMatch() {
+  document.getElementById('admin-edit-match-modal').style.display = 'none';
+  adminEditingMatch = null;
+}
+
+async function deleteAdminMatchGlobal(groupCode, matchId) {
+  if (!confirm('¿Eliminar este partido? Esta acción no se puede deshacer.')) return;
+  
+  showLoading();
+  try {
+    await db.collection('groups').doc(groupCode).collection('matches').doc(matchId).delete();
+    
+    toast('✓ Partido eliminado');
+    await loadAdminMatches(); // Reload
+  } catch (err) {
+    toast('⚠️ Error: ' + err.message);
+    hideLoading();
+  }
 }
 
 // --------------------------------------------------
@@ -3188,6 +3500,12 @@ document.addEventListener('DOMContentLoaded', () => {
       if (e.key === 'Enter') saveQuickGuest();
     });
   }
+  
+  // Admin matches filters
+  const groupFilter = document.getElementById('admin-matches-filter-group');
+  const typeFilter = document.getElementById('admin-matches-filter-type');
+  if (groupFilter) groupFilter.addEventListener('change', renderAdminMatches);
+  if (typeFilter) typeFilter.addEventListener('change', renderAdminMatches);
 });
 
 function resetMatchForm() {
