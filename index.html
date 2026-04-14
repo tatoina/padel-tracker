@@ -36,7 +36,12 @@
       --shadow:       0 1px 4px rgba(0,0,0,.08), 0 2px 8px rgba(0,0,0,.04);
       --tab-h:        62px;
     }
-    html { -webkit-tap-highlight-color: transparent; }
+    html {
+      -webkit-tap-highlight-color: transparent;
+      overscroll-behavior: none;
+      /* Mismo color que la tab-bar: si Android hace overscroll solo se ve blanco */
+      background: #ffffff;
+    }
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
       background: var(--bg); color: var(--text);
@@ -47,14 +52,7 @@
     }
     body::before, body::after { display: none !important; }
     
-    /* Ocultar home indicator de iOS/Emuladores */
-    @supports (padding-bottom: env(safe-area-inset-bottom)) {
-      body { padding-bottom: 0 !important; }
-    }
-    html::after, body::after, 
-    div[style*="bottom"]::after,
-    *[class*="indicator"]::before,
-    *[class*="indicator"]::after { display: none !important; }
+    html::after, body::after { display: none !important; }
 
     /* --- SCREENS ----------------------------------- */
     .screen { display: none; }
@@ -74,7 +72,8 @@
 
     .reg-hero { text-align: center; color: #fff; margin-bottom: 2rem; }
     .reg-logo  { line-height: 1; margin-bottom: 0.75rem; }
-    .reg-logo img { width: 90px; height: 90px; object-fit: contain; border-radius: 18px; }
+    .reg-logo img { width: 90px; height: 90px; object-fit: contain; border-radius: 18px; cursor: pointer; -webkit-user-select: none; user-select: none; }
+    .reg-logo img:active { transform: scale(.93); }
     .reg-title { font-size: 2.25rem; font-weight: 900; letter-spacing: -0.05em; }
     .reg-sub   { font-size: 0.9rem; opacity: 0.75; margin-top: 0.375rem; }
 
@@ -115,6 +114,7 @@
     .header {
       background: linear-gradient(135deg, #16a34a, #166534);
       color: #fff; padding: 0.75rem 1rem;
+      padding-top: calc(0.75rem + env(safe-area-inset-top, 0px));
       display: flex; align-items: center; gap: 0.625rem;
       position: sticky; top: 0; z-index: 100;
       box-shadow: 0 2px 12px rgba(0,0,0,.18);
@@ -140,7 +140,7 @@
     }
     #account-dropdown.open { display: block; }
     .account-sheet {
-      position: absolute; top: 56px; right: .75rem;
+      position: absolute; top: calc(56px + env(safe-area-inset-top, 0px)); right: max(.75rem, calc((100vw - 480px) / 2 + .75rem));
       background: #fff; border-radius: 14px; box-shadow: 0 8px 32px rgba(0,0,0,.18);
       min-width: 220px; overflow: hidden; z-index: 701;
     }
@@ -230,11 +230,12 @@
     .group-option-check { margin-left: auto; color: var(--green); font-size: 1.2rem; }
 
     /* --- MAIN / TAB BAR / PAGES ------------------- */
-    .main { padding: 1rem; padding-bottom: calc(var(--tab-h) + 1.25rem); }
+    .main { padding: 1rem; padding-bottom: calc(var(--tab-h) + env(safe-area-inset-bottom, 0px) + 1.25rem); }
     .tab-bar {
       position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
       width: 100%; max-width: 480px;
-      height: var(--tab-h);
+      height: calc(var(--tab-h) + env(safe-area-inset-bottom, 0px));
+      padding-bottom: env(safe-area-inset-bottom, 0px);
       background: var(--card); border-top: 1px solid var(--border);
       display: flex; z-index: 200;
     }
@@ -401,6 +402,25 @@
 
     .admin-main { padding: 1rem; padding-bottom: 2rem; max-width: 480px; margin: 0 auto; }
 
+    .admin-search {
+      display: flex; align-items: center; gap: .5rem;
+      background: #fff; border: 1.5px solid var(--border);
+      border-radius: 10px; padding: .5rem .75rem;
+      margin-bottom: 1rem;
+    }
+    .admin-search svg { flex-shrink: 0; color: var(--muted); }
+    .admin-search input {
+      flex: 1; border: none; outline: none; font-size: .9rem;
+      font-family: inherit; background: transparent; color: var(--text);
+    }
+    .admin-search input::placeholder { color: var(--muted); }
+    .admin-search-clear {
+      background: none; border: none; cursor: pointer;
+      color: var(--muted); font-size: .9rem; padding: 0; line-height: 1;
+      display: flex; align-items: center;
+    }
+    .admin-search-clear:hover { color: var(--text); }
+
     /* Status badge */
     .status-pill { display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.72rem; font-weight: 700; padding: 0.2rem 0.55rem; border-radius: 20px; }
     .status-pending  { background: var(--amber-light);  color: #92400e; }
@@ -451,8 +471,8 @@
     .empty-title { font-weight: 700; margin-bottom: 0.25rem; color: var(--text); }
     .empty-sub   { font-size: 0.8125rem; }
 
-    .toast { position: fixed; bottom: calc(var(--tab-h) + 1rem); left: 50%; transform: translateX(-50%) translateY(80px); background: #1e293b; color: #fff; padding: 0.7rem 1.125rem; border-radius: 10px; font-size: 0.875rem; font-weight: 600; z-index: 999; transition: transform .28s cubic-bezier(.34,1.56,.64,1); white-space: nowrap; box-shadow: 0 4px 16px rgba(0,0,0,.22); pointer-events: none; }
-    .toast.show { transform: translateX(-50%) translateY(0); }
+    .toast { position: fixed; bottom: calc(var(--tab-h) + env(safe-area-inset-bottom, 0px) + 1rem); left: 50%; transform: translateX(-50%) translateY(200px); opacity: 0; background: #1e293b; color: #fff; padding: 0.7rem 1.125rem; border-radius: 10px; font-size: 0.875rem; font-weight: 600; z-index: 999; transition: transform .28s cubic-bezier(.34,1.56,.64,1), opacity .28s ease; white-space: nowrap; box-shadow: 0 4px 16px rgba(0,0,0,.22); pointer-events: none; }
+    .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
     .toast-admin { bottom: 2rem; }
 
     .row   { display: flex; gap: 0.5rem; align-items: center; }
@@ -545,7 +565,7 @@
 -------------------------------------------------- -->
 <div id="screen-register" class="active">
   <div class="reg-hero">
-    <div class="reg-logo"><img src="icon-512.png" alt="PadelTracker"></div>
+    <div class="reg-logo"><img src="icon-512.png" alt="PadelTracker" id="reg-logo-img" onclick="clearCacheAndReload()" title="Pulsa para actualizar la app"></div>
     <div class="reg-title">PadelTracker</div>
     <div class="reg-sub">Registro de partidos para tu grupo</div>
   </div>
@@ -655,7 +675,7 @@
     <div style="margin-top:1rem">
       <button class="btn btn-primary" onclick="adminLogin()">Entrar como admin</button>
     </div>
-    <button onclick="showRegister()" style="display:block;margin-top:.75rem;background:none;border:none;color:var(--muted);cursor:pointer;font-size:.8125rem;width:100%;text-align:center;font-family:inherit">? Volver al registro</button>
+    <button onclick="showRegister()" style="display:block;margin-top:.75rem;background:none;border:none;color:var(--muted);cursor:pointer;font-size:.8125rem;width:100%;text-align:center;font-family:inherit">← Volver al registro</button>
   </div>
 </div>
 
@@ -723,9 +743,11 @@
         <button class="admin-tab" id="atab-inactive" onclick="setAdminTab('inactive')">🚫 Inactivos</button>
       </div>
       <div class="admin-search">
-        <span style="font-size:1rem;color:var(--muted)">📍</span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
         <input type="text" id="admin-search-input" placeholder="Buscar por nombre..." oninput="filterAdminUsers(this.value)">
-        <button onclick="document.getElementById('admin-search-input').value='';filterAdminUsers('')" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:1rem;padding:0;line-height:1" title="Limpiar">&times;</button>
+        <button class="admin-search-clear" onclick="document.getElementById('admin-search-input').value='';filterAdminUsers('')" title="Limpiar">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
       </div>
       <div id="admin-user-list"></div>
     </div>
@@ -738,7 +760,7 @@
       <div class="admin-noticia-form">
         <select id="admin-noticia-cat">
           <option value="general">📰 General</option>
-          <option value="partido">� Partido</option>
+          <option value="partido">⚽ Partido</option>
           <option value="torneo">🏆 Torneo</option>
           <option value="aviso">⚠️ Aviso</option>
         </select>
@@ -753,7 +775,16 @@
           <img id="admin-noticia-img-preview" class="img-preview" alt="">
           <input type="text" id="admin-noticia-img-url" class="form-input" placeholder="O pega una URL de imagen..." style="margin-top:.35rem;font-size:.81rem" oninput="previewNoticiaUrl(this.value)">
         </div>
-        <button class="btn btn-primary" style="width:100%;padding:.65rem" onclick="adminPublishNoticia()">📢 Publicar</button>
+        <!-- Grupos destinatarios -->
+        <div style="margin:.75rem 0 .5rem">
+          <label style="font-size:.78rem;font-weight:700;color:var(--muted);display:block;margin-bottom:.4rem">👥 Enviar a grupos</label>
+          <label style="display:flex;align-items:center;gap:.5rem;font-size:.85rem;font-weight:700;margin-bottom:.5rem;padding:.4rem .5rem;background:var(--green-light);border-radius:8px;cursor:pointer">
+            <input type="checkbox" id="noticia-grupo-todos" onchange="toggleTodosGrupos(this.checked)" style="width:16px;height:16px;accent-color:var(--green)">
+            Todos los grupos
+          </label>
+          <div id="noticia-grupos-list" style="display:flex;flex-direction:column;gap:.3rem;max-height:140px;overflow-y:auto"></div>
+        </div>
+        <button class="btn btn-primary" style="width:100%;padding:.65rem" onclick="adminPublishNoticia()">📢 Publicar y notificar</button>
       </div>
       <div id="admin-noticias-list"></div>
     </div>
@@ -762,6 +793,62 @@
   <!-- PANE: Grupos -->
   <div class="admin-section-pane" id="apane-grupos">
     <div class="admin-main">
+
+      <!-- Crear grupo nuevo -->
+      <div style="font-weight:800;font-size:.95rem;margin-bottom:.75rem;color:var(--text)">➕ Crear grupo</div>
+      <div style="background:var(--card);border:1.5px solid var(--border);border-radius:12px;padding:1rem;margin-bottom:1.25rem">
+        <div class="form-group" style="margin-bottom:.625rem">
+          <label class="form-label">Código / nombre del grupo</label>
+          <input type="text" id="admin-new-group-name" class="form-input" maxlength="20"
+            placeholder="Ej: AMIGOS2026"
+            style="text-transform:uppercase;letter-spacing:.06em;font-weight:700;font-size:1rem"
+            oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'')">
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.5rem;margin-bottom:.75rem">
+          <div>
+            <label class="form-label">🏆 Victoria</label>
+            <input type="number" id="admin-new-group-win"  class="pts-input" min="0" max="99" value="3" style="width:100%">
+          </div>
+          <div>
+            <label class="form-label">🤝 Empate</label>
+            <input type="number" id="admin-new-group-draw" class="pts-input" min="0" max="99" value="2" style="width:100%">
+          </div>
+          <div>
+            <label class="form-label">❌ Derrota</label>
+            <input type="number" id="admin-new-group-loss" class="pts-input" min="0" max="99" value="1" style="width:100%">
+          </div>
+        </div>
+        <button class="btn btn-primary" style="width:100%" onclick="adminCreateGroup()">✅ Crear grupo</button>
+      </div>
+
+      <!-- Invitar al grupo -->
+      <div style="font-weight:800;font-size:.95rem;margin-bottom:.75rem;color:var(--text)">🔗 Invitar a un grupo</div>
+      <div style="background:var(--card);border:1.5px solid var(--border);border-radius:12px;padding:1rem;margin-bottom:1.25rem">
+        <div class="form-group" style="margin-bottom:.625rem">
+          <label class="form-label">Grupo</label>
+          <select id="admin-invite-group-sel" class="form-select" onchange="updateAdminInviteLink()">
+            <option value="">— Selecciona un grupo —</option>
+          </select>
+        </div>
+        <div style="display:flex;align-items:center;gap:.5rem;background:#f8fafc;border:1px solid var(--border);border-radius:8px;padding:.5rem .75rem;margin-bottom:.75rem">
+          <span id="admin-invite-link-text" style="flex:1;font-size:.78rem;color:var(--muted);word-break:break-all">Selecciona un grupo para ver el enlace</span>
+          <button class="btn btn-ghost btn-sm" onclick="adminCopyInviteLink()" style="flex-shrink:0">Copiar</button>
+        </div>
+        <div style="font-weight:700;font-size:.8rem;color:var(--text);margin-bottom:.4rem">Enviar por email</div>
+        <div style="display:flex;gap:.5rem;margin-bottom:.5rem">
+          <input type="email" id="admin-invite-email" class="form-input flex1" placeholder="email@ejemplo.com" style="font-size:.85rem">
+          <button class="btn btn-primary btn-sm" onclick="adminSendInviteEmail()">Enviar</button>
+        </div>
+        <div style="font-weight:700;font-size:.8rem;color:var(--text);margin-bottom:.4rem">O invitar a usuario ya registrado</div>
+        <div style="display:flex;gap:.5rem">
+          <select id="admin-invite-user-sel" class="form-select flex1" style="font-size:.82rem">
+            <option value="">— Selecciona usuario —</option>
+          </select>
+          <button class="btn btn-primary btn-sm" onclick="adminSendInviteToUser()">Enviar</button>
+        </div>
+      </div>
+
+      <!-- Lista de grupos -->
       <div style="font-weight:800;font-size:.95rem;margin-bottom:.75rem;color:var(--text)">📊 Grupos existentes</div>
       <div id="admin-grupos-list"></div>
     </div>
@@ -1277,6 +1364,14 @@
   <div style="color:#64748b;font-weight:600;font-size:.9rem">Cargando...</div>
 </div>
 
+<!-- Noticia detail modal -->
+<div class="modal-overlay" id="noticia-detail-modal" onclick="if(event.target===this)closeNoticiaDetail()">
+  <div class="modal-sheet" style="max-height:85vh;overflow-y:auto">
+    <button class="modal-close" onclick="closeNoticiaDetail()">✕</button>
+    <div id="noticia-detail-content"></div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -1308,7 +1403,8 @@ const ADMIN_EMAIL = 'admin@admin.es';
 // -- EmailJS (notificación nuevo usuario) --------------
 const EMAILJS_PUBLIC_KEY  = 'FZ2LxvvBnzjVgMhRK';
 const EMAILJS_SERVICE_ID  = 'service_0a4twxt';
-const EMAILJS_TEMPLATE_ID = 'template_tbtz2tv';
+const EMAILJS_TEMPLATE_ID      = 'template_tbtz2tv';  // bienvenida
+const EMAILJS_NEWS_TEMPLATE_ID  = 'template_bja3hwd';  // noticias
 try { emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY }); } catch(e) {}
 const ADMIN_PW    = 'Admin1234!';
 
@@ -1358,6 +1454,17 @@ window.addEventListener('beforeinstallprompt', e => {
   deferredInstall = e;
   document.getElementById('install-banner').classList.add('visible');
 });
+
+// --------------------------------------------------
+// LOGO TAP → borrar caché y recargar
+// --------------------------------------------------
+async function clearCacheAndReload() {
+  if ('caches' in window) {
+    const keys = await caches.keys();
+    await Promise.all(keys.map(k => caches.delete(k)));
+  }
+  window.location.reload(true);
+}
 window.addEventListener('appinstalled', () => {
   deferredInstall = null;
   document.getElementById('install-banner').classList.remove('visible');
@@ -1685,6 +1792,7 @@ async function renderAdmin() {
     document.getElementById('stat-inactive').textContent = inactive;
     renderAdminUsers(adminUsers, adminGroups);
     renderAdminNoticias();
+    renderNoticiasGruposList();
   } catch (err) {
     toast('\u26a0\ufe0f Error cargando datos: ' + err.message);
   }
@@ -1739,8 +1847,8 @@ function setAdminSection(sec) {
   document.querySelectorAll('.admin-section-pane').forEach(p => p.classList.remove('active'));
   document.getElementById('asec-' + sec).classList.add('active');
   document.getElementById('apane-' + sec).classList.add('active');
-  if (sec === 'noticias') renderAdminNoticias();
-  if (sec === 'grupos') renderAdminGroups();
+  if (sec === 'noticias') { renderAdminNoticias(); renderNoticiasGruposList(); }
+  if (sec === 'grupos') { renderAdminGroups(); populateAdminInviteSelectors(); }
   if (sec === 'partidos') loadAdminMatches();
 }
 
@@ -1768,7 +1876,31 @@ async function adminTogglePago(uid, paid) {
 }
 
 // --- NOTICIAS -----------------------------------------------
-const CAT_LABELS = { general:'📰 General', partido:'� Partido', torneo:'🏆 Torneo', aviso:'⚠️ Aviso' };
+const CAT_LABELS = { general:'📰 General', partido:'⚽ Partido', torneo:'🏆 Torneo', aviso:'⚠️ Aviso' };
+
+function toggleTodosGrupos(checked) {
+  document.querySelectorAll('.noticia-grupo-cb').forEach(cb => {
+    cb.checked = checked;
+    cb.disabled = checked;
+  });
+}
+
+function renderNoticiasGruposList() {
+  const container = document.getElementById('noticia-grupos-list');
+  if (!container) return;
+  container.innerHTML = (adminGroups || []).map(g => `
+    <label style="display:flex;align-items:center;gap:.5rem;font-size:.85rem;padding:.25rem .5rem;border-radius:6px;cursor:pointer;background:#f8fafc">
+      <input type="checkbox" class="noticia-grupo-cb" value="${esc(g)}" style="width:15px;height:15px;accent-color:var(--green)">
+      ${esc(g)}
+    </label>
+  `).join('');
+}
+
+async function refreshNewsCount() {
+  const snap = await db.collection('noticias').get();
+  const el = document.getElementById('global-total-news');
+  if (el) el.textContent = snap.size;
+}
 
 function previewNoticiaImg(input) {
   const file = input.files[0];
@@ -1839,20 +1971,47 @@ async function renderAdminNoticias() {
       const date  = n.createdAt ? fmtDate(n.createdAt.toDate ? n.createdAt.toDate().toISOString() : n.createdAt) : '';
       const thumb = n.image
         ? `<div class="admin-news-thumb"><img src="${esc(n.image)}" onerror="this.parentElement.textContent='📰'"></div>`
-        : `<div class="admin-news-thumb">${cat === 'partido' ? '�' : cat === 'torneo' ? '🏆' : cat === 'aviso' ? '⚠️' : '📰'}</div>`;
-      return `<div class="admin-news-card">
+        : `<div class="admin-news-thumb">${cat === 'partido' ? '⚽' : cat === 'torneo' ? '🏆' : cat === 'aviso' ? '⚠️' : '📰'}</div>`;
+      return `<div class="admin-news-card" onclick="openNoticiaDetail('${d.id}')" style="cursor:pointer">
         ${thumb}
         <div class="admin-news-info">
           <div style="display:flex;align-items:center;gap:.4rem;margin-bottom:.2rem">
             <span class="news-cat ${cat}" style="font-size:.63rem;padding:.15rem .5rem">${label}</span>
-            <button class="noticia-del-btn" onclick="adminDeleteNoticia('${d.id}')" style="float:none;margin:0">🗑️</button>
+            <button class="noticia-del-btn" onclick="event.stopPropagation();adminDeleteNoticia('${d.id}')" style="float:none;margin:0">🗑️</button>
           </div>
           <div class="admin-news-info-title">${n.title ? esc(n.title) : '<em style="color:var(--muted);font-style:normal">Sin título</em>'}</div>
+          <div style="font-size:.75rem;color:var(--muted);margin-top:.2rem;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${esc(n.body)}</div>
           <div class="admin-news-info-meta">${date}</div>
         </div>
       </div>`;
     }).join('');
+    // store for detail view
+    window._adminNoticiasDocs = {};
+    snap.docs.forEach(d => { window._adminNoticiasDocs[d.id] = d.data(); });
   } catch(e) {}
+}
+
+function openNoticiaDetail(id) {
+  const n = window._adminNoticiasDocs && window._adminNoticiasDocs[id];
+  if (!n) return;
+  const cat   = n.category || 'general';
+  const label = CAT_LABELS[cat] || '📰 General';
+  const date  = n.createdAt ? fmtDate(n.createdAt.toDate ? n.createdAt.toDate().toISOString() : n.createdAt) : '';
+  const imgHtml = n.image ? `<img src="${esc(n.image)}" alt="" style="width:100%;border-radius:10px;margin-bottom:1rem;object-fit:cover;max-height:200px" onerror="this.style.display='none'">` : '';
+  document.getElementById('noticia-detail-content').innerHTML = `
+    ${imgHtml}
+    <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.75rem">
+      <span class="news-cat ${cat}" style="font-size:.72rem">${label}</span>
+      <span style="font-size:.72rem;color:var(--muted)">📅 ${date}</span>
+    </div>
+    ${n.title ? `<div style="font-size:1.05rem;font-weight:800;color:var(--text);margin-bottom:.75rem">${esc(n.title)}</div>` : ''}
+    <div style="font-size:.9rem;color:var(--text);line-height:1.6;white-space:pre-wrap">${esc(n.body)}</div>
+  `;
+  document.getElementById('noticia-detail-modal').classList.add('open');
+}
+
+function closeNoticiaDetail() {
+  document.getElementById('noticia-detail-modal').classList.remove('open');
 }
 
 async function adminPublishNoticia() {
@@ -1861,24 +2020,75 @@ async function adminPublishNoticia() {
   const cat   = document.getElementById('admin-noticia-cat').value || 'general';
   const urlField = (document.getElementById('admin-noticia-img-url').value || '').trim();
   const prevSrc  = document.getElementById('admin-noticia-img-preview').src || '';
-  // image = base64 (from file) or URL
   const image = urlField || (prevSrc.startsWith('data:') ? prevSrc : '');
   if (!body) { toast('⚠️ Escribe algo antes de publicar'); return; }
+
+  // Recoger grupos seleccionados
+  const todosChecked = document.getElementById('noticia-grupo-todos').checked;
+  let targetGroups = [];
+  if (todosChecked) {
+    targetGroups = adminGroups.slice();
+  } else {
+    document.querySelectorAll('.noticia-grupo-cb:checked').forEach(cb => targetGroups.push(cb.value));
+  }
+
   showLoading();
   try {
     await db.collection('noticias').add({
       title, body, category: cat,
       image: image || null,
+      targetGroups: targetGroups.length ? targetGroups : [],
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });
+
+    // Enviar emails a miembros de los grupos seleccionados
+    if (targetGroups.length) {
+      // Obtener todos los usuarios activos con email cuyo grupo esté en targetGroups
+      const usersSnap = await db.collection('users').where('status', '==', 'active').get();
+      const emailsSent = new Set();
+      for (const uDoc of usersSnap.docs) {
+        const u = uDoc.data();
+        if (!u.email || u.email === ADMIN_EMAIL) continue;
+        // Comprobar si el usuario pertenece a algún grupo seleccionado
+        const userGroups = u.groups || (u.group ? [u.group] : []);
+        const match = userGroups.some(g => targetGroups.includes(g));
+        if (!match) continue;
+        if (emailsSent.has(u.email)) continue;
+        emailsSent.add(u.email);
+        const recipientName = u.firstname || u.name || u.displayName || 'Jugador';
+        try {
+          await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_NEWS_TEMPLATE_ID, {
+            to_name:        recipientName,
+            user_name:      recipientName,
+            user_email:     u.email,
+            name:           recipientName,
+            from_name:      'PadelTracker',
+            reply_to:       'noreply@padeltracker.app',
+            title:          title || 'Nueva noticia',
+            noticia_titulo: title || 'Nueva noticia',
+            noticia_cuerpo: body,
+            message:        body,
+            admin_url:      'https://padelapp-9e01c.web.app',
+          });
+        } catch(e) { console.warn('Email error:', u.email, e); }
+      }
+      toast(`✅ Noticia publicada · ${emailsSent.size} email(s) enviados`);
+    } else {
+      toast('✅ Noticia publicada (sin destinatarios)');
+    }
+
+    // Reset form
     document.getElementById('admin-noticia-title').value = '';
     document.getElementById('admin-noticia-body').value  = '';
     document.getElementById('admin-noticia-img-url').value = '';
     document.getElementById('admin-noticia-img-file').value = '';
     document.getElementById('admin-noticia-img-preview').style.display = 'none';
     document.getElementById('admin-noticia-img-preview').src = '';
-    toast('? Noticia publicada');
+    document.getElementById('noticia-grupo-todos').checked = false;
+    document.querySelectorAll('.noticia-grupo-cb').forEach(cb => cb.checked = false);
+
     renderAdminNoticias();
+    refreshNewsCount();
   } catch(e) { toast('⚠️ ' + e.message); }
   hideLoading();
 }
@@ -1888,8 +2098,9 @@ async function adminDeleteNoticia(id) {
   showLoading();
   try {
     await db.collection('noticias').doc(id).delete();
-    toast('⚠️? Noticia eliminada');
+    toast('🗑️ Noticia eliminada');
     renderAdminNoticias();
+    refreshNewsCount();
   } catch(e) { toast('⚠️ ' + e.message); }
   hideLoading();
 }
@@ -1967,6 +2178,105 @@ async function adminRemoveGroup(uid, code) {
 // --------------------------------------------------
 // ADMIN: GESTIÓN DE GRUPOS
 // --------------------------------------------------
+async function adminCreateGroup() {
+  const code = (document.getElementById('admin-new-group-name').value || '').trim().toUpperCase();
+  if (!code) { toast('⚠️ Escribe un nombre para el grupo'); return; }
+  const win  = parseInt(document.getElementById('admin-new-group-win').value)  || 3;
+  const draw = parseInt(document.getElementById('admin-new-group-draw').value) || 2;
+  const loss = parseInt(document.getElementById('admin-new-group-loss').value) || 1;
+  showLoading();
+  try {
+    const ref = db.collection('groups').doc(code);
+    const snap = await ref.get();
+    if (snap.exists) { toast('⚠️ Ya existe un grupo con ese código'); hideLoading(); return; }
+    await ref.set({ settings: { win, draw, loss }, guests: [], createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+    document.getElementById('admin-new-group-name').value = '';
+    toast('✅ Grupo ' + code + ' creado');
+    await renderAdmin(); // refresca todo incluido la lista de grupos
+  } catch(e) { toast('⚠️ ' + e.message); }
+  hideLoading();
+}
+
+function updateAdminInviteLink() {
+  const code = document.getElementById('admin-invite-group-sel').value;
+  const el = document.getElementById('admin-invite-link-text');
+  if (!code) { el.textContent = 'Selecciona un grupo para ver el enlace'; return; }
+  el.textContent = `https://padelapp-9e01c.web.app/?g=${encodeURIComponent(code)}`;
+}
+
+function adminCopyInviteLink() {
+  const code = document.getElementById('admin-invite-group-sel').value;
+  if (!code) { toast('⚠️ Selecciona un grupo'); return; }
+  const link = `https://padelapp-9e01c.web.app/?g=${encodeURIComponent(code)}`;
+  navigator.clipboard.writeText(link).then(() => toast('🔗 Enlace copiado'));
+}
+
+async function adminSendInviteEmail() {
+  const code = document.getElementById('admin-invite-group-sel').value;
+  const email = (document.getElementById('admin-invite-email').value || '').trim();
+  if (!code) { toast('⚠️ Selecciona un grupo'); return; }
+  if (!email) { toast('⚠️ Escribe un email'); return; }
+  const link = `https://padelapp-9e01c.web.app/?g=${encodeURIComponent(code)}`;
+  showLoading();
+  try {
+    await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+      to_name:    email,
+      user_name:  email,
+      user_email: email,
+      name:       email,
+      from_name:  'PadelTracker',
+      reply_to:   'noreply@padeltracker.app',
+      message:    `Te han invitado al grupo ${code} en PadelTracker.\n\nAccede con este enlace:\n${link}`,
+      admin_url:  link,
+    });
+    document.getElementById('admin-invite-email').value = '';
+    toast('✉️ Invitación enviada a ' + email);
+  } catch(e) { toast('⚠️ Error al enviar: ' + e.message); }
+  hideLoading();
+}
+
+async function adminSendInviteToUser() {
+  const code = document.getElementById('admin-invite-group-sel').value;
+  const uid  = document.getElementById('admin-invite-user-sel').value;
+  if (!code) { toast('⚠️ Selecciona un grupo'); return; }
+  if (!uid)  { toast('⚠️ Selecciona un usuario'); return; }
+  const user = adminUsers.find(u => u.id === uid);
+  if (!user || !user.email) { toast('⚠️ Usuario sin email'); return; }
+  const link = `https://padelapp-9e01c.web.app/?g=${encodeURIComponent(code)}`;
+  showLoading();
+  try {
+    await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+      to_name:    user.firstname || user.name || user.email,
+      user_name:  user.firstname || user.name || user.email,
+      user_email: user.email,
+      name:       user.firstname || user.name || user.email,
+      from_name:  'PadelTracker',
+      reply_to:   'noreply@padeltracker.app',
+      message:    `Hola ${user.firstname || ''},\n\nTe han invitado al grupo ${code} en PadelTracker.\n\nAccede con este enlace:\n${link}`,
+      admin_url:  link,
+    });
+    toast('✉️ Invitación enviada a ' + user.email);
+  } catch(e) { toast('⚠️ Error al enviar: ' + e.message); }
+  hideLoading();
+}
+
+function populateAdminInviteSelectors() {
+  // grupos
+  const groupSel = document.getElementById('admin-invite-group-sel');
+  if (groupSel) {
+    groupSel.innerHTML = '<option value="">— Selecciona un grupo —</option>' +
+      (adminGroups || []).map(g => `<option value="${esc(g)}">${esc(g)}</option>`).join('');
+  }
+  // usuarios
+  const userSel = document.getElementById('admin-invite-user-sel');
+  if (userSel) {
+    userSel.innerHTML = '<option value="">— Selecciona usuario —</option>' +
+      (adminUsers || []).filter(u => u.email !== ADMIN_EMAIL).map(u =>
+        `<option value="${u.id}">${esc(u.firstname||'')} ${esc(u.lastname||'')} (${esc(u.email)})</option>`
+      ).join('');
+  }
+}
+
 async function renderAdminGroups() {
   const el = document.getElementById('admin-grupos-list');
   if (!el) return;
