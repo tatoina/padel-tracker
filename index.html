@@ -769,6 +769,12 @@
 
     <div style="margin-bottom:1.5rem">
       <div class="card-title" style="margin-bottom:.75rem">👥 Miembros registrados (<span id="admin-group-members-count">0</span>)</div>
+      <div style="margin-bottom:.75rem">
+        <select id="admin-group-add-member-sel" class="form-select" style="margin-bottom:.5rem;font-size:.8125rem">
+          <option value="">— Seleccionar usuario —</option>
+        </select>
+        <button class="btn btn-outline" style="width:100%;font-size:.8125rem;padding:.45rem" onclick="addMemberToAdminGroup()">➕ Añadir miembro al grupo</button>
+      </div>
       <div id="admin-group-members-list" style="font-size:.8125rem;color:var(--muted)">Cargando...</div>
     </div>
 
@@ -1902,9 +1908,9 @@ async function openAdminGroupDetail(code) {
     }
     
     const data = groupSnap.data();
-    const members = usersSnap.docs
-      .filter(d => (d.data().groups || []).includes(code))
-      .map(d => ({ id: d.id, ...d.data() }));
+    const allUsers = usersSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+    const members = allUsers.filter(u => (u.groups || []).includes(code));
+    const nonMembers = allUsers.filter(u => !(u.groups || []).includes(code));
     const guests = data.guests || [];
     const settings = data.settings || { win: 3, draw: 2, loss: 1 };
     
@@ -1914,15 +1920,20 @@ async function openAdminGroupDetail(code) {
     document.getElementById('admin-group-pts-draw').value = settings.draw;
     document.getElementById('admin-group-pts-loss').value = settings.loss;
     
-    // Members
+    // Members - populate add member selector
+    const addMemberSel = document.getElementById('admin-group-add-member-sel');
+    addMemberSel.innerHTML = '<option value="">— Seleccionar usuario —</option>' + 
+      nonMembers.map(u => `<option value="${u.id}">${esc(u.firstname)} ${esc(u.lastname)} (${esc(u.email)})</option>`).join('');
+    
     document.getElementById('admin-group-members-count').textContent = members.length;
     const membersEl = document.getElementById('admin-group-members-list');
     if (members.length === 0) {
       membersEl.innerHTML = '<p style="color:var(--muted)">Sin miembros registrados</p>';
     } else {
       membersEl.innerHTML = members.map(m => `
-        <div style="padding:.5rem;background:var(--bg);border-radius:.375rem;margin-bottom:.375rem">
-          ${esc(m.firstname)} ${esc(m.lastname)} <span style="color:var(--muted)">· ${esc(m.email)}</span>
+        <div style="padding:.5rem;background:var(--bg);border-radius:.375rem;margin-bottom:.375rem;display:flex;align-items:center;justify-content:space-between">
+          <span>${esc(m.firstname)} ${esc(m.lastname)} <span style="color:var(--muted)">· ${esc(m.email)}</span></span>
+          <button onclick="removeMemberFromAdminGroup('${code}', '${m.id}')" style="background:var(--danger);color:white;border:none;padding:.25rem .5rem;border-radius:.25rem;font-size:.7rem;cursor:pointer">🗑️ Quitar</button>
         </div>
       `).join('');
     }
@@ -2019,6 +2030,48 @@ async function deleteAdminGuest(groupCode, guestId) {
     await db.collection('groups').doc(groupCode).update({ guests });
     
     toast('✓ Invitado eliminado');
+    await openAdminGroupDetail(groupCode); // Reload
+  } catch (err) {
+    toast('⚠️ ' + err.message);
+    hideLoading();
+  }
+}
+
+async function addMemberToAdminGroup() {
+  if (!adminActiveGroupCode) return;
+  
+  const sel = document.getElementById('admin-group-add-member-sel');
+  const userId = sel.value;
+  
+  if (!userId) {
+    toast('⚠️ Selecciona un usuario');
+    return;
+  }
+  
+  showLoading();
+  try {
+    await db.collection('users').doc(userId).update({
+      groups: firebase.firestore.FieldValue.arrayUnion(adminActiveGroupCode)
+    });
+    
+    toast('✓ Miembro añadido al grupo');
+    await openAdminGroupDetail(adminActiveGroupCode); // Reload
+  } catch (err) {
+    toast('⚠️ ' + err.message);
+    hideLoading();
+  }
+}
+
+async function removeMemberFromAdminGroup(groupCode, userId) {
+  if (!confirm('¿Quitar este usuario del grupo?')) return;
+  
+  showLoading();
+  try {
+    await db.collection('users').doc(userId).update({
+      groups: firebase.firestore.FieldValue.arrayRemove(groupCode)
+    });
+    
+    toast('✓ Miembro eliminado del grupo');
     await openAdminGroupDetail(groupCode); // Reload
   } catch (err) {
     toast('⚠️ ' + err.message);
