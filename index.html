@@ -669,6 +669,29 @@
     <button class="admin-logout-btn" onclick="adminLogout()">Salir</button>
   </div>
 
+  <!-- Dashboard Global -->
+  <div style="background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);padding:1.5rem 1rem;margin-bottom:1rem">
+    <div style="color:white;font-weight:800;font-size:1rem;margin-bottom:1rem;text-align:center">📊 Estadísticas Globales</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:.75rem">
+      <div style="background:rgba(255,255,255,0.2);backdrop-filter:blur(10px);border-radius:.5rem;padding:.75rem;text-align:center">
+        <div style="font-size:1.5rem;font-weight:900;color:white" id="global-total-users">-</div>
+        <div style="font-size:.7rem;color:rgba(255,255,255,0.9)">Usuarios</div>
+      </div>
+      <div style="background:rgba(255,255,255,0.2);backdrop-filter:blur(10px);border-radius:.5rem;padding:.75rem;text-align:center">
+        <div style="font-size:1.5rem;font-weight:900;color:white" id="global-total-groups">-</div>
+        <div style="font-size:.7rem;color:rgba(255,255,255,0.9)">Grupos</div>
+      </div>
+      <div style="background:rgba(255,255,255,0.2);backdrop-filter:blur(10px);border-radius:.5rem;padding:.75rem;text-align:center">
+        <div style="font-size:1.5rem;font-weight:900;color:white" id="global-total-matches">-</div>
+        <div style="font-size:.7rem;color:rgba(255,255,255,0.9)">Partidos</div>
+      </div>
+      <div style="background:rgba(255,255,255,0.2);backdrop-filter:blur(10px);border-radius:.5rem;padding:.75rem;text-align:center">
+        <div style="font-size:1.5rem;font-weight:900;color:white" id="global-total-news">-</div>
+        <div style="font-size:.7rem;color:rgba(255,255,255,0.9)">Noticias</div>
+      </div>
+    </div>
+  </div>
+
   <!-- Section nav -->
   <nav class="admin-section-nav">
     <button class="admin-section-btn active" id="asec-usuarios" onclick="setAdminSection('usuarios')">👥 Usuarios</button>
@@ -785,7 +808,7 @@
 
     <div style="margin-bottom:1.5rem">
       <div class="card-title" style="margin-bottom:.75rem">🎾 Partidos (<span id="admin-group-matches-count">0</span>)</div>
-      <div id="admin-group-matches-info" style="font-size:.8125rem;color:var(--muted)">0 partidos registrados</div>
+      <div id="admin-group-matches-list" style="font-size:.8125rem">Cargando...</div>
     </div>
 
     <div style="border-top:1px solid var(--border);padding-top:1rem;margin-top:1rem">
@@ -1547,12 +1570,31 @@ async function adminLogin() {
 // --------------------------------------------------
 async function renderAdmin() {
   try {
-    const [usersSnap, groupsSnap] = await Promise.all([
+    const [usersSnap, groupsSnap, noticiasSnap] = await Promise.all([
       db.collection('users').get(),
-      db.collection('groups').get()
+      db.collection('groups').get(),
+      db.collection('noticias').get()
     ]);
     adminUsers  = usersSnap.docs.map(d => tsToStr({ id: d.id, ...d.data() })).filter(u => u.email !== ADMIN_EMAIL);
     adminGroups = groupsSnap.docs.map(d => d.id).sort();
+    
+    // Global statistics
+    const totalUsers = usersSnap.size;
+    const totalGroups = groupsSnap.size;
+    const totalNews = noticiasSnap.size;
+    
+    // Count total matches across all groups
+    let totalMatches = 0;
+    for (const groupDoc of groupsSnap.docs) {
+      const matchesSnap = await db.collection('groups').doc(groupDoc.id).collection('matches').get();
+      totalMatches += matchesSnap.size;
+    }
+    
+    document.getElementById('global-total-users').textContent = totalUsers;
+    document.getElementById('global-total-groups').textContent = totalGroups;
+    document.getElementById('global-total-matches').textContent = totalMatches;
+    document.getElementById('global-total-news').textContent = totalNews;
+    
     const pending  = adminUsers.filter(u => u.status === 'pending').length;
     const active   = adminUsers.filter(u => u.status === 'active').length;
     const inactive = adminUsers.filter(u => u.status === 'inactive').length;
@@ -1955,11 +1997,38 @@ async function openAdminGroupDetail(code) {
       `).join('');
     }
     
-    // Matches
+    // Matches - show full list
     document.getElementById('admin-group-matches-count').textContent = matchesSnap.size;
-    document.getElementById('admin-group-matches-info').textContent = 
-      matchesSnap.size === 0 ? 'Sin partidos registrados' : 
-      `${matchesSnap.size} partido${matchesSnap.size !== 1 ? 's' : ''} registrado${matchesSnap.size !== 1 ? 's' : ''}`;
+    const matchesEl = document.getElementById('admin-group-matches-list');
+    if (matchesSnap.size === 0) {
+      matchesEl.innerHTML = '<p style="color:var(--muted)">Sin partidos registrados</p>';
+    } else {
+      const allPlayers = [...members, ...guests];
+      const pname = (id) => {
+        const p = allPlayers.find(pl => pl.id === id);
+        return p ? (p.name || `${p.firstname} ${p.lastname}`) : 'Eliminado';
+      };
+      
+      matchesEl.innerHTML = matchesSnap.docs.map(doc => {
+        const m = doc.data();
+        const p1n = (m.pair1 || []).map(id => esc(pname(id))).join(' & ');
+        const p2n = (m.pair2 || []).map(id => esc(pname(id))).join(' & ');
+        const date = m.date || '';
+        const dateStr = date ? new Date(date).toLocaleDateString('es-ES', {day:'2-digit', month:'2-digit', year:'numeric'}) : 'Sin fecha';
+        const pachangaBadge = m.isPachanga ? ' <span style="background:#ff6600;color:white;font-size:.6rem;padding:.125rem .25rem;border-radius:.25rem">🎉 PACHANGA</span>' : '';
+        
+        return `
+          <div style="padding:.5rem;background:var(--bg);border:1px solid var(--border);border-radius:.375rem;margin-bottom:.5rem">
+            <div style="font-size:.7rem;color:var(--muted);margin-bottom:.25rem">📅 ${dateStr}${pachangaBadge}</div>
+            <div style="font-size:.8125rem;margin-bottom:.375rem">${p1n} <strong>vs</strong> ${p2n}</div>
+            <div style="font-size:.75rem;color:var(--muted);margin-bottom:.375rem">Marcador: ${m.score || 'N/A'}</div>
+            <div style="display:flex;gap:.375rem">
+              <button onclick="deleteAdminMatch('${code}', '${doc.id}')" style="background:var(--danger);color:white;border:none;padding:.25rem .5rem;border-radius:.25rem;font-size:.7rem;cursor:pointer;flex:1">🗑️ Eliminar</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
     
     document.getElementById('admin-group-detail-modal').style.display = 'flex';
     hideLoading();
@@ -2030,6 +2099,21 @@ async function deleteAdminGuest(groupCode, guestId) {
     await db.collection('groups').doc(groupCode).update({ guests });
     
     toast('✓ Invitado eliminado');
+    await openAdminGroupDetail(groupCode); // Reload
+  } catch (err) {
+    toast('⚠️ ' + err.message);
+    hideLoading();
+  }
+}
+
+async function deleteAdminMatch(groupCode, matchId) {
+  if (!confirm('¿Eliminar este partido? Esta acción no se puede deshacer.')) return;
+  
+  showLoading();
+  try {
+    await db.collection('groups').doc(groupCode).collection('matches').doc(matchId).delete();
+    
+    toast('✓ Partido eliminado');
     await openAdminGroupDetail(groupCode); // Reload
   } catch (err) {
     toast('⚠️ ' + err.message);
