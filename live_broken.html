@@ -1,12 +1,11 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta name="theme-color" content="#16a34a">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="PadelTracker">
   <title>PadelTracker</title>
   <link rel="manifest" href="manifest.json">
@@ -42,19 +41,7 @@
       background: var(--bg); color: var(--text);
       min-height: 100vh; max-width: 480px; margin: 0 auto;
       position: relative; overscroll-behavior: none;
-      -webkit-user-select: none;
-      user-select: none;
     }
-    body::before, body::after { display: none !important; }
-    
-    /* Ocultar home indicator de iOS/Emuladores */
-    @supports (padding-bottom: env(safe-area-inset-bottom)) {
-      body { padding-bottom: 0 !important; }
-    }
-    html::after, body::after, 
-    div[style*="bottom"]::after,
-    *[class*="indicator"]::before,
-    *[class*="indicator"]::after { display: none !important; }
 
     /* --- SCREENS ----------------------------------- */
     .screen { display: none; }
@@ -72,7 +59,7 @@
     #screen-pending.active,
     #screen-admin-login.active { display: flex; }
 
-    .reg-hero { text-align: center; color: #fff; margin-bottom: 2rem; }
+    .reg-hero { text-align: center; color: #fff; margin-bottom: 2rem; padding-top: env(safe-area-inset-top); }
     .reg-logo  { line-height: 1; margin-bottom: 0.75rem; }
     .reg-logo img { width: 90px; height: 90px; object-fit: contain; border-radius: 18px; }
     .reg-title { font-size: 2.25rem; font-weight: 900; letter-spacing: -0.05em; }
@@ -115,6 +102,7 @@
     .header {
       background: linear-gradient(135deg, #16a34a, #166534);
       color: #fff; padding: 0.75rem 1rem;
+      padding-top: calc(0.75rem + env(safe-area-inset-top));
       display: flex; align-items: center; gap: 0.625rem;
       position: sticky; top: 0; z-index: 100;
       box-shadow: 0 2px 12px rgba(0,0,0,.18);
@@ -140,7 +128,7 @@
     }
     #account-dropdown.open { display: block; }
     .account-sheet {
-      position: absolute; top: 56px; right: .75rem;
+      position: absolute; top: calc(56px + env(safe-area-inset-top)); right: .75rem;
       background: #fff; border-radius: 14px; box-shadow: 0 8px 32px rgba(0,0,0,.18);
       min-width: 220px; overflow: hidden; z-index: 701;
     }
@@ -170,7 +158,7 @@
     .profile-sheet {
       background: #fff; border-radius: 20px 20px 0 0;
       width: 100%; max-width: 480px;
-      padding: 1.25rem 1.25rem 1.5rem;
+      padding: 1.25rem 1.25rem calc(1.5rem + env(safe-area-inset-bottom));
       animation: slideUp .22s cubic-bezier(.34,1.56,.64,1);
     }
     .profile-sheet h3 { font-size: 1rem; font-weight: 800; margin-bottom: 1.1rem; color: var(--text); }
@@ -207,7 +195,7 @@
     .modal-sheet {
       background: #fff; border-radius: 20px 20px 0 0;
       width: 100%; max-width: 480px;
-      padding: 1.25rem;
+      padding: 1.25rem 1.25rem calc(1.25rem + env(safe-area-inset-bottom));
       animation: slideUp .22s cubic-bezier(.34,1.56,.64,1);
       max-height: 80vh; overflow-y: auto;
     }
@@ -230,13 +218,15 @@
     .group-option-check { margin-left: auto; color: var(--green); font-size: 1.2rem; }
 
     /* --- MAIN / TAB BAR / PAGES ------------------- */
-    .main { padding: 1rem; padding-bottom: calc(var(--tab-h) + 1.25rem); }
+    .main { padding: 1rem; padding-bottom: calc(var(--tab-h) + 1.25rem + env(safe-area-inset-bottom)); }
     .tab-bar {
       position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
       width: 100%; max-width: 480px;
-      height: var(--tab-h);
+      height: calc(var(--tab-h) + env(safe-area-inset-bottom));
+      padding-bottom: env(safe-area-inset-bottom);
       background: var(--card); border-top: 1px solid var(--border);
       display: flex; z-index: 200;
+      box-shadow: 0 -4px 20px rgba(0,0,0,.07);
     }
     .tab-btn {
       flex: 1; display: flex; flex-direction: column; align-items: center;
@@ -245,9 +235,7 @@
       color: var(--muted); font-size: 0.65rem; font-weight: 600;
       padding: 0.5rem 0 0; transition: color .18s;
       -webkit-tap-highlight-color: transparent;
-      outline: none;
     }
-    .tab-btn:focus { outline: none; }
     .tab-btn.active { color: var(--green); }
     .tab-btn .ti { font-size: 1.4rem; line-height: 1; }
 
@@ -293,21 +281,27 @@
     .vs-circle { background: var(--text); color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; font-weight: 800; align-self: center; }
 
     /* --- SET SCORER -------------------------------- */
-    .set-item { margin-bottom: 0.5rem; }
-    .set-item-label { font-size: 0.72rem; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 0.3rem; }
-    .set-item-row { display: flex; align-items: center; justify-content: center; gap: 0.5rem; }
-    .set-score-input { 
-      width: 50px; height: 50px; border: 2px solid var(--border); border-radius: 8px; 
-      text-align: center; font-size: 1.75rem; font-weight: 900; 
-      background: #fff; color: var(--text); outline: none;
+    .set-item { margin-bottom: 0.875rem; }
+    .set-item-label { font-size: 0.72rem; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 0.4rem; }
+    .set-item-row { display: grid; grid-template-columns: 1fr 24px 1fr; gap: 0.375rem; align-items: center; }
+    .stepper-box { border: 2px solid var(--border); border-radius: 12px; padding: 0.5rem 0.375rem 0.625rem; text-align: center; transition: border-color .18s, background .18s; background: #fff; }
+    .stepper-box.win-p1 { border-color: var(--green); background: var(--green-light); }
+    .stepper-box.win-p2 { border-color: var(--amber);  background: var(--amber-light); }
+    .stepper-name { font-size: 0.68rem; font-weight: 700; color: var(--muted); margin-bottom: 0.4rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .stepper-box.win-p1 .stepper-name { color: var(--green-dark); }
+    .stepper-box.win-p2 .stepper-name { color: #92400e; }
+    .set-num-input {
+      width: 100%; border: none; background: transparent;
+      font-size: 2.5rem; font-weight: 900; text-align: center;
+      color: var(--text); outline: none; padding: 0;
       -webkit-appearance: none; -moz-appearance: textfield;
-      transition: border-color .18s, background .18s;
+      font-family: inherit; line-height: 1;
     }
-    .set-score-input::-webkit-outer-spin-button,
-    .set-score-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-    .set-score-input.win-p1 { border-color: var(--green); background: var(--green-light); color: var(--green-dark); }
-    .set-score-input.win-p2 { border-color: var(--amber); background: var(--amber-light); color: #92400e; }
-    .set-vs { font-size: 1rem; font-weight: 900; color: var(--muted); }
+    .set-num-input::-webkit-outer-spin-button,
+    .set-num-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+    .stepper-box.win-p1 .set-num-input { color: var(--green-dark); }
+    .stepper-box.win-p2 .set-num-input { color: #92400e; }
+    .set-colon { font-size: 1.5rem; font-weight: 900; color: var(--muted); text-align: center; padding-top: 1.375rem; }
     .set-actions { display: flex; gap: 0.5rem; margin: 0.25rem 0 0.125rem; }
     .result-box { border-radius: 10px; padding: 0.8rem 1rem; text-align: center; font-size: 0.9375rem; font-weight: 700; margin-top: 0.875rem; }
     .rb-empty { background: var(--bg); color: var(--muted); }
@@ -391,7 +385,7 @@
     .admin-header {
       background: linear-gradient(135deg, #1e293b, #0f172a);
       color: #fff; padding: 0.875rem 1rem;
-      padding-top: 0.875rem;
+      padding-top: calc(0.875rem + env(safe-area-inset-top));
       display: flex; align-items: center; gap: 0.75rem;
       position: sticky; top: 0; z-index: 100;
       box-shadow: 0 2px 12px rgba(0,0,0,.3);
@@ -451,9 +445,14 @@
     .empty-title { font-weight: 700; margin-bottom: 0.25rem; color: var(--text); }
     .empty-sub   { font-size: 0.8125rem; }
 
-    .toast { position: fixed; bottom: calc(var(--tab-h) + 1rem); left: 50%; transform: translateX(-50%) translateY(80px); background: #1e293b; color: #fff; padding: 0.7rem 1.125rem; border-radius: 10px; font-size: 0.875rem; font-weight: 600; z-index: 999; transition: transform .28s cubic-bezier(.34,1.56,.64,1); white-space: nowrap; box-shadow: 0 4px 16px rgba(0,0,0,.22); pointer-events: none; }
+    .toast { position: fixed; bottom: calc(var(--tab-h) + env(safe-area-inset-bottom) + 1rem); left: 50%; transform: translateX(-50%) translateY(80px); background: #1e293b; color: #fff; padding: 0.7rem 1.125rem; border-radius: 10px; font-size: 0.875rem; font-weight: 600; z-index: 999; transition: transform .28s cubic-bezier(.34,1.56,.64,1); white-space: nowrap; box-shadow: 0 4px 16px rgba(0,0,0,.22); pointer-events: none; }
     .toast.show { transform: translateX(-50%) translateY(0); }
     .toast-admin { bottom: 2rem; }
+
+    #install-banner { display: none; background: linear-gradient(135deg,#16a34a,#166534); color: #fff; padding: 0.75rem 1rem; align-items: center; justify-content: space-between; gap: 0.75rem; font-size: 0.8125rem; font-weight: 600; }
+    #install-banner.visible { display: flex; }
+    #install-btn { background: #fff; color: var(--green); border: none; border-radius: 20px; padding: 0.4rem 1.1rem; font-weight: 800; cursor: pointer; font-size: .85rem; white-space:nowrap; }
+    #install-dismiss { background: none; border: none; color: rgba(255,255,255,.75); cursor: pointer; font-size: 1.25rem; padding: 0 0.25rem; }
 
     .row   { display: flex; gap: 0.5rem; align-items: center; }
     .flex1 { flex: 1; }
@@ -471,31 +470,6 @@
     .group-card-active-badge { font-size: .68rem; font-weight: 800; color: var(--green); background: #dcfce7; border-radius: 20px; padding: .15rem .5rem; margin-left: auto; flex-shrink: 0; }
     .group-card-actions { display: flex; flex-wrap: wrap; gap: .375rem; margin-top: .7rem; padding-top: .65rem; border-top: 1px solid var(--border); }
     .group-card.active-group .group-card-actions { border-top-color: #bbf7d0; }
-
-    /* -- PWA INSTALL BANNER --------------------------------- */
-    #install-banner { 
-      position: fixed; 
-      top: 4.5rem; 
-      left: 50%; 
-      transform: translateX(-50%);
-      width: calc(100% - 2rem); 
-      max-width: 448px;
-      background: linear-gradient(135deg,#16a34a,#166534); 
-      color: #fff; 
-      padding: 0.75rem 1rem; 
-      align-items: center; 
-      justify-content: space-between; 
-      gap: 0.75rem; 
-      font-size: 0.8125rem; 
-      font-weight: 600;
-      border-radius: 12px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-      z-index: 500;
-      display: none !important;
-    }
-    #install-banner.visible { display: flex !important; }
-    #install-btn { background: #fff; color: var(--green); border: none; border-radius: 20px; padding: 0.4rem 1.1rem; font-weight: 800; cursor: pointer; font-size: .85rem; white-space:nowrap; }
-    #install-dismiss { background: none; border: none; color: #fff; font-size: 1.5rem; cursor: pointer; line-height: 1; padding: 0 0.25rem; }
 
     /* -- NEWS PAGE ------------------------------------------- */
     #page-news { background: #f1f5f9; padding: 0; }
@@ -563,7 +537,7 @@
       Continuar con Google
     </button>
 
-    <div class="or-divider">o regístrate con email</div>
+    <div class="or-divider">o reg�strate con email</div>
 
     <div class="form-group">
       <label class="form-label">Nombre</label>
@@ -571,15 +545,15 @@
     </div>
     <div class="form-group">
       <label class="form-label">Apellidos</label>
-      <input type="text" id="reg-lastname" class="form-input" placeholder="Ej: García López" maxlength="50" autocomplete="family-name">
+      <input type="text" id="reg-lastname" class="form-input" placeholder="Ej: Garc�a L�pez" maxlength="50" autocomplete="family-name">
     </div>
     <div class="form-group">
       <label class="form-label">Email</label>
       <input type="email" id="reg-email" class="form-input" placeholder="tu@email.com" autocomplete="email">
     </div>
     <div class="form-group mb-0">
-      <label class="form-label">Contraseña</label>
-      <input type="password" id="reg-password" class="form-input" placeholder="Mínimo 6 caracteres" autocomplete="new-password">
+      <label class="form-label">Contrase�a</label>
+      <input type="password" id="reg-password" class="form-input" placeholder="M�nimo 6 caracteres" autocomplete="new-password">
     </div>
 
     <div style="margin-top:1rem;margin-bottom:1rem">
@@ -587,11 +561,11 @@
     </div>
 
     <p style="text-align:center;font-size:.8125rem;color:var(--muted)">
-      ¿Ya tienes cuenta?
-      <button onclick="showLogin()" style="background:none;border:none;color:var(--green);font-weight:700;cursor:pointer;font-size:.8125rem;font-family:inherit">Iniciar sesión</button>
+      �Ya tienes cuenta?
+      <button onclick="showLogin()" style="background:none;border:none;color:var(--green);font-weight:700;cursor:pointer;font-size:.8125rem;font-family:inherit">Iniciar sesi�n</button>
     </p>
     <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border);text-align:center">
-      <button onclick="showAdminLogin()" style="background:none;border:2px solid #1e293b;color:#1e293b;font-weight:700;cursor:pointer;font-size:.8125rem;font-family:inherit;padding:.45rem 1.25rem;border-radius:8px">🛡️ Acceso Administrador</button>
+      <button onclick="showAdminLogin()" style="background:none;border:2px solid #1e293b;color:#1e293b;font-weight:700;cursor:pointer;font-size:.8125rem;font-family:inherit;padding:.45rem 1.25rem;border-radius:8px">??? Acceso Administrador</button>
     </div>
 
     <!-- Login form (hidden by default) -->
@@ -601,8 +575,8 @@
         <input type="email" id="login-email" class="form-input" placeholder="tu@email.com" autocomplete="email">
       </div>
       <div class="form-group mb-0">
-        <label class="form-label">Contraseña</label>
-        <input type="password" id="login-password" class="form-input" placeholder="Tu contraseña" autocomplete="current-password">
+        <label class="form-label">Contrase�a</label>
+        <input type="password" id="login-password" class="form-input" placeholder="Tu contrase�a" autocomplete="current-password">
       </div>
       <div style="margin-top:1rem">
         <button class="btn btn-primary" onclick="loginUser()">Entrar</button>
@@ -612,7 +586,7 @@
 </div>
 
 <!-- --------------------------------------------------
-     PANTALLA: PENDIENTE DE APROBACIÓN
+     PANTALLA: PENDIENTE DE APROBACI�N
 -------------------------------------------------- -->
 <div id="screen-pending">
   <div class="reg-hero" style="margin-bottom:1.5rem">
@@ -620,15 +594,15 @@
     <div class="reg-title">PadelTracker</div>
   </div>
   <div class="pending-card">
-    <div class="pending-icon">⏳</div>
-    <div class="pending-title">Cuenta pendiente de activación</div>
+    <div class="pending-icon">?</div>
+    <div class="pending-title">Cuenta pendiente de activaci�n</div>
     <div class="pending-sub">
       Tu solicitud ha sido enviada al administrador.<br>
-      Recibirás acceso en cuanto sea aprobada.<br><br>
+      Recibir�s acceso en cuanto sea aprobada.<br><br>
       <strong id="pending-name"></strong><br>
       <span style="color:var(--muted)" id="pending-email"></span>
     </div>
-    <button class="btn btn-outline" onclick="checkActivation()">🔄 Comprobar estado</button>
+    <button class="btn btn-outline" onclick="checkActivation()">?? Comprobar estado</button>
     <button class="btn btn-ghost" style="margin-top:.625rem" onclick="logoutPending()">Volver al inicio</button>
   </div>
 </div>
@@ -638,19 +612,19 @@
 -------------------------------------------------- -->
 <div id="screen-admin-login">
   <div class="reg-hero">
-    <div class="reg-logo">�</div>
+    <div class="reg-logo">??</div>
     <div class="reg-title">Admin</div>
-    <div class="reg-sub">Panel de administración</div>
+    <div class="reg-sub">Panel de administraci�n</div>
   </div>
   <div class="reg-card">
-    <div class="reg-card-title">🛡️ Acceso administrador</div>
+    <div class="reg-card-title">??? Acceso administrador</div>
     <div class="form-group">
       <label class="form-label">Email admin</label>
       <input type="email" id="admin-login-email" class="form-input" value="admin@admin.es" readonly>
     </div>
     <div class="form-group mb-0">
-      <label class="form-label">Contraseña</label>
-      <input type="password" id="admin-login-pw" class="form-input" placeholder="Contraseña de administrador">
+      <label class="form-label">Contrase�a</label>
+      <input type="password" id="admin-login-pw" class="form-input" placeholder="Contrase�a de administrador">
     </div>
     <div style="margin-top:1rem">
       <button class="btn btn-primary" onclick="adminLogin()">Entrar como admin</button>
@@ -664,15 +638,15 @@
 -------------------------------------------------- -->
 <div id="screen-admin">
   <div class="admin-header">
-    <span style="font-size:1.4rem">�</span>
-    <div class="admin-header-title">Panel de Administración</div>
+    <span style="font-size:1.4rem">???</span>
+    <div class="admin-header-title">Panel de Administraci�n</div>
     <button class="admin-logout-btn" onclick="adminLogout()">Salir</button>
   </div>
 
   <!-- Section nav -->
   <nav class="admin-section-nav">
-    <button class="admin-section-btn active" id="asec-usuarios" onclick="setAdminSection('usuarios')">👥 Usuarios</button>
-    <button class="admin-section-btn" id="asec-noticias" onclick="setAdminSection('noticias')">📢 Noticias</button>
+    <button class="admin-section-btn active" id="asec-usuarios" onclick="setAdminSection('usuarios')">?? Usuarios</button>
+    <button class="admin-section-btn" id="asec-noticias" onclick="setAdminSection('noticias')">?? Noticias</button>
   </nav>
 
   <!-- PANE: Usuarios -->
@@ -693,12 +667,12 @@
         </div>
       </div>
       <div class="admin-tabs">
-        <button class="admin-tab active" id="atab-pending"  onclick="setAdminTab('pending')">⏳ Pendientes</button>
-        <button class="admin-tab" id="atab-active"   onclick="setAdminTab('active')">✅ Activos</button>
-        <button class="admin-tab" id="atab-inactive" onclick="setAdminTab('inactive')">🚫 Inactivos</button>
+        <button class="admin-tab active" id="atab-pending"  onclick="setAdminTab('pending')">? Pendientes</button>
+        <button class="admin-tab" id="atab-active"   onclick="setAdminTab('active')">? Activos</button>
+        <button class="admin-tab" id="atab-inactive" onclick="setAdminTab('inactive')">? Inactivos</button>
       </div>
       <div class="admin-search">
-        <span style="font-size:1rem;color:var(--muted)">📍</span>
+        <span style="font-size:1rem;color:var(--muted)">??</span>
         <input type="text" id="admin-search-input" placeholder="Buscar por nombre..." oninput="filterAdminUsers(this.value)">
         <button onclick="document.getElementById('admin-search-input').value='';filterAdminUsers('')" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:1rem;padding:0;line-height:1" title="Limpiar">&times;</button>
       </div>
@@ -709,26 +683,26 @@
   <!-- PANE: Noticias -->
   <div class="admin-section-pane" id="apane-noticias">
     <div class="admin-main">
-      <div style="font-weight:800;font-size:.95rem;margin-bottom:.75rem;color:var(--text)">📝 Publicar noticia</div>
+      <div style="font-weight:800;font-size:.95rem;margin-bottom:.75rem;color:var(--text)">?? Publicar noticia</div>
       <div class="admin-noticia-form">
         <select id="admin-noticia-cat">
-          <option value="general">📰 General</option>
-          <option value="partido">� Partido</option>
-          <option value="torneo">🏆 Torneo</option>
-          <option value="aviso">⚠️ Aviso</option>
+          <option value="general">?? General</option>
+          <option value="partido">? Partido</option>
+          <option value="torneo">?? Torneo</option>
+          <option value="aviso">?? Aviso</option>
         </select>
-        <input type="text" id="admin-noticia-title" class="form-input" placeholder="Título" style="margin-bottom:.5rem">
+        <input type="text" id="admin-noticia-title" class="form-input" placeholder="T�tulo" style="margin-bottom:.5rem">
         <textarea id="admin-noticia-body" placeholder="Escribe la noticia o aviso..."></textarea>
         <div style="margin:.5rem 0">
           <label style="font-size:.78rem;font-weight:700;color:var(--muted);display:block;margin-bottom:.3rem">Imagen (opcional)</label>
           <label class="file-pick-btn">
-            🖼️ Seleccionar imagen
+            ?? Seleccionar imagen
             <input type="file" id="admin-noticia-img-file" accept="image/*" onchange="previewNoticiaImg(this)" style="display:none">
           </label>
           <img id="admin-noticia-img-preview" class="img-preview" alt="">
           <input type="text" id="admin-noticia-img-url" class="form-input" placeholder="O pega una URL de imagen..." style="margin-top:.35rem;font-size:.81rem" oninput="previewNoticiaUrl(this.value)">
         </div>
-        <button class="btn btn-primary" style="width:100%;padding:.65rem" onclick="adminPublishNoticia()">📢 Publicar</button>
+        <button class="btn btn-primary" style="width:100%;padding:.65rem" onclick="adminPublishNoticia()">?? Publicar</button>
       </div>
       <div id="admin-noticias-list"></div>
     </div>
@@ -740,11 +714,22 @@
 -------------------------------------------------- -->
 <div id="screen-app">
 
+  <div id="install-banner">
+    <div style="display:flex;flex-direction:column;gap:1px">
+      <span style="font-weight:800;font-size:.9rem">?? Instalar PadelTracker</span>
+      <span style="font-size:.72rem;opacity:.85">A��dela a tu pantalla de inicio</span>
+    </div>
+    <div class="row" style="gap:.5rem;flex-shrink:0">
+      <button id="install-btn">Instalar</button>
+      <button id="install-dismiss" aria-label="Cerrar">?</button>
+    </div>
+  </div>
+
   <header class="header">
     <button class="avatar-btn" id="header-avatar" onclick="toggleAccountDropdown()">?</button>
     <div class="header-text">
       <div class="header-title">PadelTracker</div>
-      <div class="header-sub" id="header-user">—</div>
+      <div class="header-sub" id="header-user">�</div>
     </div>
 
   </header>
@@ -757,15 +742,15 @@
         <div class="account-sheet-email" id="acc-email-display"></div>
         <div class="account-sheet-since" id="acc-since"></div>
       </div>
-      <button class="account-sheet-btn edit-btn" onclick="closeAccountDropdown();openProfile()">✏️ Editar perfil</button>
-      <button class="account-sheet-btn" onclick="logoutUser()">🚪 Cerrar sesión</button>
+      <button class="account-sheet-btn edit-btn" onclick="closeAccountDropdown();openProfile()">?? Editar perfil</button>
+      <button class="account-sheet-btn" onclick="logoutUser()">?? Cerrar sesi�n</button>
     </div>
   </div>
 
   <!-- Profile modal -->
   <div id="profile-overlay" onclick="closeProfile()">
     <div class="profile-sheet" onclick="event.stopPropagation()">
-      <h3>✏️ Editar perfil</h3>
+      <h3>?? Editar perfil</h3>
       <div class="profile-field">
         <label>Nombre</label>
         <input type="text" id="prof-firstname" placeholder="Tu nombre" autocomplete="given-name">
@@ -775,7 +760,7 @@
         <input type="text" id="prof-lastname" placeholder="Tus apellidos" autocomplete="family-name">
       </div>
       <div class="profile-field">
-        <label>Teléfono</label>
+        <label>Tel�fono</label>
         <input type="tel" id="prof-phone" placeholder="+34 600 000 000" autocomplete="tel">
       </div>
       <div class="profile-field">
@@ -787,81 +772,86 @@
     </div>
   </div>
 
-  <!-- PWA Install Banner -->
-  <div id="install-banner" style="display:none">
-    <div style="display:flex;flex-direction:column;gap:1px">
-      <span style="font-weight:800;font-size:.9rem">📲 Instalar PadelTracker</span>
-      <span style="font-size:.72rem;opacity:.85">Añádela a tu pantalla de inicio</span>
-    </div>
-    <div class="row" style="gap:.5rem;flex-shrink:0">
-      <button id="install-btn">Instalar</button>
-      <button id="install-dismiss" aria-label="Cerrar">×</button>
-    </div>
-  </div>
-
-  <!-- Quick Add Guest Modal -->
-  <div id="quick-guest-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:999;align-items:center;justify-content:center" onclick="closeQuickGuestModal()">
-    <div style="background:#fff;border-radius:16px;padding:1.5rem;max-width:360px;width:90%;margin:0 1rem" onclick="event.stopPropagation()">
-      <h3 style="font-size:1.1rem;font-weight:800;margin-bottom:1rem">👤 Añadir invitado</h3>
-      <input type="text" id="quick-guest-name" placeholder="Nombre del jugador" style="width:100%;padding:.75rem;border:2px solid var(--border);border-radius:10px;font-size:.9375rem;margin-bottom:1rem;font-family:inherit">
-      <div style="display:flex;gap:.5rem">
-        <button class="btn btn-primary" style="flex:1" onclick="saveQuickGuest()">Añadir</button>
-        <button class="btn btn-outline" onclick="closeQuickGuestModal()">Cancelar</button>
-      </div>
-    </div>
-  </div>
-
   <main class="main">
 
     <!-- PARTIDO -->
     <div id="page-match" class="page active">
       <div class="card">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem">
+        <div class="card-title">?? Grupo</div>
+        <div class="form-group" style="margin-bottom:0">
+          <select id="match-group-sel" class="form-select" onchange="onMatchGroupChange(this.value)">
+            <option value="">� Selecciona un grupo �</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">?? Fecha del partido</div>
+        <div class="form-group" style="margin-bottom:0">
+          <input type="date" id="match-date" class="form-input">
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">👥 Selecciona los jugadores</div>
+        <div class="card-title" style="margin-bottom:.5rem">🟢 Pareja 1</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-bottom:.75rem">
           <div>
-            <div class="card-title" style="margin-bottom:.5rem">🏠 Grupo</div>
-            <select id="match-group-sel" class="form-select" onchange="onMatchGroupChange(this.value)">
-              <option value="">— Selecciona un grupo</option>
-            </select>
+            <label class="form-label">Jugador 1</label>
+            <select id="p1" class="form-select"><option value="">— Seleccionar —</option></select>
           </div>
           <div>
-            <div class="card-title" style="margin-bottom:.5rem">📅 Fecha</div>
-            <input type="date" id="match-date" class="form-input">
+            <label class="form-label">Jugador 2</label>
+            <select id="p2" class="form-select"><option value="">— Seleccionar —</option></select>
+          </div>
+        </div>
+        <div class="divider-text">VS</div>
+        <div class="card-title" style="margin-bottom:.5rem">🟠 Pareja 2</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-bottom:.75rem">
+          <div>
+            <label class="form-label">Jugador 3</label>
+            <select id="p3" class="form-select"><option value="">— Seleccionar —</option></select>
+          </div>
+          <div>
+            <label class="form-label">Jugador 4</label>
+            <select id="p4" class="form-select"><option value="">— Seleccionar —</option></select>
+          </div>
+        </div>
+        <div>
+          <div class="card-title">Vista previa</div>
+          <div class="pair-vs-grid">
+            <div class="pair-box">
+              <div class="pair-box-label">Pareja 1</div>
+              <div class="pair-player-name" id="prev-p1">—</div>
+              <div class="pair-player-name" id="prev-p2">—</div>
+            </div>
+            <div class="vs-circle">VS</div>
+            <div class="pair-box p2">
+              <div class="pair-box-label">Pareja 2</div>
+              <div class="pair-player-name" id="prev-p3">—</div>
+              <div class="pair-player-name" id="prev-p4">—</div>
+            </div>
           </div>
         </div>
       </div>
 
       <div class="card">
-        <div class="card-title">👥 Jugadores</div>
-        <div style="font-size:.8125rem;font-weight:700;color:var(--green);margin-bottom:.375rem">🟢 Pareja 1</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-bottom:.5rem">
-          <select id="p1" class="form-select" onchange="checkAddGuest('p1')"><option value="">— Jugador 1 —</option></select>
-          <select id="p2" class="form-select" onchange="checkAddGuest('p2')"><option value="">— Jugador 2 —</option></select>
-        </div>
-        <div class="divider-text" style="margin:.25rem 0">VS</div>
-        <div style="font-size:.8125rem;font-weight:700;color:var(--amber);margin-bottom:.375rem">🟠 Pareja 2</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem">
-          <select id="p3" class="form-select" onchange="checkAddGuest('p3')"><option value="">— Jugador 3 —</option></select>
-          <select id="p4" class="form-select" onchange="checkAddGuest('p4')"><option value="">— Jugador 4 —</option></select>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="card-title">� Marcador por sets</div>
+        <div class="card-title">?? Marcador por sets</div>
         <div id="set-scorer"></div>
         <div class="set-actions">
-          <button class="btn btn-outline" style="padding:.4rem .75rem;font-size:.8125rem" onclick="addSet()">＋ Añadir set</button>
-          <button class="btn btn-danger-ghost" style="padding:.4rem .75rem;font-size:.8125rem;display:none" id="btn-remove-set" onclick="removeSet()">− Quitar último</button>
+          <button class="btn btn-outline btn-sm" onclick="addSet()">+ A�adir set</button>
+          <button class="btn btn-danger-ghost btn-sm" id="btn-remove-set" onclick="removeSet()" style="display:none">- Quitar �ltimo</button>
         </div>
         <div id="result-box" class="result-box rb-empty">Anota el marcador para ver el resultado</div>
       </div>
 
-      <button class="btn btn-primary" onclick="saveMatch()">💾 Guardar partido</button>
+      <button class="btn btn-primary" onclick="saveMatch()">?? Guardar partido</button>
     </div>
 
-    <!-- CLASIFICACIÓN -->
+    <!-- CLASIFICACI�N -->
     <div id="page-ranking" class="page">
       <div class="card">
-        <div class="card-title">🏆 Clasificación individual</div>
+        <div class="card-title">?? Clasificaci�n individual</div>
         <div id="ranking-body"></div>
       </div>
     </div>
@@ -875,7 +865,7 @@
     <div id="page-news" class="page">
       <div class="news-header">
         <div>
-          <div class="news-header-title">📢 Noticias</div>
+          <div class="news-header-title">?? Noticias</div>
           <div class="news-header-sub">Novedades, partidos y torneos</div>
         </div>
       </div>
@@ -887,43 +877,43 @@
 
       <!-- Crear o unirse a un grupo (siempre arriba) -->
       <div class="card">
-        <div class="card-title">➕ Crear o unirse a un grupo</div>
+        <div class="card-title">? Crear o unirse a un grupo</div>
         <div class="row form-group mb-0">
           <input type="text" id="new-group-code" class="form-input flex1"
-                 placeholder="Nombre o código (ej: AMIGOS)" maxlength="20"
+                 placeholder="Nombre o c�digo (ej: AMIGOS)" maxlength="20"
                  style="text-transform:uppercase;letter-spacing:.06em;font-weight:700">
           <button class="btn btn-primary btn-sm" onclick="startGroupCreation()">Continuar</button>
         </div>
-        <div class="form-hint">Si el grupo ya existe te unirás. Si es nuevo, podrás configurarlo y añadir miembros.</div>
+        <div class="form-hint">Si el grupo ya existe te unir�s. Si es nuevo, podr�s configurarlo y a�adir miembros.</div>
       </div>
 
       <!-- Mis grupos -->
       <div class="card">
-        <div class="card-title">🏠 Mis grupos</div>
+        <div class="card-title">?? Mis grupos</div>
         <div id="my-groups-list"></div>
       </div>
 
-      <!-- Jugadores del grupo activo (se muestra dentro del card de grupo vía JS) -->
+      <!-- Jugadores del grupo activo (se muestra dentro del card de grupo v�a JS) -->
       <div class="card" id="players-card" style="display:none">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem">
-          <div class="card-title" style="margin-bottom:0">👤 <span id="players-card-title">Jugadores del grupo</span></div>
+          <div class="card-title" style="margin-bottom:0">?? <span id="players-card-title">Jugadores del grupo</span></div>
           <button onclick="toggleAddMemberPanel()" id="btn-add-member" style="background:var(--green);color:#fff;border:none;border-radius:50%;width:28px;height:28px;font-size:1.2rem;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center">+</button>
         </div>
         <div id="players-list"></div>
         <!-- Quick add panel -->
         <div id="add-member-panel" style="display:none;margin-top:.875rem;padding-top:.875rem;border-top:1px solid var(--border)">
           <div class="form-group">
-            <label class="form-label">Añadir usuario registrado</label>
+            <label class="form-label">A�adir usuario registrado</label>
             <div class="row" style="gap:.5rem">
-              <select id="quick-add-user-sel" class="form-select" style="flex:1"><option value="">— Seleccionar —</option></select>
-              <button class="btn btn-primary btn-sm" onclick="quickAddUser()">Añadir</button>
+              <select id="quick-add-user-sel" class="form-select" style="flex:1"><option value="">� Seleccionar �</option></select>
+              <button class="btn btn-primary btn-sm" onclick="quickAddUser()">A�adir</button>
             </div>
           </div>
           <div class="form-group" style="margin-bottom:0">
-            <label class="form-label">Añadir sin cuenta (invitado)</label>
+            <label class="form-label">A�adir sin cuenta (invitado)</label>
             <div class="row" style="gap:.5rem">
               <input type="text" id="quick-add-guest-name" class="form-input" placeholder="Nombre del invitado" style="flex:1">
-              <button class="btn btn-outline btn-sm" onclick="quickAddGuest()">Añadir</button>
+              <button class="btn btn-outline btn-sm" onclick="quickAddGuest()">A�adir</button>
             </div>
           </div>
         </div>
@@ -931,9 +921,9 @@
 
       <!-- Zona peligrosa -->
       <div class="card" id="danger-card" style="display:none">
-        <div class="card-title">⚠️ Zona peligrosa</div>
+        <div class="card-title">?? Zona peligrosa</div>
         <p style="font-size:.8125rem;color:var(--muted);margin-bottom:.875rem">Borra todos los partidos del grupo activo.</p>
-        <button class="btn btn-danger" onclick="resetMatches()">🗑️ Borrar todos los partidos</button>
+        <button class="btn btn-danger" onclick="resetMatches()">??? Borrar todos los partidos</button>
       </div>
 
       <p style="text-align:center;font-size:.68rem;color:var(--muted);margin-top:.5rem;padding-bottom:.5rem">
@@ -944,35 +934,35 @@
   </main>
 
   <nav class="tab-bar">
-    <button class="tab-btn active" id="tab-match"   onclick="switchTab('match')"><span class="ti">⚡</span>Partido</button>
-    <button class="tab-btn" id="tab-ranking"  onclick="switchTab('ranking')"><span class="ti">🏆</span>Clasificación</button>
-    <button class="tab-btn" id="tab-news"     onclick="switchTab('news')"><span class="ti">📢</span>Noticias</button>
-    <button class="tab-btn" id="tab-history"  onclick="switchTab('history')"><span class="ti">📋</span>Historial</button>
-    <button class="tab-btn" id="tab-settings" onclick="switchTab('settings')"><span class="ti">⚙️</span>Ajustes</button>
+    <button class="tab-btn active" id="tab-match"   onclick="switchTab('match')"><span class="ti">?</span>Partido</button>
+    <button class="tab-btn" id="tab-ranking"  onclick="switchTab('ranking')"><span class="ti">??</span>Clasificaci�n</button>
+    <button class="tab-btn" id="tab-news"     onclick="switchTab('news')"><span class="ti">??</span>Noticias</button>
+    <button class="tab-btn" id="tab-history"  onclick="switchTab('history')"><span class="ti">??</span>Historial</button>
+    <button class="tab-btn" id="tab-settings" onclick="switchTab('settings')"><span class="ti">??</span>Ajustes</button>
   </nav>
 </div>
 
 <!-- First Group Modal (shown when user has no groups) -->
 <div class="modal-overlay" id="first-group-modal">
   <div class="modal-sheet">
-    <div class="modal-title">🏠 Crea o únete a un grupo</div>
+    <div class="modal-title">?? Crea o �nete a un grupo</div>
     <p style="font-size:.875rem;color:var(--muted);margin-bottom:1.25rem;line-height:1.5">Necesitas un grupo para poder registrar partidos.</p>
     <div class="form-group">
-      <label class="form-label">Nombre o código del grupo</label>
+      <label class="form-label">Nombre o c�digo del grupo</label>
       <input type="text" id="first-group-input" class="form-input"
              placeholder="Ej: AMIGOS2026" maxlength="20"
              style="text-transform:uppercase;letter-spacing:.06em;font-weight:700;font-size:1.1rem">
-      <div class="form-hint">Si te han compartido un enlace el código ya estará aquí. Si no, pon el nombre que quieras.</div>
+      <div class="form-hint">Si te han compartido un enlace el c�digo ya estar� aqu�. Si no, pon el nombre que quieras.</div>
     </div>
-    <button class="btn btn-primary" onclick="fromFirstGroupModal()">Continuar →</button>
+    <button class="btn btn-primary" onclick="fromFirstGroupModal()">Continuar ?</button>
   </div>
 </div>
 
 <!-- Create Group Setup Modal -->
 <div class="modal-overlay" id="create-group-modal">
   <div class="modal-sheet" style="max-height:90vh;overflow-y:auto">
-    <button class="modal-close" onclick="closeCreateGroupModal()">✕</button>
-    <div class="modal-title">✨ Configurar nuevo grupo</div>
+    <button class="modal-close" onclick="closeCreateGroupModal()">?</button>
+    <div class="modal-title">? Configurar nuevo grupo</div>
 
     <div class="form-group">
       <label class="form-label">Nombre del grupo</label>
@@ -981,36 +971,36 @@
     </div>
 
     <div style="margin-bottom:1rem">
-      <div class="card-title" style="margin-bottom:.75rem">⚖️ Sistema de puntuación</div>
+      <div class="card-title" style="margin-bottom:.75rem">?? Sistema de puntuaci�n</div>
       <div class="settings-row">
-        <div><div class="settings-label">🏆 Victoria</div><div class="settings-desc">Puntos por ganar</div></div>
+        <div><div class="settings-label">?? Victoria</div><div class="settings-desc">Puntos por ganar</div></div>
         <input type="number" id="cg-win"  class="pts-input" min="0" max="99" value="3">
       </div>
       <div class="settings-row">
-        <div><div class="settings-label">🤝 Empate</div><div class="settings-desc">Puntos por empatar</div></div>
+        <div><div class="settings-label">?? Empate</div><div class="settings-desc">Puntos por empatar</div></div>
         <input type="number" id="cg-draw" class="pts-input" min="0" max="99" value="2">
       </div>
       <div class="settings-row">
-        <div><div class="settings-label">❌ Derrota</div><div class="settings-desc">Puntos por perder</div></div>
+        <div><div class="settings-label">? Derrota</div><div class="settings-desc">Puntos por perder</div></div>
         <input type="number" id="cg-loss" class="pts-input" min="0" max="99" value="1">
       </div>
     </div>
 
     <div style="margin-bottom:1.25rem">
-      <div class="card-title" style="margin-bottom:.5rem">👥 Añadir miembros de la app</div>
-      <div class="form-hint" style="margin-bottom:.75rem">Selecciona usuarios ya registrados para añadirlos al grupo:</div>
+      <div class="card-title" style="margin-bottom:.5rem">?? A�adir miembros de la app</div>
+      <div class="form-hint" style="margin-bottom:.75rem">Selecciona usuarios ya registrados para a�adirlos al grupo:</div>
       <div id="cg-members-list"></div>
     </div>
 
-    <button class="btn btn-primary" onclick="confirmCreateGroup()">✅ Crear grupo</button>
+    <button class="btn btn-primary" onclick="confirmCreateGroup()">? Crear grupo</button>
   </div>
 </div>
 
 <!-- Edit Group Modal -->
 <div class="modal-overlay" id="edit-group-modal" onclick="if(event.target===this)closeEditGroupModal()">
   <div class="modal-sheet" style="max-height:92vh;overflow-y:auto">
-    <button class="modal-close" onclick="closeEditGroupModal()">✕</button>
-    <div class="modal-title">✏️ Gestionar grupo</div>
+    <button class="modal-close" onclick="closeEditGroupModal()">?</button>
+    <div class="modal-title">?? Gestionar grupo</div>
     <input type="hidden" id="edit-group-code">
 
     <!-- Nombre -->
@@ -1020,65 +1010,65 @@
              style="text-transform:uppercase;letter-spacing:.06em;font-weight:700;font-size:1.05rem;background:#f8fafc" readonly>
     </div>
 
-    <!-- Puntuación -->
+    <!-- Puntuaci�n -->
     <div style="margin-bottom:1.25rem">
-      <div class="card-title" style="margin-bottom:.75rem">⚖️ Puntuación</div>
+      <div class="card-title" style="margin-bottom:.75rem">?? Puntuaci�n</div>
       <div class="settings-row">
-        <div><div class="settings-label">🏆 Victoria</div></div>
+        <div><div class="settings-label">?? Victoria</div></div>
         <input type="number" id="edit-pts-win"  class="pts-input" min="0" max="99">
       </div>
       <div class="settings-row">
-        <div><div class="settings-label">🤝 Empate</div></div>
+        <div><div class="settings-label">?? Empate</div></div>
         <input type="number" id="edit-pts-draw" class="pts-input" min="0" max="99">
       </div>
       <div class="settings-row">
-        <div><div class="settings-label">❌ Derrota</div></div>
+        <div><div class="settings-label">? Derrota</div></div>
         <input type="number" id="edit-pts-loss" class="pts-input" min="0" max="99">
       </div>
-      <button class="btn btn-primary btn-sm mt-2" onclick="saveEditGroup()">💾 Guardar puntuación</button>
+      <button class="btn btn-primary btn-sm mt-2" onclick="saveEditGroup()">?? Guardar puntuaci�n</button>
     </div>
 
     <!-- Miembros actuales -->
     <div style="margin-bottom:1.25rem">
-      <div class="card-title" style="margin-bottom:.6rem">👥 Miembros del grupo</div>
+      <div class="card-title" style="margin-bottom:.6rem">?? Miembros del grupo</div>
       <div id="edit-members-list"></div>
     </div>
 
-    <!-- Añadir usuario registrado -->
+    <!-- A�adir usuario registrado -->
     <div style="margin-bottom:1.25rem">
-      <div class="card-title" style="margin-bottom:.5rem">➕ Añadir usuario registrado</div>
+      <div class="card-title" style="margin-bottom:.5rem">? A�adir usuario registrado</div>
       <div class="row mb-0">
         <select id="edit-add-user-sel" class="form-input flex1" style="font-size:.85rem">
-          <option value="">— Selecciona un usuario</option>
+          <option value="">� Selecciona un usuario �</option>
         </select>
-        <button class="btn btn-primary btn-sm" onclick="editGroupAddUser()">Añadir</button>
+        <button class="btn btn-primary btn-sm" onclick="editGroupAddUser()">A�adir</button>
       </div>
     </div>
 
-    <!-- Añadir invitado -->
+    <!-- A�adir invitado -->
     <div style="margin-bottom:1.5rem">
-      <div class="card-title" style="margin-bottom:.5rem">👻 Añadir invitado (sin cuenta)</div>
+      <div class="card-title" style="margin-bottom:.5rem">?? A�adir invitado (sin cuenta)</div>
       <div class="row mb-0">
         <input type="text" id="edit-guest-name" class="form-input flex1" placeholder="Nombre del invitado" maxlength="40">
-        <button class="btn btn-primary btn-sm" onclick="editGroupAddGuest()">Añadir</button>
+        <button class="btn btn-primary btn-sm" onclick="editGroupAddGuest()">A�adir</button>
       </div>
-      <div class="form-hint">Aparece en partidos y clasificación, pero no tiene acceso a la app.</div>
+      <div class="form-hint">Aparece en partidos y clasificaci�n, pero no tiene acceso a la app.</div>
     </div>
 
     <!-- Compartir -->
     <div style="margin-bottom:1.5rem">
-      <div class="card-title" style="margin-bottom:.5rem">🔗 Invitar al grupo</div>
+      <div class="card-title" style="margin-bottom:.5rem">?? Invitar al grupo</div>
       <div class="row">
-        <button class="btn btn-ghost btn-sm flex1" onclick="copyGroupLink(document.getElementById('edit-group-code').value)">🔗 Copiar enlace</button>
-        <button class="btn btn-ghost btn-sm flex1" onclick="shareGroupWhatsApp(document.getElementById('edit-group-code').value)">💬 WhatsApp</button>
+        <button class="btn btn-ghost btn-sm flex1" onclick="copyGroupLink(document.getElementById('edit-group-code').value)">?? Copiar enlace</button>
+        <button class="btn btn-ghost btn-sm flex1" onclick="shareGroupWhatsApp(document.getElementById('edit-group-code').value)">?? WhatsApp</button>
       </div>
     </div>
 
     <!-- Zona peligrosa -->
     <div style="border-top:1px solid var(--border);padding-top:1rem">
-      <div class="card-title" style="margin-bottom:.4rem;color:var(--red)">⚠️ Zona peligrosa</div>
-      <p style="font-size:.78rem;color:var(--muted);margin-bottom:.75rem">Esto borrará el grupo y todos sus partidos permanentemente.</p>
-      <button class="btn btn-danger" style="width:100%" onclick="deleteGroup(document.getElementById('edit-group-code').value)">🗑️ Eliminar grupo</button>
+      <div class="card-title" style="margin-bottom:.4rem;color:var(--red)">?? Zona peligrosa</div>
+      <p style="font-size:.78rem;color:var(--muted);margin-bottom:.75rem">Esto borrar� el grupo y todos sus partidos permanentemente.</p>
+      <button class="btn btn-danger" style="width:100%" onclick="deleteGroup(document.getElementById('edit-group-code').value)">??? Eliminar grupo</button>
     </div>
   </div>
 </div>
@@ -1086,18 +1076,18 @@
 <!-- Group Switcher Modal -->
 <div class="modal-overlay" id="group-modal" onclick="handleModalClick(event)">
   <div class="modal-sheet">
-    <button class="modal-close" onclick="closeGroupModal()">✕</button>
-    <div class="modal-title">🔄 Cambiar de grupo</div>
+    <button class="modal-close" onclick="closeGroupModal()">?</button>
+    <div class="modal-title">?? Cambiar de grupo</div>
     <div id="group-modal-list"></div>
     <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border)">
-      <p style="font-size:.8rem;color:var(--muted);margin-bottom:.625rem">Nombre o código de grupo:</p>
+      <p style="font-size:.8rem;color:var(--muted);margin-bottom:.625rem">Nombre o c�digo de grupo:</p>
       <div class="row">
         <input type="text" id="modal-group-code" class="form-input flex1"
                placeholder="Ej: AMIGOS" maxlength="20"
                style="text-transform:uppercase;letter-spacing:.06em;font-weight:700">
         <button class="btn btn-primary btn-sm" onclick="joinGroupFromModal()">Continuar</button>
       </div>
-      <p class="form-hint" style="margin-top:.5rem">Si existe te unirás; si no, lo crearás.</p>
+      <p class="form-hint" style="margin-top:.5rem">Si existe te unir�s; si no, lo crear�s.</p>
     </div>
   </div>
 </div>
@@ -1137,14 +1127,13 @@ db.enablePersistence({ synchronizeTabs: true }).catch(() => {});
 // --------------------------------------------------
 const ADMIN_EMAIL = 'admin@admin.es';
 
-// -- EmailJS (notificación nuevo usuario) --------------
+// -- EmailJS (notificaci�n nuevo usuario) --------------
 const EMAILJS_PUBLIC_KEY  = 'FZ2LxvvBnzjVgMhRK';
 const EMAILJS_SERVICE_ID  = 'service_0a4twxt';
 const EMAILJS_TEMPLATE_ID = 'template_tbtz2tv';
 try { emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY }); } catch(e) {}
 const ADMIN_PW    = 'Admin1234!';
 
-let deferredInstall = null;
 let currentFbUser = null;
 let currentUser   = null;   // Firestore doc data + id
 let currentGroup  = null;   // group code string
@@ -1152,36 +1141,15 @@ let matchGroupCode = '';    // group selected in the match form
 let matchGroupPlayers = []; // players for the match form
 let ST = { players: [], matches: [], settings: { win:3, draw:2, loss:1 } };
 let sets = [{ p1:0, p2:0 }, { p1:0, p2:0 }];
+let deferredInstall = null;
 let adminTabActive = 'pending';
 let adminUsers = [];
 let adminGroups = [];
 
-// Service Worker registration with auto-update
+// Capture install prompt as early as possible (before auth)
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js').then(reg => {
-    console.log('SW registered');
-    
-    // Check for updates every 30 seconds
-    setInterval(() => reg.update(), 30000);
-    
-    // Listen for new service worker
-    reg.addEventListener('updatefound', () => {
-      const newWorker = reg.installing;
-      console.log('New SW found, installing...');
-      
-      newWorker.addEventListener('statechange', () => {
-        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-          console.log('New SW installed, reloading...');
-          // New version available, force reload
-          setTimeout(() => {
-            window.location.reload(true);
-          }, 1000);
-        }
-      });
-    });
-  }).catch(e => console.warn('SW error:', e));
+  navigator.serviceWorker.register('sw.js').catch(e => console.warn('SW', e));
 }
-
 window.addEventListener('beforeinstallprompt', e => {
   e.preventDefault();
   deferredInstall = e;
@@ -1228,7 +1196,7 @@ function showLogin() {
 }
 
 // --------------------------------------------------
-// AUTH STATE — main entry point
+// AUTH STATE � main entry point
 // --------------------------------------------------
 fbAuth.onAuthStateChanged(async fbUser => {
   if (!fbUser) {
@@ -1249,13 +1217,13 @@ fbAuth.onAuthStateChanged(async fbUser => {
     return;
   }
 
-  // Normal user — load or create Firestore doc (force server read to avoid stale cache)
+  // Normal user � load or create Firestore doc (force server read to avoid stale cache)
   try {
     const docRef = db.collection('users').doc(fbUser.uid);
     const snap   = await docRef.get({ source: 'server' }).catch(() => docRef.get());
 
     if (!snap.exists) {
-      // First sign-in — create pending user doc
+      // First sign-in � create pending user doc
       const fn = sessionStorage.getItem('pendingFirstname') || (fbUser.displayName || '').split(' ')[0] || fbUser.email.split('@')[0];
       const ln = sessionStorage.getItem('pendingLastname')  || (fbUser.displayName || '').split(' ').slice(1).join(' ') || '';
       sessionStorage.removeItem('pendingFirstname');
@@ -1297,7 +1265,7 @@ fbAuth.onAuthStateChanged(async fbUser => {
     hideLoading();
   } catch (err) {
     console.error('onAuthStateChanged error:', err);
-    toast('⚠️ Error al cargar datos: ' + err.message);
+    toast('?? Error al cargar datos: ' + err.message);
     hideLoading();
   }
 });
@@ -1311,7 +1279,7 @@ function tsToStr(obj) {
 }
 
 // --------------------------------------------------
-// REGISTER — Firebase Auth email/password
+// REGISTER � Firebase Auth email/password
 // --------------------------------------------------
 async function registerUser() {
   const firstname = document.getElementById('reg-firstname').value.trim();
@@ -1319,11 +1287,11 @@ async function registerUser() {
   const email     = document.getElementById('reg-email').value.trim().toLowerCase();
   const password  = document.getElementById('reg-password').value;
 
-  if (!firstname)           { toast('⚠️ Escribe tu nombre'); return; }
-  if (!lastname)            { toast('⚠️ Escribe tus apellidos'); return; }
-  if (!isValidEmail(email)) { toast('⚠️ Email no válido'); return; }
-  if (password.length < 6)  { toast('⚠️ Contraseña mínimo 6 caracteres'); return; }
-  if (email === ADMIN_EMAIL) { toast('⚠️ Email reservado'); return; }
+  if (!firstname)           { toast('?? Escribe tu nombre'); return; }
+  if (!lastname)            { toast('?? Escribe tus apellidos'); return; }
+  if (!isValidEmail(email)) { toast('?? Email no v�lido'); return; }
+  if (password.length < 6)  { toast('?? Contrase�a m�nimo 6 caracteres'); return; }
+  if (email === ADMIN_EMAIL) { toast('?? Email reservado'); return; }
 
   showLoading();
   try {
@@ -1336,18 +1304,18 @@ async function registerUser() {
     sessionStorage.removeItem('pendingFirstname');
     sessionStorage.removeItem('pendingLastname');
     hideLoading();
-    if (err.code === 'auth/email-already-in-use') toast('⚠️ Ya existe una cuenta con ese email');
-    else toast('⚠️ ' + err.message);
+    if (err.code === 'auth/email-already-in-use') toast('?? Ya existe una cuenta con ese email');
+    else toast('?? ' + err.message);
   }
 }
 
 // --------------------------------------------------
-// LOGIN — Firebase Auth email/password
+// LOGIN � Firebase Auth email/password
 // --------------------------------------------------
 async function loginUser() {
   const email    = document.getElementById('login-email').value.trim().toLowerCase();
   const password = document.getElementById('login-password').value;
-  if (!isValidEmail(email)) { toast('⚠️ Email no válido'); return; }
+  if (!isValidEmail(email)) { toast('?? Email no v�lido'); return; }
   showLoading();
   try {
     await fbAuth.signInWithEmailAndPassword(email, password);
@@ -1355,9 +1323,9 @@ async function loginUser() {
   } catch (err) {
     hideLoading();
     if (err.code === 'auth/wrong-password' || err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential') {
-      toast('⚠️ Email o contraseña incorrectos');
+      toast('?? Email o contrase�a incorrectos');
     } else {
-      toast('⚠️ ' + err.message);
+      toast('?? ' + err.message);
     }
   }
 }
@@ -1372,7 +1340,7 @@ function googleSignIn() {
   fbAuth.signInWithPopup(provider).catch(err => {
     hideLoading();
     if (err.code !== 'auth/popup-closed-by-user' && err.code !== 'auth/cancelled-popup-request') {
-      toast('⚠️ Google: ' + err.message);
+      toast('?? Google: ' + err.message);
     }
   });
 }
@@ -1403,8 +1371,8 @@ async function saveProfile() {
   const firstname = document.getElementById('prof-firstname').value.trim();
   const lastname  = document.getElementById('prof-lastname').value.trim();
   const phone     = document.getElementById('prof-phone').value.trim();
-  if (!firstname) { toast('⚠️ Escribe tu nombre'); return; }
-  if (!lastname)  { toast('⚠️ Escribe tus apellidos'); return; }
+  if (!firstname) { toast('?? Escribe tu nombre'); return; }
+  if (!lastname)  { toast('?? Escribe tus apellidos'); return; }
   showLoading();
   try {
     await db.collection('users').doc(currentFbUser.uid).update({ firstname, lastname, phone });
@@ -1417,7 +1385,7 @@ async function saveProfile() {
     document.getElementById('acc-name').textContent      = firstname + ' ' + lastname;
     closeProfile();
     toast('? Perfil actualizado');
-  } catch(err) { toast('⚠️ ' + err.message); }
+  } catch(err) { toast('?? ' + err.message); }
   hideLoading();
 }
 function logoutPending() { fbAuth.signOut(); }
@@ -1446,20 +1414,20 @@ async function checkActivation() {
       await fbAuth.signOut();
       toast('? Cuenta desactivada');
     } else {
-      toast('⏳ Aún pendiente de aprobación');
+      toast('? A�n pendiente de aprobaci�n');
     }
   } catch (err) {
-    toast('⚠️ ' + err.message);
+    toast('?? ' + err.message);
   }
   hideLoading();
 }
 
 // --------------------------------------------------
-// ADMIN LOGIN — signs in via Firebase Auth
+// ADMIN LOGIN � signs in via Firebase Auth
 // --------------------------------------------------
 async function adminLogin() {
   const pw = document.getElementById('admin-login-pw').value;
-  if (pw !== ADMIN_PW) { toast('⚠️ Contraseña incorrecta'); return; }
+  if (pw !== ADMIN_PW) { toast('?? Contrase�a incorrecta'); return; }
   showLoading();
   try {
     await fbAuth.signInWithEmailAndPassword(ADMIN_EMAIL, ADMIN_PW);
@@ -1468,10 +1436,10 @@ async function adminLogin() {
     if (err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential') {
       try {
         await fbAuth.createUserWithEmailAndPassword(ADMIN_EMAIL, ADMIN_PW);
-      } catch (e2) { hideLoading(); toast('⚠️ ' + e2.message); }
+      } catch (e2) { hideLoading(); toast('?? ' + e2.message); }
     } else {
       hideLoading();
-      toast('⚠️ ' + err.message);
+      toast('?? ' + err.message);
     }
   }
 }
@@ -1537,8 +1505,8 @@ function renderAdminUsers(users, groups) {
       <div class="ua-actions">
         ${u.status !== 'active'  ? `<button class="ua-btn activate"   onclick="adminActivate('${u.id}')">\u2705 Activar</button>` : ''}
         ${u.status === 'active'  ? `<button class="ua-btn deactivate" onclick="adminDeactivate('${u.id}')">\u23f8 Desactivar</button>` : ''}
-        <button class="ua-btn reset-pw" onclick="adminResetPw('${esc(u.email)}')">📧 Reset contrase\u00f1a</button>
-        <button class="ua-btn del"      onclick="adminDelete('${u.id}')">🗑️? Eliminar</button>
+        <button class="ua-btn reset-pw" onclick="adminResetPw('${esc(u.email)}')">?? Reset contrase\u00f1a</button>
+        <button class="ua-btn del"      onclick="adminDelete('${u.id}')">??? Eliminar</button>
       </div>
     </div>`;
   }).join('');
@@ -1576,12 +1544,12 @@ async function adminTogglePago(uid, paid) {
 }
 
 // --- NOTICIAS -----------------------------------------------
-const CAT_LABELS = { general:'📰 General', partido:'� Partido', torneo:'🏆 Torneo', aviso:'⚠️ Aviso' };
+const CAT_LABELS = { general:'?? General', partido:'? Partido', torneo:'?? Torneo', aviso:'?? Aviso' };
 
 function previewNoticiaImg(input) {
   const file = input.files[0];
   if (!file) return;
-  if (file.size > 800 * 1024) { toast('⚠️ Imagen muy grande (máx. 800 KB)'); input.value = ''; return; }
+  if (file.size > 800 * 1024) { toast('?? Imagen muy grande (m�x. 800 KB)'); input.value = ''; return; }
   const lbl = input.closest('.file-pick-btn');
   if (lbl) lbl.firstChild.textContent = '? ' + file.name;
   const reader = new FileReader();
@@ -1610,13 +1578,13 @@ async function renderNoticias() {
   try {
     const snap = await db.collection('noticias').orderBy('createdAt', 'desc').limit(30).get();
     if (snap.empty) {
-      el.innerHTML = '<div class="empty"><div class="empty-icon">⏳</div><div class="empty-title">Sin noticias</div><div class="empty-sub">El administrador publicará aquí los avisos, partidos y torneos.</div></div>';
+      el.innerHTML = '<div class="empty"><div class="empty-icon">??</div><div class="empty-title">Sin noticias</div><div class="empty-sub">El administrador publicar� aqu� los avisos, partidos y torneos.</div></div>';
       return;
     }
     el.innerHTML = snap.docs.map(d => {
       const n = d.data();
       const cat   = n.category || 'general';
-      const label = CAT_LABELS[cat] || '📰 General';
+      const label = CAT_LABELS[cat] || '?? General';
       const date  = n.createdAt ? fmtDate(n.createdAt.toDate ? n.createdAt.toDate().toISOString() : n.createdAt) : '';
       const imgHtml = n.image ? `<img class="news-card-img" src="${esc(n.image)}" alt="" loading="lazy" onerror="this.style.display='none'">` : '';
       return `<div class="news-card">
@@ -1626,7 +1594,7 @@ async function renderNoticias() {
           ${n.title ? `<div class="news-card-title">${esc(n.title)}</div>` : ''}
           <div class="news-card-text">${esc(n.body)}</div>
           <div class="news-card-footer">
-            <span class="news-card-date">📅 ${date}</span>
+            <span class="news-card-date">?? ${date}</span>
           </div>
         </div>
       </div>`;
@@ -1639,23 +1607,23 @@ async function renderAdminNoticias() {
   if (!el) return;
   try {
     const snap = await db.collection('noticias').orderBy('createdAt', 'desc').limit(20).get();
-    if (snap.empty) { el.innerHTML = '<p style="font-size:.8rem;color:var(--muted)">No hay noticias publicadas todavía.</p>'; return; }
+    if (snap.empty) { el.innerHTML = '<p style="font-size:.8rem;color:var(--muted)">No hay noticias publicadas todav�a.</p>'; return; }
     el.innerHTML = snap.docs.map(d => {
       const n = d.data();
       const cat   = n.category || 'general';
-      const label = CAT_LABELS[cat] || '📰 General';
+      const label = CAT_LABELS[cat] || '?? General';
       const date  = n.createdAt ? fmtDate(n.createdAt.toDate ? n.createdAt.toDate().toISOString() : n.createdAt) : '';
       const thumb = n.image
-        ? `<div class="admin-news-thumb"><img src="${esc(n.image)}" onerror="this.parentElement.textContent='📰'"></div>`
-        : `<div class="admin-news-thumb">${cat === 'partido' ? '�' : cat === 'torneo' ? '🏆' : cat === 'aviso' ? '⚠️' : '📰'}</div>`;
+        ? `<div class="admin-news-thumb"><img src="${esc(n.image)}" onerror="this.parentElement.textContent='??'"></div>`
+        : `<div class="admin-news-thumb">${cat === 'partido' ? '?' : cat === 'torneo' ? '??' : cat === 'aviso' ? '??' : '??'}</div>`;
       return `<div class="admin-news-card">
         ${thumb}
         <div class="admin-news-info">
           <div style="display:flex;align-items:center;gap:.4rem;margin-bottom:.2rem">
             <span class="news-cat ${cat}" style="font-size:.63rem;padding:.15rem .5rem">${label}</span>
-            <button class="noticia-del-btn" onclick="adminDeleteNoticia('${d.id}')" style="float:none;margin:0">🗑️</button>
+            <button class="noticia-del-btn" onclick="adminDeleteNoticia('${d.id}')" style="float:none;margin:0">???</button>
           </div>
-          <div class="admin-news-info-title">${n.title ? esc(n.title) : '<em style="color:var(--muted);font-style:normal">Sin título</em>'}</div>
+          <div class="admin-news-info-title">${n.title ? esc(n.title) : '<em style="color:var(--muted);font-style:normal">Sin t�tulo</em>'}</div>
           <div class="admin-news-info-meta">${date}</div>
         </div>
       </div>`;
@@ -1671,7 +1639,7 @@ async function adminPublishNoticia() {
   const prevSrc  = document.getElementById('admin-noticia-img-preview').src || '';
   // image = base64 (from file) or URL
   const image = urlField || (prevSrc.startsWith('data:') ? prevSrc : '');
-  if (!body) { toast('⚠️ Escribe algo antes de publicar'); return; }
+  if (!body) { toast('?? Escribe algo antes de publicar'); return; }
   showLoading();
   try {
     await db.collection('noticias').add({
@@ -1687,18 +1655,18 @@ async function adminPublishNoticia() {
     document.getElementById('admin-noticia-img-preview').src = '';
     toast('? Noticia publicada');
     renderAdminNoticias();
-  } catch(e) { toast('⚠️ ' + e.message); }
+  } catch(e) { toast('?? ' + e.message); }
   hideLoading();
 }
 
 async function adminDeleteNoticia(id) {
-  if (!confirm('¿Eliminar esta noticia?')) return;
+  if (!confirm('�Eliminar esta noticia?')) return;
   showLoading();
   try {
     await db.collection('noticias').doc(id).delete();
-    toast('⚠️? Noticia eliminada');
+    toast('??? Noticia eliminada');
     renderAdminNoticias();
-  } catch(e) { toast('⚠️ ' + e.message); }
+  } catch(e) { toast('?? ' + e.message); }
   hideLoading();
 }
 
@@ -1708,28 +1676,28 @@ async function adminActivate(uid) {
     await db.collection('users').doc(uid).update({ status: 'active', activatedAt: firebase.firestore.FieldValue.serverTimestamp() });
     toast('? Usuario activado');
     await renderAdmin();
-  } catch (err) { toast('⚠️ ' + err.message); }
+  } catch (err) { toast('?? ' + err.message); }
   hideLoading();
 }
 
 async function adminDeactivate(uid) {
-  if (!confirm('¿Desactivar este usuario?')) return;
+  if (!confirm('�Desactivar este usuario?')) return;
   showLoading();
   try {
     await db.collection('users').doc(uid).update({ status: 'inactive' });
     toast('? Usuario desactivado');
     await renderAdmin();
-  } catch (err) { toast('⚠️ ' + err.message); }
+  } catch (err) { toast('?? ' + err.message); }
   hideLoading();
 }
 
 async function adminResetPw(email) {
-  if (!confirm(`¿Enviar email de restablecimiento de contraseña a ${email}?`)) return;
+  if (!confirm(`�Enviar email de restablecimiento de contrase�a a ${email}?`)) return;
   showLoading();
   try {
     await fbAuth.sendPasswordResetEmail(email);
-    toast('⚠️ Email de recuperación enviado');
-  } catch (err) { toast('⚠️ ' + err.message); }
+    toast('?? Email de recuperaci�n enviado');
+  } catch (err) { toast('?? ' + err.message); }
   hideLoading();
 }
 
@@ -1738,7 +1706,7 @@ async function adminDelete(uid) {
   showLoading();
   try {
     await db.collection('users').doc(uid).delete();
-    toast('⚠️? Usuario eliminado');
+    toast('??? Usuario eliminado');
     await renderAdmin();
   } catch (err) { toast('\u26a0\ufe0f ' + err.message); }
   hideLoading();
@@ -1766,7 +1734,7 @@ async function adminRemoveGroup(uid, code) {
     await db.collection('users').doc(uid).update({
       groups: firebase.firestore.FieldValue.arrayRemove(code)
     });
-    toast('⚠️? Eliminado del grupo ' + code);
+    toast('??? Eliminado del grupo ' + code);
     await renderAdmin();
   } catch (err) { toast('\u26a0\ufe0f ' + err.message); }
   hideLoading();
@@ -1787,19 +1755,12 @@ async function startApp(user) {
     history.replaceState(null, '', window.location.pathname);
   }
 
-  // Refresh user from Firestore (force server read to get latest groups)
+  // Refresh user from Firestore (with fallback to passed-in data)
   try {
-    const freshSnap = await db.collection('users').doc(currentFbUser.uid).get({ source: 'server' });
-    if (freshSnap.exists) {
-      currentUser = tsToStr({ id: freshSnap.id, ...freshSnap.data() });
-    }
+    const freshSnap = await db.collection('users').doc(currentFbUser.uid).get({ source: 'server' }).catch(() => db.collection('users').doc(currentFbUser.uid).get());
+    if (freshSnap.exists) currentUser = tsToStr({ id: freshSnap.id, ...freshSnap.data() });
   } catch(err) {
-    console.warn('Could not refresh user doc from server:', err.message);
-    // Fallback to cache
-    const cacheSnap = await db.collection('users').doc(currentFbUser.uid).get();
-    if (cacheSnap.exists) {
-      currentUser = tsToStr({ id: cacheSnap.id, ...cacheSnap.data() });
-    }
+    console.warn('Could not refresh user doc:', err);
   }
 
   // Pick last used group or first group
@@ -1840,14 +1801,10 @@ async function startApp(user) {
   loadSettingsUI();
   renderRanking();
   renderHistory();
-  
-  await renderMyGroups();
-  
-  // Initialize match group selector on startup since match tab is active by default
-  await initMatchGroupSelector();
+  renderMyGroups();
 
   ['p1','p2','p3','p4'].forEach(id =>
-    document.getElementById(id).addEventListener('change', () => { renderSets(); })
+    document.getElementById(id).addEventListener('change', () => { updatePreview(); renderSets(); })
   );
 
   registerSW();
@@ -1963,7 +1920,7 @@ async function switchGroup(code) {
 async function startGroupCreation() {
   const inputEl = document.getElementById('new-group-code');
   const code = (inputEl ? inputEl.value.trim() : '').toUpperCase().replace(/[^A-Z0-9_\-]/g, '');
-  if (code.length < 2) { toast('⚠️ Mínimo 2 caracteres'); return; }
+  if (code.length < 2) { toast('?? M�nimo 2 caracteres'); return; }
   if ((currentUser.groups || []).includes(code)) { await switchGroup(code); return; }
   showLoading();
   try {
@@ -1978,7 +1935,7 @@ async function startGroupCreation() {
     }
   } catch (err) {
     hideLoading();
-    toast('⚠️ ' + err.message);
+    toast('?? ' + err.message);
   }
 }
 
@@ -1993,7 +1950,7 @@ async function openCreateGroupModal(code) {
     const others = snap.docs.map(d => ({ id: d.id, ...d.data() })).filter(u => u.id !== currentFbUser.uid && u.email !== ADMIN_EMAIL);
     const listEl = document.getElementById('cg-members-list');
     if (!others.length) {
-      listEl.innerHTML = '<div style="font-size:.8rem;color:var(--muted);padding:.5rem 0">No hay otros usuarios activos todavía.</div>';
+      listEl.innerHTML = '<div style="font-size:.8rem;color:var(--muted);padding:.5rem 0">No hay otros usuarios activos todav�a.</div>';
     } else {
       listEl.innerHTML = others.map(u => `
         <label style="display:flex;align-items:center;gap:.75rem;padding:.5rem 0;border-bottom:1px solid var(--border);cursor:pointer">
@@ -2021,7 +1978,7 @@ function closeCreateGroupModal() {
 
 async function confirmCreateGroup() {
   const code = document.getElementById('cg-name').value.trim().toUpperCase();
-  if (code.length < 2) { toast('⚠️ Nombre inválido'); return; }
+  if (code.length < 2) { toast('?? Nombre inv�lido'); return; }
 
   const settings = {
     win:  Math.max(0, parseInt(document.getElementById('cg-win').value)  || 0),
@@ -2061,14 +2018,14 @@ async function confirmCreateGroup() {
     toast('? Grupo "' + code + '" creado');
   } catch (err) {
     hideLoading();
-    toast('⚠️ ' + err.message);
+    toast('?? ' + err.message);
   }
 }
 
 async function fromFirstGroupModal() {
   const inp  = document.getElementById('first-group-input');
   const code = inp.value.trim().toUpperCase().replace(/[^A-Z0-9_\-]/g, '');
-  if (code.length < 2) { toast('⚠️ Mínimo 2 caracteres'); return; }
+  if (code.length < 2) { toast('?? M�nimo 2 caracteres'); return; }
   const fm = document.getElementById('first-group-modal');
   fm.classList.remove('open');
   fm.style.display = 'none';
@@ -2084,14 +2041,14 @@ async function fromFirstGroupModal() {
     }
   } catch (err) {
     hideLoading();
-    toast('⚠️ ' + err.message);
+    toast('?? ' + err.message);
   }
 }
 
 async function joinGroup(codeOverride) {
   const inputEl = document.getElementById('new-group-code');
   const code = (codeOverride || (inputEl && inputEl.value.trim()) || '').toString().toUpperCase().replace(/[^A-Z0-9_\-]/g, '');
-  if (code.length < 2) { toast('⚠️ Mínimo 2 caracteres'); return; }
+  if (code.length < 2) { toast('?? M�nimo 2 caracteres'); return; }
   if ((currentUser.groups || []).includes(code)) { await switchGroup(code); return; }
   showLoading();
   try {
@@ -2101,14 +2058,14 @@ async function joinGroup(codeOverride) {
     toast('? Unido al grupo ' + code);
   } catch (err) {
     hideLoading();
-    toast('⚠️ ' + err.message);
+    toast('?? ' + err.message);
   }
 }
 
 async function joinGroupFromModal() {
   const inputEl = document.getElementById('modal-group-code');
   const code = inputEl.value.trim().toUpperCase().replace(/[^A-Z0-9_\-]/g, '');
-  if (code.length < 2) { toast('⚠️ Mínimo 2 caracteres'); return; }
+  if (code.length < 2) { toast('?? M�nimo 2 caracteres'); return; }
   if ((currentUser.groups || []).includes(code)) { closeGroupModal(); await switchGroup(code); return; }
   closeGroupModal();
   showLoading();
@@ -2124,7 +2081,7 @@ async function joinGroupFromModal() {
     }
   } catch (err) {
     hideLoading();
-    toast('⚠️ ' + err.message);
+    toast('?? ' + err.message);
   }
 }
 async function leaveGroupDb(code) {
@@ -2156,7 +2113,7 @@ async function switchGroup(code) {
 async function startGroupCreation() {
   const inputEl = document.getElementById('new-group-code');
   const code = (inputEl ? inputEl.value.trim() : '').toUpperCase().replace(/[^A-Z0-9_\-]/g, '');
-  if (code.length < 2) { toast('⚠️ Mínimo 2 caracteres'); return; }
+  if (code.length < 2) { toast('?? M�nimo 2 caracteres'); return; }
   if ((currentUser.groups || []).includes(code)) { await switchGroup(code); return; }
   showLoading();
   try {
@@ -2171,7 +2128,7 @@ async function startGroupCreation() {
     }
   } catch (err) {
     hideLoading();
-    toast('⚠️ ' + err.message);
+    toast('?? ' + err.message);
   }
 }
 
@@ -2186,7 +2143,7 @@ async function openCreateGroupModal(code) {
     const others = snap.docs.map(d => ({ id: d.id, ...d.data() })).filter(u => u.id !== currentFbUser.uid && u.email !== ADMIN_EMAIL);
     const listEl = document.getElementById('cg-members-list');
     if (!others.length) {
-      listEl.innerHTML = '<div style="font-size:.8rem;color:var(--muted);padding:.5rem 0">No hay otros usuarios activos todavía.</div>';
+      listEl.innerHTML = '<div style="font-size:.8rem;color:var(--muted);padding:.5rem 0">No hay otros usuarios activos todav�a.</div>';
     } else {
       listEl.innerHTML = others.map(u => `
         <label style="display:flex;align-items:center;gap:.75rem;padding:.5rem 0;border-bottom:1px solid var(--border);cursor:pointer">
@@ -2214,7 +2171,7 @@ function closeCreateGroupModal() {
 
 async function confirmCreateGroup() {
   const code = document.getElementById('cg-name').value.trim().toUpperCase();
-  if (code.length < 2) { toast('⚠️ Nombre inválido'); return; }
+  if (code.length < 2) { toast('?? Nombre inv�lido'); return; }
 
   const settings = {
     win:  Math.max(0, parseInt(document.getElementById('cg-win').value)  || 0),
@@ -2254,14 +2211,14 @@ async function confirmCreateGroup() {
     toast('? Grupo "' + code + '" creado');
   } catch (err) {
     hideLoading();
-    toast('⚠️ ' + err.message);
+    toast('?? ' + err.message);
   }
 }
 
 async function fromFirstGroupModal() {
   const inp  = document.getElementById('first-group-input');
   const code = inp.value.trim().toUpperCase().replace(/[^A-Z0-9_\-]/g, '');
-  if (code.length < 2) { toast('⚠️ Mínimo 2 caracteres'); return; }
+  if (code.length < 2) { toast('?? M�nimo 2 caracteres'); return; }
   const fm = document.getElementById('first-group-modal');
   fm.classList.remove('open');
   fm.style.display = 'none';
@@ -2277,14 +2234,14 @@ async function fromFirstGroupModal() {
     }
   } catch (err) {
     hideLoading();
-    toast('⚠️ ' + err.message);
+    toast('?? ' + err.message);
   }
 }
 
 async function joinGroup(codeOverride) {
   const inputEl = document.getElementById('new-group-code');
   const code = (codeOverride || (inputEl && inputEl.value.trim()) || '').toString().toUpperCase().replace(/[^A-Z0-9_\-]/g, '');
-  if (code.length < 2) { toast('⚠️ Mínimo 2 caracteres'); return; }
+  if (code.length < 2) { toast('?? M�nimo 2 caracteres'); return; }
   if ((currentUser.groups || []).includes(code)) { await switchGroup(code); return; }
   showLoading();
   try {
@@ -2294,12 +2251,12 @@ async function joinGroup(codeOverride) {
     toast('? Unido al grupo ' + code);
   } catch (err) {
     hideLoading();
-    toast('⚠️ ' + err.message);
+    toast('?? ' + err.message);
   }
 }
 
 async function leaveGroup(code) {
-  if (!confirm(`¿Salir del grupo ${code}?`)) return;
+  if (!confirm(`�Salir del grupo ${code}?`)) return;
   showLoading();
   try {
     await leaveGroupDb(code);
@@ -2312,7 +2269,7 @@ async function leaveGroup(code) {
       refreshSelects(); renderSets(); renderPlayers(); loadSettingsUI(); renderRanking(); renderHistory(); renderMyGroups();
     }
     toast('Saliste del grupo ' + code);
-  } catch (err) { toast('⚠️ ' + err.message); }
+  } catch (err) { toast('?? ' + err.message); }
   hideLoading();
 }
 
@@ -2323,11 +2280,11 @@ function openGroupModal() {
   const list   = document.getElementById('group-modal-list');
   const groups = currentUser.groups || [];
   if (!groups.length) {
-    list.innerHTML = '<div style="font-size:.8125rem;color:var(--muted);padding:.75rem 0">No estás en ningún grupo todavía</div>';
+    list.innerHTML = '<div style="font-size:.8125rem;color:var(--muted);padding:.75rem 0">No est�s en ning�n grupo todav�a</div>';
   } else {
     list.innerHTML = groups.map(g => `
       <div class="group-option" onclick="selectGroupFromModal('${g}')">
-        <div class="group-option-icon${g === currentGroup ? ' active-g' : ''}">🏠</div>
+        <div class="group-option-icon${g === currentGroup ? ' active-g' : ''}">??</div>
         <div>
           <div class="group-option-name">${esc(g)}</div>
           <div class="group-option-sub">${g === currentGroup ? 'Grupo activo' : 'Cambiar a este grupo'}</div>
@@ -2351,11 +2308,11 @@ function handleModalClick(e) { if (e.target === document.getElementById('group-m
 function groupInviteUrl(code) { return 'https://padelapp-9e01c.web.app/?group=' + encodeURIComponent(code); }
 function copyGroupLink(code) {
   const url = groupInviteUrl(code);
-  navigator.clipboard.writeText(url).then(() => toast('🔗 Enlace copiado')).catch(() => { prompt('Copia este enlace:', url); });
+  navigator.clipboard.writeText(url).then(() => toast('?? Enlace copiado')).catch(() => { prompt('Copia este enlace:', url); });
 }
 function shareGroupWhatsApp(code) {
   const url  = groupInviteUrl(code);
-  const text = encodeURIComponent('Únete a nuestro grupo de pádel "' + code + '"! Entra aquí: ' + url);
+  const text = encodeURIComponent('��nete a nuestro grupo de p�del "' + code + '"! Entra aqu�: ' + url);
   window.open('https://wa.me/?text=' + text, '_blank');
 }
 
@@ -2376,7 +2333,7 @@ async function renderMyGroups() {
     document.getElementById('players-card-title').textContent = 'Jugadores del grupo: ' + currentGroup;
 
   if (!groups.length) {
-    el.innerHTML = '<div style="font-size:.8125rem;color:var(--muted);padding:.5rem 0">No estás en ningún grupo todavía</div>';
+    el.innerHTML = '<div style="font-size:.8125rem;color:var(--muted);padding:.5rem 0">No est�s en ning�n grupo todav�a</div>';
     return;
   }
 
@@ -2393,19 +2350,19 @@ async function renderMyGroups() {
     const isOwner = data.createdBy === currentFbUser.uid;
     return `<div class="group-card${isActive ? ' active-group' : ''}">
       <div class="group-card-top">
-        <div class="group-card-icon">${isActive ? '✅' : '📁'}</div>
+        <div class="group-card-icon">${isActive ? '?' : '??'}</div>
         <div style="flex:1;min-width:0">
           <div class="group-card-name">${esc(g)}</div>
-          <div class="group-card-meta">${isOwner ? '👑 Propietario' : '👤 Miembro'}</div>
+          <div class="group-card-meta">${isOwner ? '?? Propietario' : '?? Miembro'}</div>
         </div>
         ${isActive ? '<span class="group-card-active-badge">ACTIVO</span>' : ''}
       </div>
       <div class="group-card-actions">
         ${!isActive ? `<button class="btn btn-primary btn-sm" onclick="switchGroup('${g}')">Activar</button>` : ''}
-        <button class="btn btn-ghost btn-sm" onclick="copyGroupLink('${g}')">🔗 Invitar</button>
-        <button class="btn btn-ghost btn-sm" onclick="shareGroupWhatsApp('${g}')">💬 WhatsApp</button>
+        <button class="btn btn-ghost btn-sm" onclick="copyGroupLink('${g}')">?? Invitar</button>
+        <button class="btn btn-ghost btn-sm" onclick="shareGroupWhatsApp('${g}')">?? WhatsApp</button>
         ${isOwner
-          ? `<button class="btn btn-outline btn-sm" onclick="openEditGroupModal('${g}')">⏳ Editar</button>`
+          ? `<button class="btn btn-outline btn-sm" onclick="openEditGroupModal('${g}')">?? Editar</button>`
           : `<button class="btn btn-danger-ghost btn-sm" onclick="leaveGroup('${g}')">Salir</button>`
         }
       </div>
@@ -2451,7 +2408,7 @@ async function openEditGroupModal(code) {
             <div class="avatar${isMe ? ' me' : ''}" style="width:32px;height:32px;font-size:.8rem">${esc((u.firstname||'?')[0]).toUpperCase()}</div>
             <div>
               <div style="font-size:.85rem;font-weight:700">${esc(u.firstname)} ${esc(u.lastname)}</div>
-              <div style="font-size:.72rem;color:var(--muted)">${esc(u.email)}${isMe ? ' — tú' : ''}</div>
+              <div style="font-size:.72rem;color:var(--muted)">${esc(u.email)}${isMe ? ' � t�' : ''}</div>
             </div>
           </div>
           ${!isMe ? `<button onclick="editGroupRemoveMember('${u.id}','${code}')" style="background:none;border:none;color:#ef4444;cursor:pointer;font-size:1.1rem;padding:.2rem" title="Quitar del grupo">?</button>` : '<span style="font-size:.7rem;color:var(--muted)">propietario</span>'}
@@ -2459,7 +2416,7 @@ async function openEditGroupModal(code) {
       }),
       ...guests.map(g => `<div class="player-row" style="justify-content:space-between">
         <div style="display:flex;align-items:center;gap:.6rem">
-          <div class="avatar" style="width:32px;height:32px;font-size:.8rem;background:#94a3b8">👤</div>
+          <div class="avatar" style="width:32px;height:32px;font-size:.8rem;background:#94a3b8">??</div>
           <div>
             <div style="font-size:.85rem;font-weight:700">${esc(g.name)}</div>
             <div style="font-size:.72rem;color:var(--muted)">Sin cuenta</div>
@@ -2468,15 +2425,15 @@ async function openEditGroupModal(code) {
         <button onclick="editGroupRemoveGuest('${g.id}','${code}')" style="background:none;border:none;color:#ef4444;cursor:pointer;font-size:1.1rem;padding:.2rem" title="Quitar">?</button>
       </div>`)
     ];
-    membersEl.innerHTML = rows.length ? rows.join('') : '<div style="font-size:.8rem;color:var(--muted)">No hay miembros a-n.</div>';
+    membersEl.innerHTML = rows.length ? rows.join('') : '<div style="font-size:.8rem;color:var(--muted)">No hay miembros a�n.</div>';
 
     // Populate add-user selector
     const sel = document.getElementById('edit-add-user-sel');
     sel.innerHTML = nonMembers.length
-      ? `<option value="">— Selecciona un usuario -</option>` + nonMembers.map(u => `<option value="${u.id}">${esc(u.firstname)} ${esc(u.lastname)} (${esc(u.email)})</option>`).join('')
-      : `<option value="">— Todos los usuarios ya est-n -</option>`;
+      ? `<option value="">� Selecciona un usuario �</option>` + nonMembers.map(u => `<option value="${u.id}">${esc(u.firstname)} ${esc(u.lastname)} (${esc(u.email)})</option>`).join('')
+      : `<option value="">� Todos los usuarios ya est�n �</option>`;
 
-  } catch(e) { toast('⚠️ ' + e.message); hideLoading(); return; }
+  } catch(e) { toast('?? ' + e.message); hideLoading(); return; }
   hideLoading();
   document.getElementById('edit-group-modal').classList.add('open');
 }
@@ -2496,8 +2453,8 @@ async function saveEditGroup() {
   try {
     await db.collection('groups').doc(code).set({ settings }, { merge: true });
     if (code === currentGroup) { ST.settings = settings; renderRanking(); }
-    toast('? Puntuación guardada');
-  } catch(e) { toast('⚠️ ' + e.message); }
+    toast('? Puntuaci�n guardada');
+  } catch(e) { toast('?? ' + e.message); }
   hideLoading();
 }
 
@@ -2507,7 +2464,7 @@ async function toggleAddMemberPanel() {
   if (isOpen) { panel.style.display = 'none'; return; }
   // Populate user select with users NOT already in the group
   const sel = document.getElementById('quick-add-user-sel');
-  sel.innerHTML = '<option value="">— Cargando...</option>';
+  sel.innerHTML = '<option value="">� Cargando... �</option>';
   panel.style.display = 'block';
   try {
     const usersSnap = await db.collection('users').where('status', '==', 'active').get();
@@ -2515,29 +2472,29 @@ async function toggleAddMemberPanel() {
     const opts = usersSnap.docs
       .filter(d => d.data().email !== ADMIN_EMAIL && !existing.includes(d.id))
       .map(d => `<option value="${d.id}">${esc(d.data().firstname + ' ' + d.data().lastname)}</option>`);
-    sel.innerHTML = '<option value="">— Seleccionar —</option>' + opts.join('');
-  } catch(e) { sel.innerHTML = '<option value="">— Error -</option>'; }
+    sel.innerHTML = '<option value="">� Seleccionar �</option>' + opts.join('');
+  } catch(e) { sel.innerHTML = '<option value="">� Error �</option>'; }
 }
 
 async function quickAddUser() {
   const uid = document.getElementById('quick-add-user-sel').value;
-  if (!uid) { toast('⚠️ Selecciona un usuario'); return; }
-  if (!currentGroup) { toast('⚠️ No hay grupo activo'); return; }
+  if (!uid) { toast('?? Selecciona un usuario'); return; }
+  if (!currentGroup) { toast('?? No hay grupo activo'); return; }
   showLoading();
   try {
     await db.collection('users').doc(uid).update({ groups: firebase.firestore.FieldValue.arrayUnion(currentGroup) });
-    toast('? Usuario añadido al grupo');
+    toast('? Usuario a�adido al grupo');
     await loadGroupState(currentGroup);
     document.getElementById('add-member-panel').style.display = 'none';
     renderPlayers(); refreshSelects();
-  } catch(e) { toast('⚠️ ' + e.message); }
+  } catch(e) { toast('?? ' + e.message); }
   hideLoading();
 }
 
 async function quickAddGuest() {
   const name = document.getElementById('quick-add-guest-name').value.trim();
-  if (!name) { toast('⚠️ Escribe un nombre'); return; }
-  if (!currentGroup) { toast('⚠️ No hay grupo activo'); return; }
+  if (!name) { toast('?? Escribe un nombre'); return; }
+  if (!currentGroup) { toast('?? No hay grupo activo'); return; }
   const id = 'guest_' + Date.now();
   showLoading();
   try {
@@ -2548,9 +2505,9 @@ async function quickAddGuest() {
     ST.players.push({ id, name, guest: true });
     document.getElementById('quick-add-guest-name').value = '';
     document.getElementById('add-member-panel').style.display = 'none';
-    toast('? Invitado añadido');
+    toast('? Invitado a�adido');
     renderPlayers(); refreshSelects();
-  } catch(e) { toast('⚠️ ' + e.message); }
+  } catch(e) { toast('?? ' + e.message); }
   hideLoading();
 }
 
@@ -2558,33 +2515,33 @@ async function editGroupAddUser() {
   const code = document.getElementById('edit-group-code').value;
   const sel  = document.getElementById('edit-add-user-sel');
   const uid  = sel.value;
-  if (!uid) { toast('⚠️ Selecciona un usuario'); return; }
+  if (!uid) { toast('?? Selecciona un usuario'); return; }
   showLoading();
   try {
     await db.collection('users').doc(uid).update({ groups: firebase.firestore.FieldValue.arrayUnion(code) });
-    toast('? Usuario añadido al grupo');
+    toast('? Usuario a�adido al grupo');
     await openEditGroupModal(code); // reload modal
     if (code === currentGroup) await loadGroupState(code); renderPlayers();
-  } catch(e) { toast('⚠️ ' + e.message); }
+  } catch(e) { toast('?? ' + e.message); }
   hideLoading();
 }
 
 async function editGroupRemoveMember(uid, code) {
-  if (!confirm('¿Quitar a este usuario del grupo?')) return;
+  if (!confirm('�Quitar a este usuario del grupo?')) return;
   showLoading();
   try {
     await db.collection('users').doc(uid).update({ groups: firebase.firestore.FieldValue.arrayRemove(code) });
     toast('? Usuario eliminado del grupo');
     await openEditGroupModal(code);
     if (code === currentGroup) { await loadGroupState(code); renderPlayers(); refreshSelects(); }
-  } catch(e) { toast('⚠️ ' + e.message); }
+  } catch(e) { toast('?? ' + e.message); }
   hideLoading();
 }
 
 async function editGroupAddGuest() {
   const code = document.getElementById('edit-group-code').value;
   const name = document.getElementById('edit-guest-name').value.trim();
-  if (!name) { toast('⚠️ Escribe un nombre'); return; }
+  if (!name) { toast('?? Escribe un nombre'); return; }
   const id = 'guest_' + Date.now();
   showLoading();
   try {
@@ -2593,29 +2550,29 @@ async function editGroupAddGuest() {
     currentGuests.push({ id, name });
     await db.collection('groups').doc(code).set({ guests: currentGuests }, { merge: true });
     document.getElementById('edit-guest-name').value = '';
-    toast('? Invitado añadido');
+    toast('? Invitado a�adido');
     await openEditGroupModal(code);
     if (code === currentGroup) { ST.players.push({ id, name, guest: true }); refreshSelects(); renderPlayers(); }
-  } catch(e) { toast('⚠️ ' + e.message); }
+  } catch(e) { toast('?? ' + e.message); }
   hideLoading();
 }
 
 async function editGroupRemoveGuest(guestId, code) {
-  if (!confirm('¿Eliminar este jugador invitado?')) return;
+  if (!confirm('�Eliminar este jugador invitado?')) return;
   showLoading();
   try {
     const snap = await db.collection('groups').doc(code).get();
     const updatedGuests = ((snap.exists && snap.data().guests) ? snap.data().guests : []).filter(g => g.id !== guestId);
     await db.collection('groups').doc(code).set({ guests: updatedGuests }, { merge: true });
-    toast('⚠️? Invitado eliminado');
+    toast('??? Invitado eliminado');
     await openEditGroupModal(code);
     if (code === currentGroup) { ST.players = ST.players.filter(p => p.id !== guestId); refreshSelects(); renderPlayers(); }
-  } catch(e) { toast('⚠️ ' + e.message); }
+  } catch(e) { toast('?? ' + e.message); }
   hideLoading();
 }
 
 async function deleteGroup(code) {
-  if (!confirm(`¿Eliminar el grupo "${code}"? Se borraránn todos sus partidos. Esta acción no se puede deshacer.`)) return;
+  if (!confirm(`�Eliminar el grupo "${code}"? Se borrar�n todos sus partidos. Esta acci�n no se puede deshacer.`)) return;
   showLoading();
   try {
     // Delete all matches
@@ -2640,23 +2597,23 @@ async function deleteGroup(code) {
     closeEditGroupModal();
     renderMyGroups();
     renderPlayers();
-    toast('⚠️? Grupo eliminado');
-  } catch(e) { toast('⚠️ ' + e.message); }
+    toast('??? Grupo eliminado');
+  } catch(e) { toast('?? ' + e.message); }
   hideLoading();
 }
 
 // --------------------------------------------------
-// SAVE MATCH — Firestore subcollection
+// SAVE MATCH � Firestore subcollection
 // --------------------------------------------------
 async function saveMatch() {
-  if (!matchGroupCode) { toast('⚠️ Selecciona un grupo'); return; }
+  if (!matchGroupCode) { toast('?? Selecciona un grupo'); return; }
   const date = document.getElementById('match-date').value;
   const p1 = document.getElementById('p1').value, p2 = document.getElementById('p2').value;
   const p3 = document.getElementById('p3').value, p4 = document.getElementById('p4').value;
-  if (!date)               { toast('⚠️ Selecciona una fecha'); return; }
-  if (!p1||!p2||!p3||!p4) { toast('⚠️ Selecciona los 4 jugadores'); return; }
-  if (new Set([p1,p2,p3,p4]).size < 4) { toast('⚠️ Jugadores deben ser distintos'); return; }
-  if (!sets.some(s => s.p1 > 0 || s.p2 > 0)) { toast('⚠️ Introduce el marcador'); return; }
+  if (!date)               { toast('?? Selecciona una fecha'); return; }
+  if (!p1||!p2||!p3||!p4) { toast('?? Selecciona los 4 jugadores'); return; }
+  if (new Set([p1,p2,p3,p4]).size < 4) { toast('?? Jugadores deben ser distintos'); return; }
+  if (!sets.some(s => s.p1 > 0 || s.p2 > 0)) { toast('?? Introduce el marcador'); return; }
 
   const { result } = calcResult();
   const matchData = {
@@ -2677,105 +2634,29 @@ async function saveMatch() {
     resetMatchForm();
     toast('? Partido guardado en ' + matchGroupCode);
   } catch (err) {
-    toast('⚠️ Error guardando: ' + err.message);
+    toast('?? Error guardando: ' + err.message);
   }
   hideLoading();
 }
-
-// --------------------------------------------------
-// QUICK ADD GUEST FROM MATCH FORM
-// --------------------------------------------------
-let quickGuestTargetField = null;
-
-function openQuickGuestModal(fieldId) {
-  if (!matchGroupCode) { 
-    toast('⚠️ Selecciona un grupo primero'); 
-    return; 
-  }
-  quickGuestTargetField = fieldId;
-  document.getElementById('quick-guest-name').value = '';
-  document.getElementById('quick-guest-modal').style.display = 'flex';
-  setTimeout(() => document.getElementById('quick-guest-name').focus(), 100);
-}
-
-function closeQuickGuestModal() {
-  document.getElementById('quick-guest-modal').style.display = 'none';
-  quickGuestTargetField = null;
-}
-
-async function saveQuickGuest() {
-  const name = document.getElementById('quick-guest-name').value.trim();
-  if (!name) { 
-    toast('⚠️ Escribe un nombre'); 
-    return; 
-  }
-  if (!matchGroupCode) { 
-    toast('⚠️ No hay grupo seleccionado'); 
-    return; 
-  }
-
-  const id = 'guest_' + Date.now();
-  showLoading();
-  
-  try {
-    // Add guest to group
-    const snap = await db.collection('groups').doc(matchGroupCode).get();
-    const guests = (snap.exists && snap.data().guests) ? snap.data().guests : [];
-    guests.push({ id, name });
-    await db.collection('groups').doc(matchGroupCode).set({ guests }, { merge: true });
-    
-    // Add to match players list
-    matchGroupPlayers.push({ id, name, guest: true });
-    
-    // Add to current group if it's the same
-    if (matchGroupCode === currentGroup) {
-      ST.players.push({ id, name, guest: true });
-    }
-    
-    // Refresh selects and select the new player
-    refreshSelects();
-    if (quickGuestTargetField) {
-      document.getElementById(quickGuestTargetField).value = id;
-    }
-    
-    closeQuickGuestModal();
-    renderSets();
-    toast('✓ Invitado añadido');
-  } catch(e) {
-    toast('⚠️ Error: ' + e.message);
-  }
-  
-  hideLoading();
-}
-
-// Handle Enter key in modal
-document.addEventListener('DOMContentLoaded', () => {
-  const input = document.getElementById('quick-guest-name');
-  if (input) {
-    input.addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') saveQuickGuest();
-    });
-  }
-});
 
 function resetMatchForm() {
   sets = [{ p1:0, p2:0 }, { p1:0, p2:0 }];
   ['p1','p2','p3','p4'].forEach(id => document.getElementById(id).value = '');
-  setDefaultDate(); renderSets();
+  setDefaultDate(); updatePreview(); renderSets();
 }
 
 // --------------------------------------------------
 // DELETE MATCH
 // --------------------------------------------------
 async function deleteMatch(id) {
-  if (!confirm('¿Eliminar este partido?')) return;
+  if (!confirm('�Eliminar este partido?')) return;
   showLoading();
   try {
     await db.collection('groups').doc(currentGroup).collection('matches').doc(id).delete();
     ST.matches = ST.matches.filter(m => m.id !== id);
     renderHistory(); renderRanking();
-    toast('⚠️? Partido eliminado');
-  } catch (err) { toast('⚠️ ' + err.message); }
+    toast('??? Partido eliminado');
+  } catch (err) { toast('?? ' + err.message); }
   hideLoading();
 }
 
@@ -2787,11 +2668,11 @@ function loadSettingsUI() {}
 function renderGuests() {
   const el = document.getElementById('guests-list');
   const guests = ST.players.filter(p => p.guest);
-  if (!guests.length) { el.innerHTML = '<div style="font-size:.8rem;color:var(--muted)">Ningún invitado por ahora.</div>'; return; }
+  if (!guests.length) { el.innerHTML = '<div style="font-size:.8rem;color:var(--muted)">Ning�n invitado por ahora.</div>'; return; }
   el.innerHTML = guests.map(g => `
     <div class="player-row" style="justify-content:space-between">
       <div style="display:flex;align-items:center;gap:.6rem">
-        <div class="avatar" style="background:#94a3b8;font-size:.8rem">👤</div>
+        <div class="avatar" style="background:#94a3b8;font-size:.8rem">??</div>
         <span class="player-nm">${esc(g.name)}<span class="player-you">invitado</span></span>
       </div>
       <button onclick="removeGuestPlayer('${g.id}')" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:1.1rem;line-height:1;padding:.2rem">?</button>
@@ -2802,7 +2683,7 @@ async function addGuestPlayer() {
   if (!currentGroup) return;
   const inp = document.getElementById('guest-name-input');
   const name = inp.value.trim();
-  if (!name) { toast('⚠️ Escribe un nombre'); return; }
+  if (!name) { toast('?? Escribe un nombre'); return; }
   const id = 'guest_' + Date.now();
   const newGuest = { id, name };
   const currentGuests = ST.players.filter(p => p.guest).map(({ id, name }) => ({ id, name }));
@@ -2815,14 +2696,14 @@ async function addGuestPlayer() {
     renderGuests();
     refreshSelects();
     renderPlayers();
-    toast('? Invitado añadido');
-  } catch(e) { toast('⚠️ ' + e.message); }
+    toast('? Invitado a�adido');
+  } catch(e) { toast('?? ' + e.message); }
   hideLoading();
 }
 
 async function removeGuestPlayer(id) {
   if (!currentGroup) return;
-  if (!confirm('¿Eliminar este jugador invitado?')) return;
+  if (!confirm('�Eliminar este jugador invitado?')) return;
   const updatedGuests = ST.players.filter(p => p.guest && p.id !== id).map(({ id, name }) => ({ id, name }));
   showLoading();
   try {
@@ -2831,8 +2712,8 @@ async function removeGuestPlayer(id) {
     renderGuests();
     refreshSelects();
     renderPlayers();
-    toast('⚠️? Invitado eliminado');
-  } catch(e) { toast('⚠️ ' + e.message); }
+    toast('??? Invitado eliminado');
+  } catch(e) { toast('?? ' + e.message); }
   hideLoading();
 }
 
@@ -2846,13 +2727,13 @@ async function saveSettings() {
   try {
     await db.collection('groups').doc(currentGroup).set({ settings: ST.settings }, { merge: true });
     renderRanking();
-    toast('? Configuración guardada');
-  } catch (err) { toast('⚠️ ' + err.message); }
+    toast('? Configuraci�n guardada');
+  } catch (err) { toast('?? ' + err.message); }
   hideLoading();
 }
 
 async function resetMatches() {
-  if (!confirm('¿Borrar TODOS los partidos del grupo actual? Esta acción no se puede deshacer.')) return;
+  if (!confirm('�Borrar TODOS los partidos del grupo actual? Esta acci�n no se puede deshacer.')) return;
   showLoading();
   try {
     const snap = await db.collection('groups').doc(currentGroup).collection('matches').get();
@@ -2861,8 +2742,8 @@ async function resetMatches() {
     await batch.commit();
     ST.matches = [];
     renderHistory(); renderRanking();
-    toast('⚠️? Partidos eliminados');
-  } catch (err) { toast('⚠️ ' + err.message); }
+    toast('??? Partidos eliminados');
+  } catch (err) { toast('?? ' + err.message); }
   hideLoading();
 }
 
@@ -2887,13 +2768,13 @@ function switchTab(tab) {
 // PLAYERS
 // --------------------------------------------------
 function getPlayerName(id) {
-  if (!id) return '—';
+  if (!id) return '�';
   const p = ST.players.find(pl => pl.id === id);
-  return p ? p.name : '—';
+  return p ? p.name : '�';
 }
 function getPlayerShort(id) {
   const n = getPlayerName(id);
-  return (n === '—') ? '?' : n.split(' ')[0];
+  return (n === '�') ? '?' : n.split(' ')[0];
 }
 async function loadMatchPlayers(code) {
   if (!code) { matchGroupPlayers = []; return; }
@@ -2920,23 +2801,13 @@ async function initMatchGroupSelector() {
 
   // Always fetch fresh from Firestore to get latest groups
   try {
-    const snap = await db.collection('users').doc(currentFbUser.uid).get({ source: 'server' });
-    if (snap.exists && snap.data().groups) {
-      currentUser.groups = snap.data().groups;
-    }
-  } catch(e) { 
-    console.warn('initMatchGroupSelector fetch error, trying cache:', e);
-    try {
-      const snap = await db.collection('users').doc(currentFbUser.uid).get();
-      if (snap.exists && snap.data().groups) {
-        currentUser.groups = snap.data().groups;
-      }
-    } catch(e2) { console.error('Could not load groups:', e2); }
-  }
+    const snap = await db.collection('users').doc(currentFbUser.uid).get();
+    if (snap.exists && snap.data().groups) currentUser.groups = snap.data().groups;
+  } catch(e) { console.warn('initMatchGroupSelector fetch:', e); }
 
   const groups = currentUser.groups || [];
   if (!groups.length) {
-    sel.innerHTML = '<option value="">— Sin grupos -</option>';
+    sel.innerHTML = '<option value="">� Sin grupos �</option>';
     return;
   }
 
@@ -2944,7 +2815,7 @@ async function initMatchGroupSelector() {
   if (!matchGroupCode || !groups.includes(matchGroupCode))
     matchGroupCode = currentGroup || groups[0] || '';
 
-  sel.innerHTML = '<option value="">— Selecciona un grupo -</option>' +
+  sel.innerHTML = '<option value="">� Selecciona un grupo �</option>' +
     groups.map(g => `<option value="${esc(g)}"${g === matchGroupCode ? ' selected' : ''}>${esc(g)}</option>`).join('');
 
   // Only reload players if group changed or not loaded yet
@@ -2968,27 +2839,20 @@ async function onMatchGroupChange(code) {
 }
 
 function refreshSelects() {
-  const addNew = '<option value="__ADD_NEW__">➕ Añadir invitado...</option>';
   const opts = matchGroupPlayers.map(p => `<option value="${p.id}">${esc(p.name)}</option>`).join('');
   ['p1','p2','p3','p4'].forEach(id => {
     const sel = document.getElementById(id);
     const cur = sel.value;
-    sel.innerHTML = '<option value="">— Seleccionar —</option>' + addNew + opts;
+    sel.innerHTML = '<option value="">� Seleccionar �</option>' + opts;
     if (cur && matchGroupPlayers.find(p => p.id === cur)) sel.value = cur;
   });
+  updatePreview();
 }
-
-function checkAddGuest(fieldId) {
-  const sel = document.getElementById(fieldId);
-  if (sel.value === '__ADD_NEW__') {
-    sel.value = ''; // Reset selection
-    openQuickGuestModal(fieldId);
-  } else {
-    renderSets(); // Update sets when player changes
-  }
+function updatePreview() {
+  ['p1','p2','p3','p4'].forEach((id, i) => {
+    document.getElementById('prev-p' + (i+1)).textContent = getPlayerName(document.getElementById(id).value);
+  });
 }
-
-// updatePreview removed - preview UI eliminated for compact design
 function renderPlayers() {
   // Show/hide the players-card and danger-card based on currentGroup
   const playersCard = document.getElementById('players-card');
@@ -3004,13 +2868,13 @@ function renderPlayers() {
   if (!currentGroup) {
     return;
   }
-  if (!ST.players.length) { el.innerHTML = '<div class="empty" style="padding:1rem 0"><div class="empty-icon" style="font-size:2rem">👤</div><div class="empty-sub">Sin jugadores</div></div>'; return; }
+  if (!ST.players.length) { el.innerHTML = '<div class="empty" style="padding:1rem 0"><div class="empty-icon" style="font-size:2rem">??</div><div class="empty-sub">Sin jugadores</div></div>'; return; }
   el.innerHTML = ST.players.map(p => {
     const isMe = p.id === currentUser.id;
     if (p.guest) {
       return `<div class="player-row" style="justify-content:space-between">
         <div style="display:flex;align-items:center;gap:.6rem">
-          <div class="avatar" style="background:#94a3b8;font-size:.9rem">📲</div>
+          <div class="avatar" style="background:#94a3b8;font-size:.9rem">??</div>
           <span class="player-nm">${esc(p.name)}<span class="player-you">sin cuenta</span></span>
         </div>
         <button onclick="removeGuestPlayer('${p.id}')" style="background:none;border:none;color:#ef4444;cursor:pointer;font-size:1.1rem;line-height:1;padding:.2rem" title="Eliminar">?</button>
@@ -3018,7 +2882,7 @@ function renderPlayers() {
     }
     return `<div class="player-row">
       <div class="avatar${isMe ? ' me' : ''}">${esc(p.name[0]).toUpperCase()}</div>
-      <span class="player-nm">${esc(p.name)}${isMe ? '<span class="player-you">(tú)</span>' : ''}</span>
+      <span class="player-nm">${esc(p.name)}${isMe ? '<span class="player-you">(t�)</span>' : ''}</span>
     </div>`;
   }).join('');
 }
@@ -3051,15 +2915,15 @@ function renderSets() {
     return `<div class="set-item">
       <div class="set-item-label">Set ${i+1}</div>
       <div class="set-item-row">
-        <div style="display:flex;flex-direction:column;align-items:center;gap:.25rem">
-          <div style="font-size:.68rem;font-weight:700;color:var(--green)">${esc(lbl1)}</div>
-          <input class="set-score-input${p1w ? ' win-p1' : ''}" type="number" min="0" max="9" inputmode="numeric"
+        <div class="stepper-box${p1w ? ' win-p1' : ''}">
+          <div class="stepper-name">${esc(lbl1)}</div>
+          <input class="set-num-input" type="number" min="0" max="9" inputmode="numeric"
             value="${s.p1}" oninput="onSetInput(${i},'p1',this.value)">
         </div>
-        <div class="set-vs">-</div>
-        <div style="display:flex;flex-direction:column;align-items:center;gap:.25rem">
-          <div style="font-size:.68rem;font-weight:700;color:var(--amber)">${esc(lbl2)}</div>
-          <input class="set-score-input${p2w ? ' win-p2' : ''}" type="number" min="0" max="9" inputmode="numeric"
+        <div class="set-colon">:</div>
+        <div class="stepper-box${p2w ? ' win-p2' : ''}">
+          <div class="stepper-name">${esc(lbl2)}</div>
+          <input class="set-num-input" type="number" min="0" max="9" inputmode="numeric"
             value="${s.p2}" oninput="onSetInput(${i},'p2',this.value)">
         </div>
       </div>
@@ -3068,9 +2932,9 @@ function renderSets() {
   rbs.style.display = sets.length > 1 ? 'inline-block' : 'none';
   const hasScores = sets.some(s => s.p1 > 0 || s.p2 > 0);
   if (!hasScores) { rb.className = 'result-box rb-empty'; rb.textContent = 'Anota el marcador para ver el resultado'; return; }
-  if (result === 'pair1')      { rb.className = 'result-box rb-p1';   rb.innerHTML = `🏆 Gana <strong>${esc(lbl1)}</strong> &nbsp;(${w1}-${w2} en sets)`; }
-  else if (result === 'pair2') { rb.className = 'result-box rb-p2';   rb.innerHTML = `🏆 Gana <strong>${esc(lbl2)}</strong> &nbsp;(${w2}-${w1} en sets)`; }
-  else                         { rb.className = 'result-box rb-draw'; rb.innerHTML = `🤝 <strong>Empate</strong> &nbsp;(${w1}-${w2} en sets)`; }
+  if (result === 'pair1')      { rb.className = 'result-box rb-p1';   rb.innerHTML = `?? Gana <strong>${esc(lbl1)}</strong> &nbsp;(${w1}�${w2} en sets)`; }
+  else if (result === 'pair2') { rb.className = 'result-box rb-p2';   rb.innerHTML = `?? Gana <strong>${esc(lbl2)}</strong> &nbsp;(${w2}�${w1} en sets)`; }
+  else                         { rb.className = 'result-box rb-draw'; rb.innerHTML = `?? <strong>Empate</strong> &nbsp;(${w1}�${w2} en sets)`; }
 }
 function onSetInput(i, team, val) {
   const n = Math.max(0, Math.min(9, parseInt(val) || 0));
@@ -3086,11 +2950,11 @@ function onSetInput(i, team, val) {
   });
   const hasScores = sets.some(s => s.p1 > 0 || s.p2 > 0);
   if (!hasScores) { rb.className = 'result-box rb-empty'; rb.textContent = 'Anota el marcador para ver el resultado'; return; }
-  if (result === 'pair1')      { rb.className = 'result-box rb-p1';   rb.innerHTML = `🏆 Gana <strong>${esc(lbl1)}</strong> &nbsp;(${w1}-${w2} en sets)`; }
-  else if (result === 'pair2') { rb.className = 'result-box rb-p2';   rb.innerHTML = `🏆 Gana <strong>${esc(lbl2)}</strong> &nbsp;(${w2}-${w1} en sets)`; }
-  else                         { rb.className = 'result-box rb-draw'; rb.innerHTML = `🤝 <strong>Empate</strong> &nbsp;(${w1}-${w2} en sets)`; }
+  if (result === 'pair1')      { rb.className = 'result-box rb-p1';   rb.innerHTML = `?? Gana <strong>${esc(lbl1)}</strong> &nbsp;(${w1}�${w2} en sets)`; }
+  else if (result === 'pair2') { rb.className = 'result-box rb-p2';   rb.innerHTML = `?? Gana <strong>${esc(lbl2)}</strong> &nbsp;(${w2}�${w1} en sets)`; }
+  else                         { rb.className = 'result-box rb-draw'; rb.innerHTML = `?? <strong>Empate</strong> &nbsp;(${w1}�${w2} en sets)`; }
 }
-function addSet()  { if (sets.length >= 5) { toast('Máximo 5 sets'); return; } sets.push({ p1:0, p2:0 }); renderSets(); }
+function addSet()  { if (sets.length >= 5) { toast('M�ximo 5 sets'); return; } sets.push({ p1:0, p2:0 }); renderSets(); }
 function removeSet() { if (sets.length <= 1) return; sets.pop(); renderSets(); }
 function setsToString() { return sets.map(s => `${s.p1}-${s.p2}`).join(', '); }
 
@@ -3110,11 +2974,11 @@ function computeRanking() {
 }
 function renderRanking() {
   const data = computeRanking(), el = document.getElementById('ranking-body');
-  if (!data.length) { el.innerHTML = `<div class="empty"><div class="empty-icon">⏳</div><div class="empty-title">Sin datos</div><div class="empty-sub">Registra partidos para ver la clasificación</div></div>`; return; }
-  const medals = ['🥇','🥈','🥉'];
+  if (!data.length) { el.innerHTML = `<div class="empty"><div class="empty-icon">??</div><div class="empty-title">Sin datos</div><div class="empty-sub">Registra partidos para ver la clasificaci�n</div></div>`; return; }
+  const medals = ['??','??','??'];
   el.innerHTML = `<table class="rank-table"><thead><tr><th style="text-align:left">Jugador</th><th>PJ</th><th>G</th><th>E</th><th>D</th><th>Pts</th></tr></thead><tbody>
     ${data.map((s,i) => `<tr class="${i<3?'pos-'+(i+1):''}"><td><span class="pos-cell">${medals[i]||i+1}</span>&nbsp;<span class="name-cell">${esc(s.name)}</span></td><td>${s.pj}</td><td class="g-cell">${s.g}</td><td class="e-cell">${s.e}</td><td class="d-cell">${s.d}</td><td class="pts-cell">${s.pts}</td></tr>`).join('')}
-  </tbody></table><div class="pts-legend">Victoria +${ST.settings.win} · Empate +${ST.settings.draw} · Derrota +${ST.settings.loss} pts</div>`;
+  </tbody></table><div class="pts-legend">Victoria +${ST.settings.win} � Empate +${ST.settings.draw} � Derrota +${ST.settings.loss} pts</div>`;
 }
 
 // --------------------------------------------------
@@ -3123,23 +2987,23 @@ function renderRanking() {
 function pname(id) { const p = ST.players.find(pl => pl.id === id); return p ? p.name : 'Eliminado'; }
 function renderHistory() {
   const el = document.getElementById('history-body');
-  if (!ST.matches.length) { el.innerHTML = `<div class="empty"><div class="empty-icon">⏳</div><div class="empty-title">Sin partidos</div><div class="empty-sub">Guarda tu primer partido para verlo aquí</div></div>`; return; }
+  if (!ST.matches.length) { el.innerHTML = `<div class="empty"><div class="empty-icon">??</div><div class="empty-title">Sin partidos</div><div class="empty-sub">Guarda tu primer partido para verlo aqu�</div></div>`; return; }
   el.innerHTML = ST.matches.map(m => {
     const p1n = m.pair1.map(id => esc(pname(id))).join(' &amp; ');
     const p2n = m.pair2.map(id => esc(pname(id))).join(' &amp; ');
     const resClass   = m.result==='pair1'?'res-p1':m.result==='pair2'?'res-p2':'res-draw';
     const badgeClass = m.result==='pair1'?'badge-p1':m.result==='pair2'?'badge-p2':'badge-draw';
-    const resText    = m.result==='pair1'?`🏆 Ganó: ${p1n}`:m.result==='pair2'?`🏆 Ganó: ${p2n}`:'🤝 Empate';
+    const resText    = m.result==='pair1'?`?? Gan�: ${p1n}`:m.result==='pair2'?`?? Gan�: ${p2n}`:'?? Empate';
     let dateStr = '';
     if (m.date) { const [y,mo,d]=m.date.split('-'); dateStr = new Date(+y,+mo-1,+d).toLocaleDateString('es-ES',{day:'numeric',month:'short',year:'numeric'}); }
     let scoreHtml = '';
     if (m.sets && m.sets.length) {
-      const pills = m.sets.map(s => { const cls=s.p1>s.p2?'p1':s.p2>s.p1?'p2':''; return `<span class="set-pill ${cls}">${s.p1}-${s.p2}</span>`; }).join('');
+      const pills = m.sets.map(s => { const cls=s.p1>s.p2?'p1':s.p2>s.p1?'p2':''; return `<span class="set-pill ${cls}">${s.p1}�${s.p2}</span>`; }).join('');
       scoreHtml = `<div class="set-pills">${pills}</div>`;
     }
     return `<div class="match-card ${resClass}">
-      <button class="del-match-btn" onclick="deleteMatch('${m.id}')" aria-label="Eliminar">🗑️?</button>
-      <div class="match-date">📅 ${dateStr}</div>
+      <button class="del-match-btn" onclick="deleteMatch('${m.id}')" aria-label="Eliminar">???</button>
+      <div class="match-date">?? ${dateStr}</div>
       <div class="match-teams"><span class="match-pair p1">${p1n}</span><span class="match-vs">VS</span><span class="match-pair p2">${p2n}</span></div>
       ${scoreHtml}
       <div><span class="badge ${badgeClass}">${resText}</span></div>
@@ -3181,7 +3045,6 @@ function toast(msg, dur) {
 // PWA
 // --------------------------------------------------
 function registerSW() { /* already registered at startup */ }
-
 function setupPWAInstall() {
   document.getElementById('install-btn').addEventListener('click', async () => {
     if (!deferredInstall) return;
