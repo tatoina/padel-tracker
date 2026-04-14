@@ -1,5 +1,5 @@
 // PadelTracker Service Worker
-const VERSION = '2026.04.14.007'; // Cambia esto cada deploy
+const VERSION = '2026.04.14.008'; // Cambia esto cada deploy
 const CACHE = `padel-${VERSION}`;
 const ASSETS = [
   '/index.html',
