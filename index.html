@@ -855,6 +855,14 @@
         <div id="result-box" class="result-box rb-empty">Anota el marcador para ver el resultado</div>
       </div>
 
+      <div style="margin-bottom:1rem;padding:.75rem;background:var(--surface);border-radius:.5rem;border:1px solid var(--border)">
+        <label style="display:flex;align-items:center;gap:.5rem;cursor:pointer;user-select:none">
+          <input type="checkbox" id="match-pachanga" style="width:1.125rem;height:1.125rem;cursor:pointer">
+          <span style="font-size:.875rem;font-weight:600">🎉 PACHANGA</span>
+          <span style="font-size:.75rem;color:var(--muted);margin-left:auto">(no cuenta para clasificación)</span>
+        </label>
+      </div>
+
       <button class="btn btn-primary" onclick="saveMatch()">💾 Guardar partido</button>
     </div>
 
@@ -2659,9 +2667,11 @@ async function saveMatch() {
   if (!sets.some(s => s.p1 > 0 || s.p2 > 0)) { toast('⚠️ Introduce el marcador'); return; }
 
   const { result } = calcResult();
+  const isPachanga = document.getElementById('match-pachanga').checked;
   const matchData = {
     date, pair1: [p1, p2], pair2: [p3, p4], result,
     score: setsToString(), sets: JSON.parse(JSON.stringify(sets)),
+    isPachanga,
     createdAt: firebase.firestore.FieldValue.serverTimestamp(),
     createdBy: currentFbUser.uid
   };
@@ -2761,6 +2771,7 @@ document.addEventListener('DOMContentLoaded', () => {
 function resetMatchForm() {
   sets = [{ p1:0, p2:0 }, { p1:0, p2:0 }];
   ['p1','p2','p3','p4'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('match-pachanga').checked = false;
   setDefaultDate(); renderSets();
 }
 
@@ -3100,7 +3111,8 @@ function setsToString() { return sets.map(s => `${s.p1}-${s.p2}`).join(', '); }
 function computeRanking() {
   const map = {};
   ST.players.forEach(p => { map[p.id] = { id:p.id, name:p.name, pj:0, g:0, e:0, d:0, pts:0 }; });
-  ST.matches.forEach(({ pair1, pair2, result }) => {
+  ST.matches.forEach(({ pair1, pair2, result, isPachanga }) => {
+    if (isPachanga) return; // No contar pachangas en la clasificación
     [...pair1,...pair2].forEach(id => { if (map[id]) map[id].pj++; });
     if (result === 'pair1')      { pair1.forEach(id => { if (map[id]) { map[id].g++; map[id].pts += ST.settings.win;  } }); pair2.forEach(id => { if (map[id]) { map[id].d++; map[id].pts += ST.settings.loss; } }); }
     else if (result === 'pair2') { pair2.forEach(id => { if (map[id]) { map[id].g++; map[id].pts += ST.settings.win;  } }); pair1.forEach(id => { if (map[id]) { map[id].d++; map[id].pts += ST.settings.loss; } }); }
@@ -3137,9 +3149,10 @@ function renderHistory() {
       const pills = m.sets.map(s => { const cls=s.p1>s.p2?'p1':s.p2>s.p1?'p2':''; return `<span class="set-pill ${cls}">${s.p1}-${s.p2}</span>`; }).join('');
       scoreHtml = `<div class="set-pills">${pills}</div>`;
     }
+    const pachangaBadge = m.isPachanga ? '<span style="display:inline-block;background:#ff6600;color:white;font-size:.625rem;font-weight:700;padding:.125rem .375rem;border-radius:.25rem;margin-left:.375rem">🎉 PACHANGA</span>' : '';
     return `<div class="match-card ${resClass}">
       <button class="del-match-btn" onclick="deleteMatch('${m.id}')" aria-label="Eliminar">🗑️?</button>
-      <div class="match-date">📅 ${dateStr}</div>
+      <div class="match-date">📅 ${dateStr}${pachangaBadge}</div>
       <div class="match-teams"><span class="match-pair p1">${p1n}</span><span class="match-vs">VS</span><span class="match-pair p2">${p2n}</span></div>
       ${scoreHtml}
       <div><span class="badge ${badgeClass}">${resText}</span></div>
