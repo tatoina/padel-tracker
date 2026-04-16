@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Preview Emails - PadelTracker</title>
+  <style>
+    body { margin: 0; padding: 20px; background: #e2e8f0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+    h1 { text-align: center; color: #1e293b; margin-bottom: 8px; }
+    .subtitle { text-align: center; color: #64748b; margin-bottom: 32px; font-size: 14px; }
+    .label { text-align: center; font-size: 13px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: .08em; margin: 40px 0 12px; }
+    .label:first-of-type { margin-top: 0; }
+
+    /* Email card wrapper */
+    .email-card {
+      max-width: 480px;
+      margin: 0 auto 8px;
+      background: #fff;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 4px 24px rgba(0,0,0,.10);
+    }
+    .email-header {
+      background: linear-gradient(135deg, #16a34a, #15803d);
+      padding: 28px 32px;
+      text-align: center;
+    }
+    .email-header .icon { font-size: 2rem; }
+    .email-header .name { color: #fff; font-weight: 900; font-size: 1.3rem; margin-top: 8px; letter-spacing: -.02em; }
+    .email-body { padding: 32px; }
+    .email-footer {
+      background: #f8fafc;
+      border-top: 1px solid #e2e8f0;
+      padding: 16px 32px;
+      text-align: center;
+      font-size: 12px;
+      color: #94a3b8;
+    }
+    .email-footer a { color: #16a34a; text-decoration: none; }
+
+    /* Content styles */
+    .email-body h2 { margin: 0 0 16px; color: #1e293b; font-size: 1.2rem; }
+    .email-body h2.green { color: #16a34a; }
+    .email-body p { color: #475569; font-size: 14px; margin: 0 0 8px; }
+    .info-table { width: 100%; border-collapse: collapse; }
+    .info-table td { padding: 8px 0; }
+    .info-table td:first-child { color: #64748b; width: 90px; }
+    .info-table td:last-child { font-weight: 700; color: #1e293b; }
+    .badge-pending { background: #fef3c7; color: #d97706; padding: 3px 10px; border-radius: 20px; font-size: 13px; font-weight: 700; }
+    .btn-green {
+      display: inline-block;
+      margin-top: 20px;
+      background: #16a34a;
+      color: #fff;
+      text-decoration: none;
+      padding: 13px 32px;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 15px;
+    }
+    .btn-dark {
+      display: inline-block;
+      margin-top: 20px;
+      background: #1e293b;
+      color: #fff;
+      text-decoration: none;
+      padding: 13px 32px;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 15px;
+    }
+    .news-img { width: 100%; border-radius: 10px; margin-bottom: 16px; display: block; }
+    .small-link { margin: 16px 0 0; font-size: 12px; color: #94a3b8; }
+    .small-link a { color: #16a34a; }
+  </style>
+</head>
+<body>
+
+<h1>🎾 Preview de Emails</h1>
+<p class="subtitle">Así se ven los 4 emails que envía PadelTracker automáticamente</p>
+
+<!-- ── EMAIL 1: Nuevo usuario (al admin) ─────────────────────────── -->
+<div class="label">📬 Email 1 — Nuevo usuario pendiente (recibe el admin)</div>
+<div class="email-card">
+  <div class="email-header">
+    <div class="icon">🎾</div>
+    <div class="name">PadelTracker</div>
+  </div>
+  <div class="email-body">
+    <h2>👤 Nuevo usuario pendiente</h2>
+    <table class="info-table">
+      <tr><td>Nombre</td><td>Carlos García López</td></tr>
+      <tr><td>Email</td><td>carlos.garcia@gmail.com</td></tr>
+      <tr><td>Fecha</td><td>15/04/2026, 10:32:14</td></tr>
+      <tr><td>Estado</td><td><span class="badge-pending">⏳ Pendiente</span></td></tr>
+    </table>
+    <p style="margin-top:20px">Entra al panel de administración para activar la cuenta.</p>
+    <a href="#" class="btn-green">Ir al panel de admin →</a>
+  </div>
+  <div class="email-footer">
+    PadelTracker &middot; <a href="#">padelapp-9e01c.web.app</a>
+  </div>
+</div>
+
+<!-- ── EMAIL 2: Activación (al usuario) ──────────────────────────── -->
+<div class="label">✅ Email 2 — Cuenta activada (recibe el usuario)</div>
+<div class="email-card">
+  <div class="email-header">
+    <div class="icon">🎾</div>
+    <div class="name">PadelTracker</div>
+  </div>
+  <div class="email-body">
+    <h2 class="green">¡Tu cuenta está activa! 🎉</h2>
+    <p>Hola <strong>Carlos</strong>,</p>
+    <p>Tu cuenta en <strong>PadelTracker</strong> ha sido <strong>activada</strong>. Ya puedes entrar y empezar a registrar y ver tus partidos.</p>
+    <a href="#" class="btn-green">Entrar a la app →</a>
+  </div>
+  <div class="email-footer">
+    PadelTracker &middot; <a href="#">padelapp-9e01c.web.app</a>
+  </div>
+</div>
+
+<!-- ── EMAIL 3: Noticia ───────────────────────────────────────────── -->
+<div class="label">📢 Email 3 — Noticia / Aviso (reciben los usuarios del grupo)</div>
+<div class="email-card">
+  <div class="email-header">
+    <div class="icon">🎾</div>
+    <div class="name">PadelTracker</div>
+  </div>
+  <div class="email-body">
+    <img src="https://images.unsplash.com/photo-1554068865-24cecd4e34b8?w=480&q=80" alt="Padel" class="news-img">
+    <h2>🏆 Torneo de Primavera – ¡Apúntate!</h2>
+    <p>Este sábado 19 de abril organizamos el torneo de primavera en las pistas del club. Plazas limitadas, apúntate cuanto antes en la app o escríbenos al grupo de WhatsApp.</p>
+    <p>¡Nos vemos en la pista! 🎾</p>
+    <a href="#" class="btn-green">Ver en la app →</a>
+  </div>
+  <div class="email-footer">
+    PadelTracker &middot; <a href="#">padelapp-9e01c.web.app</a>
+  </div>
+</div>
+
+<!-- ── EMAIL 3b: Noticia sin imagen ──────────────────────────────── -->
+<div class="label">📢 Email 3b — Noticia sin imagen</div>
+<div class="email-card">
+  <div class="email-header">
+    <div class="icon">🎾</div>
+    <div class="name">PadelTracker</div>
+  </div>
+  <div class="email-body">
+    <h2>📅 Cambio de horario pistas</h2>
+    <p>A partir del lunes las pistas estarán disponibles de 8:00 a 22:00. Recordad reservar con antelación.</p>
+    <a href="#" class="btn-green">Ver en la app →</a>
+  </div>
+  <div class="email-footer">
+    PadelTracker &middot; <a href="#">padelapp-9e01c.web.app</a>
+  </div>
+</div>
+
+<!-- ── EMAIL 4: Invitación ────────────────────────────────────────── -->
+<div class="label">✉️ Email 4 — Invitación a grupo</div>
+<div class="email-card">
+  <div class="email-header">
+    <div class="icon">🎾</div>
+    <div class="name">PadelTracker</div>
+  </div>
+  <div class="email-body">
+    <h2>🎾 Te han invitado a un grupo</h2>
+    <p>Hola <strong>María</strong>,</p>
+    <p>Has sido invitado/a al grupo <strong>MUNIAIN</strong> en PadelTracker. Haz clic para unirte:</p>
+    <a href="#" class="btn-green">Unirme al grupo →</a>
+    <p class="small-link">O copia este enlace:<br><a href="#">https://padelapp-9e01c.web.app/?g=MUNIAIN</a></p>
+  </div>
+  <div class="email-footer">
+    PadelTracker &middot; <a href="#">padelapp-9e01c.web.app</a>
+  </div>
+</div>
+
+<br><br>
+
+</body>
+</html>

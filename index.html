@@ -14,7 +14,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-functions-compat.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
@@ -355,18 +355,31 @@
     .match-card.res-p1   { border-left-color: var(--green); }
     .match-card.res-draw { border-left-color: var(--indigo); }
     .match-card.res-p2   { border-left-color: var(--amber); }
-    .match-date  { font-size: 0.72rem; color: var(--muted); margin-bottom: 0.375rem; }
-    .match-teams { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
-    .match-pair  { font-size: 0.875rem; font-weight: 700; }
-    .match-pair.p1 { color: var(--green-dark); }
-    .match-pair.p2 { color: #92400e; }
-    .match-vs { font-size: 0.7rem; font-weight: 800; color: var(--muted); }
-    .del-match-btn { position: absolute; top: 0.625rem; right: 0.625rem; background: none; border: none; font-size: 1rem; cursor: pointer; color: var(--muted); opacity: 0.55; padding: 0.25rem 0.3rem; -webkit-tap-highlight-color: transparent; }
-    .del-match-btn:active { opacity: 1; }
-    .badge { display: inline-block; font-size: 0.72rem; font-weight: 700; padding: 0.2rem 0.55rem; border-radius: 20px; margin-top: 0.4rem; }
+    .match-date  { font-size: 0.72rem; color: var(--muted); }
+    .match-card-actions { position: absolute; top: 0.5rem; right: 0.5rem; display: flex; gap: 0.15rem; }
+    .del-match-btn, .edit-match-btn { background: none; border: none; font-size: 1rem; cursor: pointer; color: var(--muted); opacity: 0.5; padding: 0.2rem 0.3rem; -webkit-tap-highlight-color: transparent; line-height: 1; }
+    .del-match-btn:active, .edit-match-btn:active { opacity: 1; }
+    .badge { display: inline-block; font-size: 0.72rem; font-weight: 700; padding: 0.2rem 0.55rem; border-radius: 20px; }
     .badge-p1   { background: var(--green-light);  color: var(--green-dark); }
     .badge-draw { background: var(--indigo-light); color: #3730a3; }
     .badge-p2   { background: var(--amber-light);  color: #92400e; }
+    /* Tennis scoreboard */
+    .mc-meta { display: flex; align-items: center; gap: .5rem; margin-bottom: .6rem; flex-wrap: wrap; }
+    .mc-scoreboard { width: 100%; }
+    .mc-row { display: flex; align-items: center; gap: .5rem; padding: .38rem 0; }
+    .mc-row + .mc-row { border-top: 1px solid var(--border); }
+    .mc-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+    .mc-dot-p1 { background: var(--green); }
+    .mc-dot-p2 { background: var(--amber); }
+    .mc-name { flex: 1; font-size: .875rem; font-weight: 700; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .mc-row-p1 .mc-name { color: var(--green-dark); }
+    .mc-row-p2 .mc-name { color: #92400e; }
+    .mc-scores { display: flex; gap: .3rem; flex-shrink: 0; }
+    .mc-s { width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: .88rem; font-weight: 800; background: var(--bg); border: 1.5px solid var(--border); color: var(--muted); }
+    .mc-s.hi-p1 { background: var(--green-light); border-color: rgba(22,163,74,.35); color: var(--green-dark); }
+    .mc-s.hi-p2 { background: var(--amber-light); border-color: rgba(217,119,6,.35); color: #92400e; }
+    .mc-trophy { width: 22px; text-align: center; font-size: .85rem; flex-shrink: 0; }
+    .mc-score-txt { font-size: .72rem; color: var(--muted); margin-top: .35rem; }
 
     /* --- PLAYERS LIST ------------------------------ */
     .player-row { display: flex; align-items: center; padding: 0.6rem 0; border-bottom: 1px solid var(--border); }
@@ -427,23 +440,54 @@
     .status-active   { background: var(--green-light);  color: var(--green-dark); }
     .status-inactive { background: var(--red-light);    color: #b91c1c; }
 
-    .user-admin-card { background: var(--card); border-radius: 12px; padding: 0.875rem; margin-bottom: 0.625rem; box-shadow: var(--shadow); }
-    .ua-top { display: flex; align-items: flex-start; gap: 0.75rem; margin-bottom: 0.625rem; }
-    .ua-avatar { width: 42px; height: 42px; border-radius: 50%; background: var(--green); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1rem; flex-shrink: 0; }
-    .ua-name   { font-weight: 700; font-size: 0.9375rem; }
-    .ua-email  { font-size: 0.75rem; color: var(--muted); }
-    .ua-meta   { font-size: 0.72rem; color: var(--muted); margin-top: 0.25rem; }
-    .ua-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
-    .ua-btn { padding: 0.4rem 0.75rem; border-radius: 8px; border: 1.5px solid var(--border); background: #fff; font-size: 0.8rem; font-weight: 700; cursor: pointer; font-family: inherit; -webkit-tap-highlight-color: transparent; transition: all .15s; }
-    .ua-btn:active { transform: scale(0.95); }
-    .ua-btn.activate  { border-color: var(--green); color: var(--green); }
-    .ua-btn.deactivate{ border-color: var(--amber); color: var(--amber); }
-    .ua-btn.reset-pw  { border-color: var(--indigo); color: var(--indigo); }
-    .ua-btn.del       { border-color: var(--red); color: var(--red); }
-    .ua-groups { display: flex; flex-wrap: wrap; align-items: center; gap: 0.375rem; margin: 0.5rem 0 0.375rem; }
+    /* Compact user row styles */
+    .ua-list { display: flex; flex-direction: column; gap: 0; background: var(--card); border-radius: 14px; box-shadow: var(--shadow); overflow: hidden; }
+    .ua-row { display: flex; align-items: center; gap: 0.625rem; padding: 0.6rem 0.75rem; border-bottom: 1px solid var(--border); cursor: pointer; transition: background .12s; -webkit-tap-highlight-color: transparent; }
+    .ua-row:last-child { border-bottom: none; }
+    .ua-row:hover { background: #f8fafc; }
+    .ua-row.expanded { background: #f0fdf4; }
+    .ua-avatar { width: 34px; height: 34px; border-radius: 50%; background: var(--green); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.875rem; flex-shrink: 0; }
+    .ua-avatar.pending { background: var(--amber); }
+    .ua-avatar.inactive { background: #94a3b8; }
+    .ua-row-info { flex: 1; min-width: 0; }
+    .ua-name   { font-weight: 700; font-size: 0.875rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .ua-email  { font-size: 0.72rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .ua-row-right { display: flex; align-items: center; gap: 0.375rem; flex-shrink: 0; }
+    .ua-icon-btn { width: 30px; height: 30px; border-radius: 8px; border: 1.5px solid var(--border); background: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.875rem; transition: all .15s; -webkit-tap-highlight-color: transparent; }
+    .ua-icon-btn:active { transform: scale(0.92); }
+    .ua-icon-btn.edit-btn  { border-color: #6366f1; color: #6366f1; }
+    .ua-icon-btn.activate  { border-color: var(--green); color: var(--green); }
+    .ua-icon-btn.deactivate{ border-color: var(--amber); color: var(--amber); }
+    .ua-icon-btn.reset-pw  { border-color: #0ea5e9; color: #0ea5e9; }
+    .ua-icon-btn.del       { border-color: var(--red); color: var(--red); }
+    .ua-chevron { font-size: 0.7rem; color: var(--muted); transition: transform .2s; flex-shrink: 0; }
+    .ua-row.expanded .ua-chevron { transform: rotate(90deg); }
+    /* Expandable detail */
+    .ua-detail { display: none; padding: 0.625rem 0.75rem 0.75rem 0.75rem; background: #f8fafc; border-bottom: 1px solid var(--border); }
+    .ua-detail:last-child { border-bottom: none; }
+    .ua-detail.open { display: block; }
+    .ua-meta   { font-size: 0.72rem; color: var(--muted); margin-bottom: 0.375rem; }
+    .ua-groups { display: flex; flex-wrap: wrap; align-items: center; gap: 0.375rem; margin-bottom: 0.5rem; }
     .ua-group-pill { display: inline-flex; align-items: center; gap: 0.25rem; background: #e0f2fe; color: #0369a1; border-radius: 20px; padding: 0.2rem 0.55rem; font-size: 0.75rem; font-weight: 700; }
     .ua-group-pill button { background: none; border: none; cursor: pointer; color: #0369a1; font-size: 0.85rem; line-height: 1; padding: 0; margin-left: 0.1rem; font-weight: 900; }
-    .ua-group-select { border: 1.5px solid var(--border); border-radius: 8px; padding: 0.3rem 0.5rem; font-size: 0.8rem; font-family: inherit; background: #fff; cursor: pointer; }
+    .ua-group-add { display: flex; align-items: center; gap: 0.375rem; margin-top: 0.25rem; }
+    .ua-group-select { border: 1.5px solid var(--border); border-radius: 8px; padding: 0.28rem 0.45rem; font-size: 0.78rem; font-family: inherit; background: #fff; cursor: pointer; flex: 1; }
+    .ua-btn { padding: 0.3rem 0.6rem; border-radius: 8px; border: 1.5px solid var(--border); background: #fff; font-size: 0.775rem; font-weight: 700; cursor: pointer; font-family: inherit; -webkit-tap-highlight-color: transparent; transition: all .15s; }
+    .ua-btn:active { transform: scale(0.95); }
+    .ua-btn.activate  { border-color: var(--green); color: var(--green); }
+    /* Admin edit user modal */
+    .admin-edit-overlay { display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:3000;align-items:center;justify-content:center; }
+    .admin-edit-overlay.open { display:flex; animation: fadeIn .15s ease; }
+    .admin-edit-sheet { background:#fff;border-radius:20px;padding:1.5rem;width:90%;max-width:360px;display:flex;flex-direction:column;gap:.875rem;box-shadow:0 8px 32px rgba(0,0,0,.18); }
+    .admin-edit-sheet h3 { font-size:1.05rem;font-weight:800;margin:0 0 .25rem; }
+    .admin-edit-sheet label { font-size:.78rem;font-weight:700;color:var(--muted);display:block;margin-bottom:.3rem; }
+    .admin-edit-sheet input { width:100%;padding:.65rem .75rem;border:2px solid var(--border);border-radius:10px;font-size:.9rem;font-family:inherit;box-sizing:border-box; }
+    .admin-edit-sheet input:focus { outline:none;border-color:#6366f1; }
+    .admin-edit-sheet input[readonly] { background:#f1f5f9;color:var(--muted); }
+    .admin-edit-actions { display:flex;gap:.5rem; }
+    .admin-edit-actions button { flex:1;padding:.7rem;border-radius:10px;font-size:.9rem;font-weight:700;cursor:pointer;font-family:inherit;border:none;transition:all .15s; }
+    .admin-edit-save { background:#6366f1;color:#fff; }
+    .admin-edit-cancel { background:#f1f5f9;color:var(--text); }
 
     /* Admin section nav */
     .admin-section-nav { display: flex; background: #f1f5f9; border-bottom: 1px solid #e2e8f0; position: sticky; top: 56px; z-index: 90; }
@@ -594,6 +638,10 @@
       <input type="text" id="reg-lastname" class="form-input" placeholder="Ej: García López" maxlength="50" autocomplete="family-name">
     </div>
     <div class="form-group">
+      <label class="form-label">Alias <span style="font-size:.75rem;color:var(--muted)">(nombre que aparece en partidos y clasificación)</span></label>
+      <input type="text" id="reg-alias" class="form-input" placeholder="Ej: Carlitos" maxlength="30" autocomplete="nickname">
+    </div>
+    <div class="form-group">
       <label class="form-label">Email</label>
       <input type="email" id="reg-email" class="form-input" placeholder="tu@email.com" autocomplete="email">
     </div>
@@ -690,24 +738,23 @@
   </div>
 
   <!-- Dashboard Global -->
-  <div style="background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);padding:1.5rem 1rem;margin-bottom:1rem">
-    <div style="color:white;font-weight:800;font-size:1rem;margin-bottom:1rem;text-align:center">📊 Estadísticas Globales</div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:.75rem">
-      <div style="background:rgba(255,255,255,0.2);backdrop-filter:blur(10px);border-radius:.5rem;padding:.75rem;text-align:center">
-        <div style="font-size:1.5rem;font-weight:900;color:white" id="global-total-users">-</div>
-        <div style="font-size:.7rem;color:rgba(255,255,255,0.9)">Usuarios</div>
+  <div style="background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);padding:.75rem 1rem;margin-bottom:1rem">
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:.5rem">
+      <div style="background:rgba(255,255,255,0.2);backdrop-filter:blur(10px);border-radius:.5rem;padding:.5rem .25rem;text-align:center">
+        <div style="font-size:1.25rem;font-weight:900;color:white;line-height:1.2" id="global-total-users">-</div>
+        <div style="font-size:.65rem;color:rgba(255,255,255,0.9)">Usuarios</div>
       </div>
-      <div style="background:rgba(255,255,255,0.2);backdrop-filter:blur(10px);border-radius:.5rem;padding:.75rem;text-align:center">
-        <div style="font-size:1.5rem;font-weight:900;color:white" id="global-total-groups">-</div>
-        <div style="font-size:.7rem;color:rgba(255,255,255,0.9)">Grupos</div>
+      <div style="background:rgba(255,255,255,0.2);backdrop-filter:blur(10px);border-radius:.5rem;padding:.5rem .25rem;text-align:center">
+        <div style="font-size:1.25rem;font-weight:900;color:white;line-height:1.2" id="global-total-groups">-</div>
+        <div style="font-size:.65rem;color:rgba(255,255,255,0.9)">Grupos</div>
       </div>
-      <div style="background:rgba(255,255,255,0.2);backdrop-filter:blur(10px);border-radius:.5rem;padding:.75rem;text-align:center">
-        <div style="font-size:1.5rem;font-weight:900;color:white" id="global-total-matches">-</div>
-        <div style="font-size:.7rem;color:rgba(255,255,255,0.9)">Partidos</div>
+      <div style="background:rgba(255,255,255,0.2);backdrop-filter:blur(10px);border-radius:.5rem;padding:.5rem .25rem;text-align:center">
+        <div style="font-size:1.25rem;font-weight:900;color:white;line-height:1.2" id="global-total-matches">-</div>
+        <div style="font-size:.65rem;color:rgba(255,255,255,0.9)">Partidos</div>
       </div>
-      <div style="background:rgba(255,255,255,0.2);backdrop-filter:blur(10px);border-radius:.5rem;padding:.75rem;text-align:center">
-        <div style="font-size:1.5rem;font-weight:900;color:white" id="global-total-news">-</div>
-        <div style="font-size:.7rem;color:rgba(255,255,255,0.9)">Noticias</div>
+      <div style="background:rgba(255,255,255,0.2);backdrop-filter:blur(10px);border-radius:.5rem;padding:.5rem .25rem;text-align:center">
+        <div style="font-size:1.25rem;font-weight:900;color:white;line-height:1.2" id="global-total-news">-</div>
+        <div style="font-size:.65rem;color:rgba(255,255,255,0.9)">Noticias</div>
       </div>
     </div>
   </div>
@@ -717,6 +764,7 @@
     <button class="admin-section-btn active" id="asec-usuarios" onclick="setAdminSection('usuarios')">👥 Usuarios</button>
     <button class="admin-section-btn" id="asec-grupos" onclick="setAdminSection('grupos')">📊 Grupos</button>
     <button class="admin-section-btn" id="asec-partidos" onclick="setAdminSection('partidos')">🎾 Partidos</button>
+    <button class="admin-section-btn" id="asec-ranking" onclick="setAdminSection('ranking')">🏆 Ranking</button>
     <button class="admin-section-btn" id="asec-noticias" onclick="setAdminSection('noticias')">📢 Noticias</button>
   </nav>
 
@@ -741,6 +789,7 @@
         <button class="admin-tab active" id="atab-pending"  onclick="setAdminTab('pending')">⏳ Pendientes</button>
         <button class="admin-tab" id="atab-active"   onclick="setAdminTab('active')">✅ Activos</button>
         <button class="admin-tab" id="atab-inactive" onclick="setAdminTab('inactive')">🚫 Inactivos</button>
+        <button class="admin-tab" id="btn-refresh-admin" onclick="refreshAdminUsers()" title="Recargar usuarios" style="flex:0;padding:.6rem .75rem;font-size:1rem">🔄</button>
       </div>
       <div class="admin-search">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
@@ -818,6 +867,10 @@
             <input type="number" id="admin-new-group-loss" class="pts-input" min="0" max="99" value="1" style="width:100%">
           </div>
         </div>
+        <label style="display:flex;align-items:center;gap:.5rem;margin-bottom:.75rem;cursor:pointer;font-size:.875rem;font-weight:600;color:var(--text)">
+          <input type="checkbox" id="admin-new-group-email-results" style="width:1rem;height:1rem;accent-color:var(--green);cursor:pointer">
+          📧 Enviar resultados por email a los miembros
+        </label>
         <button class="btn btn-primary" style="width:100%" onclick="adminCreateGroup()">✅ Crear grupo</button>
       </div>
 
@@ -872,6 +925,19 @@
       </div>
       
       <div id="admin-matches-list">Cargando...</div>
+    </div>
+  </div>
+
+  <!-- PANE: Ranking -->
+  <div class="admin-section-pane" id="apane-ranking">
+    <div class="admin-main">
+      <div style="font-weight:800;font-size:.95rem;margin-bottom:.75rem;color:var(--text)">🏆 Clasificación por grupo</div>
+      <select id="admin-ranking-group-sel" class="form-select" style="margin-bottom:1rem" onchange="renderAdminRanking()">
+        <option value="">— Selecciona un grupo —</option>
+      </select>
+      <div id="admin-ranking-body">
+        <div class="empty"><div class="empty-icon">🏆</div><div class="empty-title">Selecciona un grupo</div><div class="empty-sub">Elige un grupo para ver su clasificación</div></div>
+      </div>
     </div>
   </div>
 </div>
@@ -954,6 +1020,10 @@
         <div><div class="settings-label">❌ Derrota</div></div>
         <input type="number" id="admin-group-pts-loss" class="pts-input" min="0" max="99" value="1">
       </div>
+      <div class="settings-row" style="margin-top:.25rem">
+        <div><div class="settings-label">📧 Enviar resultados por email</div></div>
+        <input type="checkbox" id="admin-group-email-results" style="width:1.1rem;height:1.1rem;accent-color:var(--green);cursor:pointer">
+      </div>
       <button class="btn btn-outline" style="margin-top:.5rem;font-size:.8125rem" onclick="saveAdminGroupSettings()">💾 Guardar configuración</button>
     </div>
 
@@ -1023,6 +1093,10 @@
       <div class="profile-field">
         <label>Apellidos</label>
         <input type="text" id="prof-lastname" placeholder="Tus apellidos" autocomplete="family-name">
+      </div>
+      <div class="profile-field">
+        <label>Alias <span style="font-size:.75rem;color:var(--muted)">(en partidos y clasificación)</span></label>
+        <input type="text" id="prof-alias" placeholder="Tu alias en partidos" maxlength="30" autocomplete="nickname">
       </div>
       <div class="profile-field">
         <label>Teléfono</label>
@@ -1392,6 +1466,8 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const fbAuth = firebase.auth();
 const db     = firebase.firestore();
+// Ensure session persists across app restarts (default is LOCAL, but explicit is safer)
+fbAuth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(() => {});
 db.enablePersistence({ synchronizeTabs: true }).catch(() => {});
 
 
@@ -1400,12 +1476,11 @@ db.enablePersistence({ synchronizeTabs: true }).catch(() => {});
 // --------------------------------------------------
 const ADMIN_EMAIL = 'admin@admin.es';
 
-// -- EmailJS (notificación nuevo usuario) --------------
-const EMAILJS_PUBLIC_KEY  = 'FZ2LxvvBnzjVgMhRK';
-const EMAILJS_SERVICE_ID  = 'service_0a4twxt';
-const EMAILJS_TEMPLATE_ID      = 'template_tbtz2tv';  // bienvenida
-const EMAILJS_NEWS_TEMPLATE_ID  = 'template_bja3hwd';  // noticias
-try { emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY }); } catch(e) {}
+// -- Cloud Functions callables --------------------------
+const fbFunctions = firebase.app().functions('us-central1');
+const fnEnviarNoticia      = fbFunctions.httpsCallable('enviarNoticia');
+const fnEnviarInvitacion   = fbFunctions.httpsCallable('enviarInvitacion');
+const fnNotificarResultado = fbFunctions.httpsCallable('notificarResultado');
 const ADMIN_PW    = 'Admin1234!';
 
 let deferredInstall = null;
@@ -1422,6 +1497,8 @@ let adminGroups = [];
 let adminActiveGroupCode = null; // For group detail modal
 let adminAllMatches = []; // For matches section
 let adminEditingMatch = null; // Currently editing match
+let adminRankingGroupsData = {}; // code -> { settings, players[] }
+let adminRankingMatchesCache = {}; // code -> matchDocs[]
 
 // Service Worker registration with auto-update
 if ('serviceWorker' in navigator) {
@@ -1536,10 +1613,12 @@ fbAuth.onAuthStateChanged(async fbUser => {
       // First sign-in — create pending user doc
       const fn = sessionStorage.getItem('pendingFirstname') || (fbUser.displayName || '').split(' ')[0] || fbUser.email.split('@')[0];
       const ln = sessionStorage.getItem('pendingLastname')  || (fbUser.displayName || '').split(' ').slice(1).join(' ') || '';
+      const al = sessionStorage.getItem('pendingAlias')     || fn;
       sessionStorage.removeItem('pendingFirstname');
       sessionStorage.removeItem('pendingLastname');
+      sessionStorage.removeItem('pendingAlias');
       const userData = {
-        firstname: fn, lastname: ln, email: fbUser.email,
+        firstname: fn, lastname: ln, alias: al, email: fbUser.email,
         status: 'pending', groups: [],
         createdAt: firebase.firestore.FieldValue.serverTimestamp(),
         activatedAt: null,
@@ -1547,19 +1626,7 @@ fbAuth.onAuthStateChanged(async fbUser => {
       };
       await docRef.set(userData);
       currentUser = { id: fbUser.uid, ...userData };
-      // Notificar por email al admin
-      try {
-        await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
-          name:       fn + ' ' + ln,
-          user_name:  fn + ' ' + ln,
-          user_email: fbUser.email,
-          admin_url:  'https://padelapp-9e01c.web.app',
-          to_name:    'Admin',
-          from_name:  fn + ' ' + ln,
-          message:    'Nuevo usuario: ' + fn + ' ' + ln + ' (' + fbUser.email + ')',
-          reply_to:   fbUser.email,
-        });
-      } catch(e) { console.warn('EmailJS error:', e); }
+      // El email al admin lo envía la Cloud Function notificarNuevoUsuario automáticamente (Firestore onCreate trigger)
       showPending(currentUser);
       hideLoading();
       return;
@@ -1594,11 +1661,13 @@ function tsToStr(obj) {
 async function registerUser() {
   const firstname = document.getElementById('reg-firstname').value.trim();
   const lastname  = document.getElementById('reg-lastname').value.trim();
+  const alias     = document.getElementById('reg-alias').value.trim();
   const email     = document.getElementById('reg-email').value.trim().toLowerCase();
   const password  = document.getElementById('reg-password').value;
 
   if (!firstname)           { toast('⚠️ Escribe tu nombre'); return; }
   if (!lastname)            { toast('⚠️ Escribe tus apellidos'); return; }
+  if (!alias)               { toast('⚠️ Escribe tu alias'); return; }
   if (!isValidEmail(email)) { toast('⚠️ Email no válido'); return; }
   if (password.length < 6)  { toast('⚠️ Contraseña mínimo 6 caracteres'); return; }
   if (email === ADMIN_EMAIL) { toast('⚠️ Email reservado'); return; }
@@ -1607,12 +1676,14 @@ async function registerUser() {
   try {
     sessionStorage.setItem('pendingFirstname', firstname);
     sessionStorage.setItem('pendingLastname',  lastname);
+    sessionStorage.setItem('pendingAlias',     alias);
     const cred = await fbAuth.createUserWithEmailAndPassword(email, password);
     // onAuthStateChanged will fire and create the Firestore doc
     _ = cred; // suppress unused warning
   } catch (err) {
     sessionStorage.removeItem('pendingFirstname');
     sessionStorage.removeItem('pendingLastname');
+    sessionStorage.removeItem('pendingAlias');
     hideLoading();
     if (err.code === 'auth/email-already-in-use') toast('⚠️ Ya existe una cuenta con ese email');
     else toast('⚠️ ' + err.message);
@@ -1670,6 +1741,7 @@ function closeAccountDropdown() {
 function openProfile() {
   document.getElementById('prof-firstname').value = currentUser.firstname || '';
   document.getElementById('prof-lastname').value  = currentUser.lastname  || '';
+  document.getElementById('prof-alias').value     = currentUser.alias     || '';
   document.getElementById('prof-phone').value     = currentUser.phone     || '';
   document.getElementById('prof-email').value     = currentUser.email     || '';
   document.getElementById('profile-overlay').classList.add('open');
@@ -1680,14 +1752,17 @@ function closeProfile() {
 async function saveProfile() {
   const firstname = document.getElementById('prof-firstname').value.trim();
   const lastname  = document.getElementById('prof-lastname').value.trim();
+  const alias     = document.getElementById('prof-alias').value.trim();
   const phone     = document.getElementById('prof-phone').value.trim();
   if (!firstname) { toast('⚠️ Escribe tu nombre'); return; }
   if (!lastname)  { toast('⚠️ Escribe tus apellidos'); return; }
+  if (!alias)     { toast('⚠️ Escribe tu alias'); return; }
   showLoading();
   try {
-    await db.collection('users').doc(currentFbUser.uid).update({ firstname, lastname, phone });
+    await db.collection('users').doc(currentFbUser.uid).update({ firstname, lastname, alias, phone });
     currentUser.firstname = firstname;
     currentUser.lastname  = lastname;
+    currentUser.alias     = alias;
     currentUser.phone     = phone;
     // Update header UI
     document.getElementById('header-user').textContent   = firstname + ' ' + lastname;
@@ -1757,6 +1832,57 @@ async function adminLogin() {
 // --------------------------------------------------
 // ADMIN PANEL
 // --------------------------------------------------
+async function refreshAdminUsers() {
+  const btn = document.getElementById('btn-refresh-admin');
+  if (btn) { btn.textContent = '⏳'; btn.disabled = true; }
+  try {
+    // Reload users + groups + noticias (global stats)
+    const [usersSnap, groupsSnap, noticiasSnap] = await Promise.all([
+      db.collection('users').get(),
+      db.collection('groups').get(),
+      db.collection('noticias').get()
+    ]);
+    adminUsers  = usersSnap.docs.map(d => tsToStr({ id: d.id, ...d.data() })).filter(u => u.email !== ADMIN_EMAIL);
+    adminGroups = groupsSnap.docs.map(d => d.id).sort();
+
+    // Update user counters
+    const pending  = adminUsers.filter(u => u.status === 'pending').length;
+    const active   = adminUsers.filter(u => u.status === 'active').length;
+    const inactive = adminUsers.filter(u => u.status === 'inactive').length;
+    document.getElementById('stat-pending').textContent  = pending;
+    document.getElementById('stat-active').textContent   = active;
+    document.getElementById('stat-inactive').textContent = inactive;
+
+    // Update global stats bar
+    const totalMatchesEl = document.getElementById('global-total-matches');
+    if (totalMatchesEl) {
+      // Sum matches across all groups
+      const matchCounts = await Promise.all(
+        groupsSnap.docs.map(d => db.collection('groups').doc(d.id).collection('matches').get().then(s => s.size))
+      );
+      const totalMatches = matchCounts.reduce((a, b) => a + b, 0);
+      totalMatchesEl.textContent = totalMatches;
+    }
+    const totalUsersEl = document.getElementById('global-total-users');
+    if (totalUsersEl) totalUsersEl.textContent = usersSnap.size;
+    const totalGroupsEl = document.getElementById('global-total-groups');
+    if (totalGroupsEl) totalGroupsEl.textContent = groupsSnap.size;
+    const totalNewsEl = document.getElementById('global-total-news');
+    if (totalNewsEl) totalNewsEl.textContent = noticiasSnap.size;
+
+    // Re-render current visible section
+    const activeSec = document.querySelector('.admin-section-btn.active');
+    const sec = activeSec ? activeSec.id.replace('asec-', '') : 'usuarios';
+    if (sec === 'usuarios')  renderAdminUsers(adminUsers, adminGroups);
+    if (sec === 'grupos')    { renderAdminGroups(); populateAdminInviteSelectors(); }
+    if (sec === 'partidos')  loadAdminMatches();
+    if (sec === 'noticias')  { renderAdminNoticias(); renderNoticiasGruposList(); }
+
+    toast('✅ Todo actualizado' + (pending ? ` · ${pending} pendiente${pending > 1 ? 's' : ''}` : ''));
+  } catch(err) { toast('⚠️ ' + err.message); }
+  finally { if (btn) { btn.textContent = '🔄'; btn.disabled = false; } }
+}
+
 async function renderAdmin() {
   try {
     const [usersSnap, groupsSnap, noticiasSnap] = await Promise.all([
@@ -1803,43 +1929,98 @@ function renderAdminUsers(users, groups) {
   const el = document.getElementById('admin-user-list');
   if (!filtered.length) {
     const label = adminTabActive === 'pending' ? 'pendientes' : adminTabActive === 'active' ? 'activos' : 'inactivos';
-    const icon  = adminTabActive === 'pending' ? '\u23f3' : adminTabActive === 'active' ? '\u2705' : '\u274c';
+    const icon  = adminTabActive === 'pending' ? '⏳' : adminTabActive === 'active' ? '✅' : '❌';
     el.innerHTML = `<div class="empty"><div class="empty-icon">${icon}</div><div class="empty-title">Sin usuarios ${label}</div></div>`;
     return;
   }
-  el.innerHTML = filtered.map(u => {
-    const statusClass = u.status === 'active' ? 'status-active' : u.status === 'inactive' ? 'status-inactive' : 'status-pending';
-    const statusLabel = u.status === 'active' ? '\u2705 Activo' : u.status === 'inactive' ? '\u274c Inactivo' : '\u23f3 Pendiente';
-    const since = u.activatedAt ? 'Activo desde ' + fmtDate(u.activatedAt) : 'Registrado ' + fmtDate(u.createdAt);
-    const userGroups = u.groups || [];
-    const groupPills = userGroups.map(g =>
-      `<span class="ua-group-pill">${esc(g)}<button onclick="adminRemoveGroup('${u.id}','${g}')" title="Quitar del grupo">&times;</button></span>`
+  const rows = filtered.map(u => {
+    const avatarClass  = u.status === 'pending' ? 'ua-avatar pending' : u.status === 'inactive' ? 'ua-avatar inactive' : 'ua-avatar';
+    const statusClass  = u.status === 'active' ? 'status-active' : u.status === 'inactive' ? 'status-inactive' : 'status-pending';
+    const statusIcon   = u.status === 'active' ? '✅' : u.status === 'inactive' ? '❌' : '⏳';
+    const since        = u.activatedAt ? 'Activo desde ' + fmtDate(u.activatedAt) : 'Registrado ' + fmtDate(u.createdAt);
+    const userGroups   = u.groups || [];
+    const groupPills   = userGroups.map(g =>
+      `<span class="ua-group-pill">${esc(g)}<button onclick="event.stopPropagation();adminRemoveGroup('${u.id}','${g}')" title="Quitar del grupo">&times;</button></span>`
     ).join('');
-    const availGroups = (groups || []).filter(g => !userGroups.includes(g));
-    const groupSelector = availGroups.length
-      ? `<select class="ua-group-select" id="gsel-${u.id}"><option value="">+ A\u00f1adir grupo</option>${availGroups.map(g => `<option value="${esc(g)}">${esc(g)}</option>`).join('')}</select>
-         <button class="ua-btn" onclick="adminAddGroup('${u.id}')" style="padding:.25rem .6rem">A\u00f1adir</button>`
-      : (groups && groups.length ? '<span style="font-size:.75rem;color:var(--muted)">Ya en todos los grupos</span>' : '<span style="font-size:.75rem;color:var(--muted)">Sin grupos creados</span>');
+    const availGroups  = (groups || []).filter(g => !userGroups.includes(g));
+    const groupAddRow  = availGroups.length
+      ? `<div class="ua-group-add">
+           <select class="ua-group-select" id="gsel-${u.id}"><option value="">+ Añadir grupo</option>${availGroups.map(g => `<option value="${esc(g)}">${esc(g)}</option>`).join('')}</select>
+           <button class="ua-btn" onclick="event.stopPropagation();adminAddGroup('${u.id}')">Añadir</button>
+         </div>`
+      : (groups && groups.length ? '<span style="font-size:.72rem;color:var(--muted)">Ya en todos los grupos</span>' : '<span style="font-size:.72rem;color:var(--muted)">Sin grupos</span>');
+    const activateBtn   = u.status !== 'active'  ? `<button class="ua-icon-btn activate"   onclick="event.stopPropagation();adminActivate('${u.id}')"   title="Activar">✅</button>` : '';
+    const deactivateBtn = u.status === 'active'  ? `<button class="ua-icon-btn deactivate" onclick="event.stopPropagation();adminDeactivate('${u.id}')" title="Desactivar">⏸</button>` : '';
     return `
-    <div class="user-admin-card">
-      <div class="ua-top">
-        <div class="ua-avatar">${esc((u.firstname||'?')[0]).toUpperCase()}</div>
-        <div style="flex:1;min-width:0">
-          <div class="ua-name">${esc(u.firstname)} ${esc(u.lastname)}</div>
-          <div class="ua-email">${esc(u.email)}</div>
-          <div class="ua-meta">${since}</div>
-        </div>
-        <span class="status-pill ${statusClass}">${statusLabel}</span>
+    <div class="ua-row" id="ua-row-${u.id}" onclick="toggleUaDetail('${u.id}')">
+      <div class="${avatarClass}">${esc((u.firstname||'?')[0]).toUpperCase()}</div>
+      <div class="ua-row-info">
+        <div class="ua-name">${esc(u.firstname)} ${esc(u.lastname)}</div>
+        <div class="ua-email">${esc(u.email)}</div>
       </div>
-      <div class="ua-groups">${groupPills}${groupSelector}</div>
-      <div class="ua-actions">
-        ${u.status !== 'active'  ? `<button class="ua-btn activate"   onclick="adminActivate('${u.id}')">\u2705 Activar</button>` : ''}
-        ${u.status === 'active'  ? `<button class="ua-btn deactivate" onclick="adminDeactivate('${u.id}')">\u23f8 Desactivar</button>` : ''}
-        <button class="ua-btn reset-pw" onclick="adminResetPw('${esc(u.email)}')">📧 Reset contrase\u00f1a</button>
-        <button class="ua-btn del"      onclick="adminDelete('${u.id}')">🗑️? Eliminar</button>
+      <div class="ua-row-right">
+        <span class="status-pill ${statusClass}" style="font-size:.68rem;padding:.15rem .45rem">${statusIcon}</span>
+        <button class="ua-icon-btn edit-btn"  onclick="event.stopPropagation();adminEditUser('${u.id}')"         title="Editar perfil">✏️</button>
+        ${activateBtn}${deactivateBtn}
+        <button class="ua-icon-btn reset-pw"  onclick="event.stopPropagation();adminResetPw('${esc(u.email)}')" title="Reset contraseña">📧</button>
+        <button class="ua-icon-btn del"       onclick="event.stopPropagation();adminDelete('${u.id}')"          title="Eliminar">🗑️</button>
+        <span class="ua-chevron">▶</span>
       </div>
+    </div>
+    <div class="ua-detail" id="ua-detail-${u.id}">
+      <div class="ua-meta">${since}</div>
+      <div class="ua-groups">${groupPills || '<span style="font-size:.72rem;color:var(--muted)">Sin grupos asignados</span>'}</div>
+      ${groupAddRow}
     </div>`;
   }).join('');
+  el.innerHTML = `<div class="ua-list">${rows}</div>`;
+}
+
+function toggleUaDetail(uid) {
+  const row    = document.getElementById('ua-row-' + uid);
+  const detail = document.getElementById('ua-detail-' + uid);
+  if (!row || !detail) return;
+  const isOpen = detail.classList.contains('open');
+  row.classList.toggle('expanded', !isOpen);
+  detail.classList.toggle('open', !isOpen);
+}
+
+let adminEditingUid = null;
+function adminEditUser(uid) {
+  const u = adminUsers.find(u => u.id === uid);
+  if (!u) return;
+  adminEditingUid = uid;
+  document.getElementById('aeu-firstname').value = u.firstname || '';
+  document.getElementById('aeu-lastname').value  = u.lastname  || '';
+  document.getElementById('aeu-alias').value     = u.alias     || '';
+  document.getElementById('aeu-phone').value     = u.phone     || '';
+  document.getElementById('aeu-email').value     = u.email     || '';
+  document.getElementById('admin-edit-overlay').classList.add('open');
+  console.log('admin edit overlay opened for', uid);
+}
+function closeAdminEditUser() {
+  document.getElementById('admin-edit-overlay').classList.remove('open');
+  adminEditingUid = null;
+}
+async function adminSaveUserProfile() {
+  const uid       = adminEditingUid;
+  const firstname = document.getElementById('aeu-firstname').value.trim();
+  const lastname  = document.getElementById('aeu-lastname').value.trim();
+  const alias     = document.getElementById('aeu-alias').value.trim();
+  const phone     = document.getElementById('aeu-phone').value.trim();
+  if (!uid) return;
+  if (!firstname) { toast('⚠️ Escribe el nombre'); return; }
+  if (!lastname)  { toast('⚠️ Escribe los apellidos'); return; }
+  showLoading();
+  try {
+    await db.collection('users').doc(uid).update({ firstname, lastname, alias, phone });
+    const u = adminUsers.find(u => u.id === uid);
+    if (u) { u.firstname = firstname; u.lastname = lastname; u.alias = alias; u.phone = phone; }
+    closeAdminEditUser();
+    renderAdminUsers(adminUsers, adminGroups);
+    toast('✅ Perfil actualizado');
+  } catch (err) { toast('⚠️ ' + err.message); }
+  finally { hideLoading(); }
 }
 
 function setAdminSection(sec) {
@@ -1850,6 +2031,7 @@ function setAdminSection(sec) {
   if (sec === 'noticias') { renderAdminNoticias(); renderNoticiasGruposList(); }
   if (sec === 'grupos') { renderAdminGroups(); populateAdminInviteSelectors(); }
   if (sec === 'partidos') loadAdminMatches();
+  if (sec === 'ranking') loadAdminRankingGroups();
 }
 
 function setAdminTab(tab) {
@@ -2041,38 +2223,16 @@ async function adminPublishNoticia() {
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });
 
-    // Enviar emails a miembros de los grupos seleccionados
+    // Enviar emails via Cloud Function
     if (targetGroups.length) {
-      // Obtener todos los usuarios activos con email cuyo grupo esté en targetGroups
-      const usersSnap = await db.collection('users').where('status', '==', 'active').get();
-      const emailsSent = new Set();
-      for (const uDoc of usersSnap.docs) {
-        const u = uDoc.data();
-        if (!u.email || u.email === ADMIN_EMAIL) continue;
-        // Comprobar si el usuario pertenece a algún grupo seleccionado
-        const userGroups = u.groups || (u.group ? [u.group] : []);
-        const match = userGroups.some(g => targetGroups.includes(g));
-        if (!match) continue;
-        if (emailsSent.has(u.email)) continue;
-        emailsSent.add(u.email);
-        const recipientName = u.firstname || u.name || u.displayName || 'Jugador';
-        try {
-          await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_NEWS_TEMPLATE_ID, {
-            to_name:        recipientName,
-            user_name:      recipientName,
-            user_email:     u.email,
-            name:           recipientName,
-            from_name:      'PadelTracker',
-            reply_to:       'noreply@padeltracker.app',
-            title:          title || 'Nueva noticia',
-            noticia_titulo: title || 'Nueva noticia',
-            noticia_cuerpo: body,
-            message:        body,
-            admin_url:      'https://padelapp-9e01c.web.app',
-          });
-        } catch(e) { console.warn('Email error:', u.email, e); }
+      try {
+        const imgUrl = document.getElementById('admin-noticia-img-url').value.trim() || null;
+        const res = await fnEnviarNoticia({ titulo: title, cuerpo: body, grupos: targetGroups, imagen: imgUrl });
+        toast(`✅ Noticia publicada · ${res.data.sent} email(s) enviados`);
+      } catch(e) {
+        console.warn('Cloud Function enviarNoticia error:', e);
+        toast('✅ Noticia publicada (error al enviar emails)');
       }
-      toast(`✅ Noticia publicada · ${emailsSent.size} email(s) enviados`);
     } else {
       toast('✅ Noticia publicada (sin destinatarios)');
     }
@@ -2109,7 +2269,7 @@ async function adminActivate(uid) {
   showLoading();
   try {
     await db.collection('users').doc(uid).update({ status: 'active', activatedAt: firebase.firestore.FieldValue.serverTimestamp() });
-    toast('? Usuario activado');
+    toast('✅ Usuario activado — se enviará email de bienvenida');
     await renderAdmin();
   } catch (err) { toast('⚠️ ' + err.message); }
   hideLoading();
@@ -2184,13 +2344,15 @@ async function adminCreateGroup() {
   const win  = parseInt(document.getElementById('admin-new-group-win').value)  || 3;
   const draw = parseInt(document.getElementById('admin-new-group-draw').value) || 2;
   const loss = parseInt(document.getElementById('admin-new-group-loss').value) || 1;
+  const emailResults = document.getElementById('admin-new-group-email-results').checked;
   showLoading();
   try {
     const ref = db.collection('groups').doc(code);
     const snap = await ref.get();
     if (snap.exists) { toast('⚠️ Ya existe un grupo con ese código'); hideLoading(); return; }
-    await ref.set({ settings: { win, draw, loss }, guests: [], createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+    await ref.set({ settings: { win, draw, loss, emailResults }, guests: [], createdAt: firebase.firestore.FieldValue.serverTimestamp() });
     document.getElementById('admin-new-group-name').value = '';
+    document.getElementById('admin-new-group-email-results').checked = false;
     toast('✅ Grupo ' + code + ' creado');
     await renderAdmin(); // refresca todo incluido la lista de grupos
   } catch(e) { toast('⚠️ ' + e.message); }
@@ -2219,16 +2381,7 @@ async function adminSendInviteEmail() {
   const link = `https://padelapp-9e01c.web.app/?g=${encodeURIComponent(code)}`;
   showLoading();
   try {
-    await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
-      to_name:    email,
-      user_name:  email,
-      user_email: email,
-      name:       email,
-      from_name:  'PadelTracker',
-      reply_to:   'noreply@padeltracker.app',
-      message:    `Te han invitado al grupo ${code} en PadelTracker.\n\nAccede con este enlace:\n${link}`,
-      admin_url:  link,
-    });
+    await fnEnviarInvitacion({ toEmail: email, toName: email, groupCode: code });
     document.getElementById('admin-invite-email').value = '';
     toast('✉️ Invitación enviada a ' + email);
   } catch(e) { toast('⚠️ Error al enviar: ' + e.message); }
@@ -2245,16 +2398,7 @@ async function adminSendInviteToUser() {
   const link = `https://padelapp-9e01c.web.app/?g=${encodeURIComponent(code)}`;
   showLoading();
   try {
-    await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
-      to_name:    user.firstname || user.name || user.email,
-      user_name:  user.firstname || user.name || user.email,
-      user_email: user.email,
-      name:       user.firstname || user.name || user.email,
-      from_name:  'PadelTracker',
-      reply_to:   'noreply@padeltracker.app',
-      message:    `Hola ${user.firstname || ''},\n\nTe han invitado al grupo ${code} en PadelTracker.\n\nAccede con este enlace:\n${link}`,
-      admin_url:  link,
-    });
+    await fnEnviarInvitacion({ toEmail: user.email, toName: user.firstname || user.name || '', groupCode: code });
     toast('✉️ Invitación enviada a ' + user.email);
   } catch(e) { toast('⚠️ Error al enviar: ' + e.message); }
   hideLoading();
@@ -2354,6 +2498,7 @@ async function openAdminGroupDetail(code) {
     document.getElementById('admin-group-pts-win').value = settings.win;
     document.getElementById('admin-group-pts-draw').value = settings.draw;
     document.getElementById('admin-group-pts-loss').value = settings.loss;
+    document.getElementById('admin-group-email-results').checked = !!settings.emailResults;
     
     // Members - populate add member selector
     const addMemberSel = document.getElementById('admin-group-add-member-sel');
@@ -2442,7 +2587,8 @@ async function saveAdminGroupSettings() {
   const settings = {
     win: Math.max(0, parseInt(document.getElementById('admin-group-pts-win').value) || 0),
     draw: Math.max(0, parseInt(document.getElementById('admin-group-pts-draw').value) || 0),
-    loss: Math.max(0, parseInt(document.getElementById('admin-group-pts-loss').value) || 0)
+    loss: Math.max(0, parseInt(document.getElementById('admin-group-pts-loss').value) || 0),
+    emailResults: document.getElementById('admin-group-email-results').checked
   };
   
   showLoading();
@@ -2620,7 +2766,7 @@ async function loadAdminMatches() {
       
       const members = usersSnap.docs
         .filter(d => (d.data().groups || []).includes(groupCode))
-        .map(d => ({ id: d.id, name: `${d.data().firstname} ${d.data().lastname}`, email: d.data().email }));
+        .map(d => ({ id: d.id, name: d.data().alias || `${d.data().firstname} ${d.data().lastname}`, email: d.data().email }));
       const guests = groupData.guests || [];
       const allPlayers = [...members, ...guests];
       
@@ -2683,21 +2829,46 @@ function renderAdminMatches() {
     const pachangaBadge = m.data.isPachanga ? ' <span style="background:#ff6600;color:white;font-size:.65rem;padding:.125rem .375rem;border-radius:.25rem">🎉 PACHANGA</span>' : '';
     const resultText = m.data.result === 'pair1' ? '🟢 Ganó P1' : m.data.result === 'pair2' ? '🟠 Ganó P2' : '🤝 Empate';
     
+    const p1wins = m.data.result === 'pair1';
+    const p2wins = m.data.result === 'pair2';
+    const isDraw = m.data.result === 'draw';
+    let sets = [];
+    if (m.data.sets && m.data.sets.length) {
+      sets = m.data.sets;
+    } else if (m.data.score) {
+      sets = m.data.score.split(',').map(s => {
+        const parts = s.trim().split('-').map(Number);
+        return parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1]) ? { p1: parts[0], p2: parts[1] } : null;
+      }).filter(Boolean);
+    }
+    const p1ScoresHtml = sets.map(s => `<span class="mc-s ${s.p1 > s.p2 ? 'hi-p1' : ''}">${s.p1}</span>`).join('');
+    const p2ScoresHtml = sets.map(s => `<span class="mc-s ${s.p2 > s.p1 ? 'hi-p2' : ''}">${s.p2}</span>`).join('');
+    const scoreTxtHtml = !sets.length && m.data.score ? `<div class="mc-score-txt" style="margin-top:.35rem">Marcador: ${esc(m.data.score)}</div>` : '';
+    const drawBadge = isDraw ? `<div style="margin:.35rem 0 .5rem"><span class="badge badge-draw">🤝 Empate</span></div>` : '';
+
     return `
-      <div style="background:var(--surface);border:1px solid var(--border);border-radius:.5rem;padding:1rem;margin-bottom:.75rem">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem">
-          <div>
-            <span style="background:var(--green);color:white;font-size:.7rem;padding:.25rem .5rem;border-radius:.25rem;font-weight:700">${esc(m.groupCode)}</span>
-            <span style="font-size:.75rem;color:var(--muted);margin-left:.5rem">📅 ${dateStr}</span>
-            ${pachangaBadge}
+      <div class="match-card ${p1wins ? 'res-p1' : p2wins ? 'res-p2' : 'res-draw'}" style="margin-bottom:.75rem">
+        <div class="mc-meta">
+          <span style="background:var(--green);color:white;font-size:.7rem;padding:.2rem .45rem;border-radius:.25rem;font-weight:700">${esc(m.groupCode)}</span>
+          <span class="match-date">📅 ${dateStr}</span>
+          ${pachangaBadge}
+        </div>
+        <div class="mc-scoreboard">
+          <div class="mc-row mc-row-p1">
+            <span class="mc-dot mc-dot-p1"></span>
+            <span class="mc-name">${p1n}</span>
+            <div class="mc-scores">${p1ScoresHtml}</div>
+            <span class="mc-trophy">${p1wins ? '🏆' : ''}</span>
           </div>
-          <span style="font-size:.75rem;font-weight:700;color:var(--text)">${resultText}</span>
+          <div class="mc-row mc-row-p2">
+            <span class="mc-dot mc-dot-p2"></span>
+            <span class="mc-name">${p2n}</span>
+            <div class="mc-scores">${p2ScoresHtml}</div>
+            <span class="mc-trophy">${p2wins ? '🏆' : ''}</span>
+          </div>
         </div>
-        <div style="font-size:.875rem;margin-bottom:.5rem">
-          <strong>🟢</strong> ${p1n} <span style="color:var(--muted)">vs</span> <strong>🟠</strong> ${p2n}
-        </div>
-        <div style="font-size:.75rem;color:var(--muted);margin-bottom:.75rem">Marcador: ${m.data.score || 'N/A'}</div>
-        <div style="display:flex;gap:.5rem">
+        ${scoreTxtHtml}${drawBadge}
+        <div style="display:flex;gap:.5rem;margin-top:.65rem">
           <button onclick="openAdminEditMatch('${m.groupCode}', '${m.id}')" style="background:var(--green);color:white;border:none;padding:.4rem .75rem;border-radius:.375rem;font-size:.75rem;font-weight:700;cursor:pointer;flex:1">✏️ Editar</button>
           <button onclick="deleteAdminMatchGlobal('${m.groupCode}', '${m.id}')" style="background:var(--danger);color:white;border:none;padding:.4rem .75rem;border-radius:.375rem;font-size:.75rem;font-weight:700;cursor:pointer">🗑️</button>
         </div>
@@ -2727,7 +2898,7 @@ async function openAdminEditMatch(groupCode, matchId) {
     
     const members = usersSnap.docs
       .filter(d => (d.data().groups || []).includes(groupCode))
-      .map(d => ({ id: d.id, name: `${d.data().firstname} ${d.data().lastname}` }));
+      .map(d => ({ id: d.id, name: d.data().alias || `${d.data().firstname} ${d.data().lastname}` }));
     const guests = (groupData.guests || []).map(g => ({ id: g.id, name: g.name }));
     const allPlayers = [...members, ...guests];
     
@@ -2868,7 +3039,7 @@ async function startApp(user) {
   if (currentUser && !ST.players.find(p => p.id === currentUser.id)) {
     ST.players.push({
       id: currentUser.id,
-      name: (currentUser.firstname || '') + ' ' + (currentUser.lastname || ''),
+      name: currentUser.alias || ((currentUser.firstname || '') + ' ' + (currentUser.lastname || '')).trim(),
       email: currentUser.email
     });
   }
@@ -2942,7 +3113,7 @@ async function loadGroupState(code) {
 
     ST.players = usersSnap.docs
       .filter(d => d.data().email !== ADMIN_EMAIL && (d.data().groups || []).includes(code))
-      .map(d => ({ id: d.id, name: d.data().firstname + ' ' + d.data().lastname, email: d.data().email }));
+      .map(d => ({ id: d.id, name: d.data().alias || (d.data().firstname + ' ' + d.data().lastname), email: d.data().email }));
 
     // Merge guest players (no account)
     guests.forEach(g => { if (!ST.players.find(p => p.id === g.id)) ST.players.push({ id: g.id, name: g.name, guest: true }); });
@@ -2953,7 +3124,7 @@ async function loadGroupState(code) {
 
   // Always ensure current user is in the player list
   if (currentUser && !ST.players.find(p => p.id === currentUser.id)) {
-    ST.players.push({ id: currentUser.id, name: currentUser.firstname + ' ' + currentUser.lastname, email: currentUser.email });
+    ST.players.push({ id: currentUser.id, name: currentUser.alias || (currentUser.firstname + ' ' + currentUser.lastname), email: currentUser.email });
   }
 
   // Load matches separately (non-critical)
@@ -3729,7 +3900,13 @@ async function saveMatch() {
       renderRanking();
     }
     resetMatchForm();
-    toast('? Partido guardado en ' + matchGroupCode);
+    toast('✅ Partido guardado en ' + matchGroupCode);
+    // Notificar resultado por email (fire-and-forget, falla silenciosamente)
+    fnNotificarResultado({
+      groupCode: matchGroupCode,
+      pair1: [p1, p2], pair2: [p3, p4],
+      result, score: matchData.score, date, isPachanga
+    }).catch(() => {});
   } catch (err) {
     toast('⚠️ Error guardando: ' + err.message);
   }
@@ -4115,13 +4292,13 @@ function renderSets() {
         <div style="display:flex;flex-direction:column;align-items:center;gap:.25rem">
           <div style="font-size:.68rem;font-weight:700;color:var(--green)">${esc(lbl1)}</div>
           <input class="set-score-input${p1w ? ' win-p1' : ''}" type="number" min="0" max="9" inputmode="numeric"
-            value="${s.p1}" oninput="onSetInput(${i},'p1',this.value)">
+            value="${s.p1}" oninput="onSetInput(${i},'p1',this.value)" onfocus="this.select()">
         </div>
         <div class="set-vs">-</div>
         <div style="display:flex;flex-direction:column;align-items:center;gap:.25rem">
           <div style="font-size:.68rem;font-weight:700;color:var(--amber)">${esc(lbl2)}</div>
           <input class="set-score-input${p2w ? ' win-p2' : ''}" type="number" min="0" max="9" inputmode="numeric"
-            value="${s.p2}" oninput="onSetInput(${i},'p2',this.value)">
+            value="${s.p2}" oninput="onSetInput(${i},'p2',this.value)" onfocus="this.select()">
         </div>
       </div>
     </div>`;
@@ -4156,6 +4333,105 @@ function removeSet() { if (sets.length <= 1) return; sets.pop(); renderSets(); }
 function setsToString() { return sets.map(s => `${s.p1}-${s.p2}`).join(', '); }
 
 // --------------------------------------------------
+// ADMIN RANKING
+// --------------------------------------------------
+async function loadAdminRankingGroups() {
+  const sel = document.getElementById('admin-ranking-group-sel');
+  const body = document.getElementById('admin-ranking-body');
+  try {
+    const [groupsSnap, usersSnap] = await Promise.all([
+      db.collection('groups').get(),
+      db.collection('users').where('status', '==', 'active').get()
+    ]);
+    const allUsers = usersSnap.docs.map(d => ({
+      id: d.id,
+      name: d.data().alias || `${d.data().firstname} ${d.data().lastname}`,
+      groups: d.data().groups || []
+    }));
+    adminRankingGroupsData = {};
+    adminRankingMatchesCache = {};
+    groupsSnap.docs.forEach(d => {
+      const code = d.id;
+      const data = d.data();
+      const settings = data.settings || { win: 3, draw: 2, loss: 1 };
+      const members = allUsers
+        .filter(u => u.groups.includes(code))
+        .map(u => ({ id: u.id, name: u.name }));
+      const guests = (data.guests || []).map(g => ({ id: g.id, name: g.name }));
+      adminRankingGroupsData[code] = { settings, players: [...members, ...guests] };
+    });
+    const codes = groupsSnap.docs.map(d => d.id).sort();
+    sel.innerHTML = '<option value="">— Selecciona un grupo —</option>' +
+      codes.map(c => `<option value="${esc(c)}">${esc(c)}</option>`).join('');
+    body.innerHTML = `<div class="empty"><div class="empty-icon">🏆</div><div class="empty-title">Selecciona un grupo</div><div class="empty-sub">Elige un grupo para ver su clasificación</div></div>`;
+  } catch (err) {
+    body.innerHTML = `<p style="color:var(--danger)">Error cargando grupos</p>`;
+    console.error(err);
+  }
+}
+
+async function renderAdminRanking() {
+  const groupCode = document.getElementById('admin-ranking-group-sel').value;
+  const body = document.getElementById('admin-ranking-body');
+  if (!groupCode) {
+    body.innerHTML = `<div class="empty"><div class="empty-icon">🏆</div><div class="empty-title">Selecciona un grupo</div><div class="empty-sub">Elige un grupo para ver su clasificación</div></div>`;
+    return;
+  }
+  body.innerHTML = `<p style="color:var(--muted);text-align:center;padding:1rem">Cargando...</p>`;
+  try {
+    // Load matches if not cached
+    if (!adminRankingMatchesCache[groupCode]) {
+      const snap = await db.collection('groups').doc(groupCode).collection('matches').get();
+      adminRankingMatchesCache[groupCode] = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    }
+    const matches = adminRankingMatchesCache[groupCode];
+    const groupInfo = adminRankingGroupsData[groupCode] || { settings: { win:3, draw:2, loss:1 }, players: [] };
+    const settings = groupInfo.settings;
+    const players = groupInfo.players;
+
+    // Build ranking map
+    const map = {};
+    players.forEach(p => { map[p.id] = { name: p.name, pj:0, g:0, e:0, d:0, pts:0 }; });
+    matches.forEach(m => {
+      if (m.isPachanga) return;
+      const pair1 = m.pair1 || [], pair2 = m.pair2 || [];
+      const result = m.result;
+      [...pair1, ...pair2].forEach(id => { if (map[id]) map[id].pj++; });
+      if (result === 'pair1') {
+        pair1.forEach(id => { if (map[id]) { map[id].g++; map[id].pts += settings.win; } });
+        pair2.forEach(id => { if (map[id]) { map[id].d++; map[id].pts += settings.loss; } });
+      } else if (result === 'pair2') {
+        pair2.forEach(id => { if (map[id]) { map[id].g++; map[id].pts += settings.win; } });
+        pair1.forEach(id => { if (map[id]) { map[id].d++; map[id].pts += settings.loss; } });
+      } else {
+        [...pair1, ...pair2].forEach(id => { if (map[id]) { map[id].e++; map[id].pts += settings.draw; } });
+      }
+    });
+
+    const data = Object.values(map).filter(s => s.pj > 0)
+      .sort((a, b) => b.pts - a.pts || b.g - a.g || a.d - b.d);
+
+    if (!data.length) {
+      body.innerHTML = `<div class="empty"><div class="empty-icon">⏳</div><div class="empty-title">Sin partidos</div><div class="empty-sub">El grupo aún no tiene partidos registrados</div></div>`;
+      return;
+    }
+    const medals = ['🥇','🥈','🥉'];
+    body.innerHTML = `<table class="rank-table"><thead><tr>
+      <th style="text-align:left">Jugador</th><th>PJ</th><th>G</th><th>E</th><th>D</th><th>Pts</th>
+    </tr></thead><tbody>
+      ${data.map((s, i) => `<tr class="${i < 3 ? 'pos-' + (i + 1) : ''}">
+        <td><span class="pos-cell">${medals[i] || i + 1}</span>&nbsp;<span class="name-cell">${esc(s.name)}</span></td>
+        <td>${s.pj}</td><td class="g-cell">${s.g}</td><td class="e-cell">${s.e}</td><td class="d-cell">${s.d}</td><td class="pts-cell">${s.pts}</td>
+      </tr>`).join('')}
+    </tbody></table>
+    <div class="pts-legend">Victoria +${settings.win} · Empate +${settings.draw} · Derrota +${settings.loss} pts</div>`;
+  } catch (err) {
+    body.innerHTML = `<p style="color:var(--danger)">Error cargando clasificación</p>`;
+    console.error(err);
+  }
+}
+
+// --------------------------------------------------
 // RANKING
 // --------------------------------------------------
 function computeRanking() {
@@ -4180,6 +4456,128 @@ function renderRanking() {
 }
 
 // --------------------------------------------------
+// EDIT MATCH (user-side)
+// --------------------------------------------------
+let editSets = [];
+let editingMatchId = null;
+
+function editMatch(id) {
+  const m = ST.matches.find(x => x.id === id);
+  if (!m) return;
+  editingMatchId = id;
+  editSets = m.sets && m.sets.length ? JSON.parse(JSON.stringify(m.sets)) : [{ p1: 0, p2: 0 }];
+
+  // Populate date
+  document.getElementById('em-date').value = m.date || '';
+
+  // Populate player selects with current group players
+  const opts = '<option value="">— Seleccionar —</option>' +
+    ST.players.map(p => `<option value="${p.id}">${esc(p.name)}</option>`).join('');
+  ['em-p1','em-p2','em-p3','em-p4'].forEach(id => { document.getElementById(id).innerHTML = opts; });
+  document.getElementById('em-p1').value = (m.pair1 || [])[0] || '';
+  document.getElementById('em-p2').value = (m.pair1 || [])[1] || '';
+  document.getElementById('em-p3').value = (m.pair2 || [])[0] || '';
+  document.getElementById('em-p4').value = (m.pair2 || [])[1] || '';
+
+  document.getElementById('em-pachanga').checked = !!m.isPachanga;
+
+  document.getElementById('user-edit-match-modal').style.display = 'flex';
+  renderEditSets();
+}
+
+function closeEditMatch() {
+  document.getElementById('user-edit-match-modal').style.display = 'none';
+  editingMatchId = null;
+}
+
+function editPairLabel(pair) {
+  const ids = pair === 1
+    ? [document.getElementById('em-p1').value, document.getElementById('em-p2').value]
+    : [document.getElementById('em-p3').value, document.getElementById('em-p4').value];
+  const a = getPlayerShort(ids[0]), b = getPlayerShort(ids[1]);
+  if (a === '?' && b === '?') return pair === 1 ? 'Pareja 1' : 'Pareja 2';
+  if (a === '?') return b; if (b === '?') return a;
+  return a + ' / ' + b;
+}
+
+function calcEditResult() {
+  let w1 = 0, w2 = 0;
+  editSets.forEach(s => { if (s.p1 > s.p2) w1++; else if (s.p2 > s.p1) w2++; });
+  return { result: w1 > w2 ? 'pair1' : w2 > w1 ? 'pair2' : 'draw', w1, w2 };
+}
+
+function renderEditSets() {
+  const el = document.getElementById('em-set-scorer');
+  const rb = document.getElementById('em-result-box');
+  const rbs = document.getElementById('em-btn-remove-set');
+  const lbl1 = editPairLabel(1), lbl2 = editPairLabel(2);
+  const { result, w1, w2 } = calcEditResult();
+  el.innerHTML = editSets.map((s, i) => {
+    const p1w = s.p1 > s.p2, p2w = s.p2 > s.p1;
+    return `<div class="set-item">
+      <div class="set-item-label">Set ${i+1}</div>
+      <div class="set-item-row">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:.25rem">
+          <div style="font-size:.68rem;font-weight:700;color:var(--green)">${esc(lbl1)}</div>
+          <input class="set-score-input${p1w ? ' win-p1' : ''}" type="number" min="0" max="9" inputmode="numeric"
+            value="${s.p1}" oninput="onEditSetInput(${i},'p1',this.value)" onfocus="this.select()">
+        </div>
+        <div class="set-vs">-</div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:.25rem">
+          <div style="font-size:.68rem;font-weight:700;color:var(--amber)">${esc(lbl2)}</div>
+          <input class="set-score-input${p2w ? ' win-p2' : ''}" type="number" min="0" max="9" inputmode="numeric"
+            value="${s.p2}" oninput="onEditSetInput(${i},'p2',this.value)" onfocus="this.select()">
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+  rbs.style.display = editSets.length > 1 ? 'inline-block' : 'none';
+  const hasScores = editSets.some(s => s.p1 > 0 || s.p2 > 0);
+  if (!hasScores) { rb.className = 'result-box rb-empty'; rb.textContent = 'Anota el marcador para ver el resultado'; return; }
+  if (result === 'pair1')      rb.className = 'result-box rb-p1',   rb.innerHTML = `🏆 Gana <strong>${esc(lbl1)}</strong> &nbsp;(${w1}-${w2} en sets)`;
+  else if (result === 'pair2') rb.className = 'result-box rb-p2',   rb.innerHTML = `🏆 Gana <strong>${esc(lbl2)}</strong> &nbsp;(${w2}-${w1} en sets)`;
+  else                         rb.className = 'result-box rb-draw', rb.innerHTML = `🤝 <strong>Empate</strong> &nbsp;(${w1}-${w2} en sets)`;
+}
+
+function onEditSetInput(i, side, val) {
+  editSets[i][side] = Math.max(0, Math.min(9, parseInt(val) || 0));
+  renderEditSets();
+}
+
+function addEditSet()    { if (editSets.length >= 5) { toast('Máximo 5 sets'); return; } editSets.push({ p1: 0, p2: 0 }); renderEditSets(); }
+function removeEditSet() { if (editSets.length <= 1) return; editSets.pop(); renderEditSets(); }
+
+async function saveEditMatch() {
+  if (!editingMatchId) return;
+  const date = document.getElementById('em-date').value;
+  const p1 = document.getElementById('em-p1').value;
+  const p2 = document.getElementById('em-p2').value;
+  const p3 = document.getElementById('em-p3').value;
+  const p4 = document.getElementById('em-p4').value;
+  const isPachanga = document.getElementById('em-pachanga').checked;
+
+  if (!date)             { toast('⚠️ Selecciona una fecha'); return; }
+  if (!p1||!p2||!p3||!p4) { toast('⚠️ Selecciona los 4 jugadores'); return; }
+  if (new Set([p1,p2,p3,p4]).size < 4) { toast('⚠️ Los jugadores deben ser distintos'); return; }
+  if (!editSets.some(s => s.p1 > 0 || s.p2 > 0)) { toast('⚠️ Introduce el marcador'); return; }
+
+  const { result } = calcEditResult();
+  const score = editSets.map(s => `${s.p1}-${s.p2}`).join(', ');
+  const update = { date, pair1: [p1, p2], pair2: [p3, p4], result, score, sets: JSON.parse(JSON.stringify(editSets)), isPachanga };
+
+  showLoading();
+  try {
+    await db.collection('groups').doc(currentGroup).collection('matches').doc(editingMatchId).update(update);
+    const idx = ST.matches.findIndex(m => m.id === editingMatchId);
+    if (idx !== -1) ST.matches[idx] = { ...ST.matches[idx], ...update };
+    closeEditMatch();
+    renderHistory(); renderRanking();
+    toast('✓ Partido actualizado');
+  } catch (err) { toast('⚠️ ' + err.message); }
+  hideLoading();
+}
+
+// --------------------------------------------------
 // HISTORY
 // --------------------------------------------------
 function pname(id) { const p = ST.players.find(pl => pl.id === id); return p ? p.name : 'Eliminado'; }
@@ -4189,23 +4587,49 @@ function renderHistory() {
   el.innerHTML = ST.matches.map(m => {
     const p1n = m.pair1.map(id => esc(pname(id))).join(' &amp; ');
     const p2n = m.pair2.map(id => esc(pname(id))).join(' &amp; ');
-    const resClass   = m.result==='pair1'?'res-p1':m.result==='pair2'?'res-p2':'res-draw';
-    const badgeClass = m.result==='pair1'?'badge-p1':m.result==='pair2'?'badge-p2':'badge-draw';
-    const resText    = m.result==='pair1'?`🏆 Ganó: ${p1n}`:m.result==='pair2'?`🏆 Ganó: ${p2n}`:'🤝 Empate';
+    const resClass = m.result==='pair1'?'res-p1':m.result==='pair2'?'res-p2':'res-draw';
+    const p1wins   = m.result === 'pair1';
+    const p2wins   = m.result === 'pair2';
+    const isDraw   = m.result === 'draw';
     let dateStr = '';
     if (m.date) { const [y,mo,d]=m.date.split('-'); dateStr = new Date(+y,+mo-1,+d).toLocaleDateString('es-ES',{day:'numeric',month:'short',year:'numeric'}); }
-    let scoreHtml = '';
+    const pachangaBadge = m.isPachanga ? '<span style="background:#ff6600;color:white;font-size:.625rem;font-weight:700;padding:.125rem .375rem;border-radius:.25rem">🎉 PACHANGA</span>' : '';
+    // Build sets array from m.sets or parse m.score text
+    let sets = [];
     if (m.sets && m.sets.length) {
-      const pills = m.sets.map(s => { const cls=s.p1>s.p2?'p1':s.p2>s.p1?'p2':''; return `<span class="set-pill ${cls}">${s.p1}-${s.p2}</span>`; }).join('');
-      scoreHtml = `<div class="set-pills">${pills}</div>`;
+      sets = m.sets;
+    } else if (m.score) {
+      sets = m.score.split(',').map(s => {
+        const parts = s.trim().split('-').map(Number);
+        return parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1]) ? { p1: parts[0], p2: parts[1] } : null;
+      }).filter(Boolean);
     }
-    const pachangaBadge = m.isPachanga ? '<span style="display:inline-block;background:#ff6600;color:white;font-size:.625rem;font-weight:700;padding:.125rem .375rem;border-radius:.25rem;margin-left:.375rem">🎉 PACHANGA</span>' : '';
+    const p1ScoresHtml = sets.map(s => `<span class="mc-s ${s.p1 > s.p2 ? 'hi-p1' : ''}">${s.p1}</span>`).join('');
+    const p2ScoresHtml = sets.map(s => `<span class="mc-s ${s.p2 > s.p1 ? 'hi-p2' : ''}">${s.p2}</span>`).join('');
+    const scoreTxtHtml = !sets.length && m.score ? `<div class="mc-score-txt">Marcador: ${esc(m.score)}</div>` : '';
+    const trophy = (w) => `<span class="mc-trophy">${w ? '🏆' : ''}</span>`;
+    const drawBadge = isDraw ? `<div style="margin-top:.5rem"><span class="badge badge-draw">🤝 Empate</span></div>` : '';
     return `<div class="match-card ${resClass}">
-      <button class="del-match-btn" onclick="deleteMatch('${m.id}')" aria-label="Eliminar">🗑️?</button>
-      <div class="match-date">📅 ${dateStr}${pachangaBadge}</div>
-      <div class="match-teams"><span class="match-pair p1">${p1n}</span><span class="match-vs">VS</span><span class="match-pair p2">${p2n}</span></div>
-      ${scoreHtml}
-      <div><span class="badge ${badgeClass}">${resText}</span></div>
+      <div class="match-card-actions">
+        <button class="edit-match-btn" onclick="editMatch('${m.id}')" aria-label="Editar">✏️</button>
+        <button class="del-match-btn"  onclick="deleteMatch('${m.id}')" aria-label="Eliminar">🗑️</button>
+      </div>
+      <div class="mc-meta"><span class="match-date">📅 ${dateStr}</span>${pachangaBadge}</div>
+      <div class="mc-scoreboard">
+        <div class="mc-row mc-row-p1">
+          <span class="mc-dot mc-dot-p1"></span>
+          <span class="mc-name">${p1n}</span>
+          <div class="mc-scores">${p1ScoresHtml}</div>
+          ${trophy(p1wins)}
+        </div>
+        <div class="mc-row mc-row-p2">
+          <span class="mc-dot mc-dot-p2"></span>
+          <span class="mc-name">${p2n}</span>
+          <div class="mc-scores">${p2ScoresHtml}</div>
+          ${trophy(p2wins)}
+        </div>
+      </div>
+      ${scoreTxtHtml}${drawBadge}
     </div>`;
   }).join('');
 }
@@ -4262,10 +4686,87 @@ function setupPWAInstall() {
 // BOOT
 // --------------------------------------------------
 (function init() {
-  showScreen('screen-register');
+  // Show loading spinner while onAuthStateChanged checks session
   showLoading();
   // onAuthStateChanged handles everything from here
 })();
 </script>
+
+<!-- Admin: Edit user profile modal (outside all screens so position:fixed works) -->
+<div id="admin-edit-overlay" class="admin-edit-overlay" onclick="closeAdminEditUser()">
+  <div class="admin-edit-sheet" onclick="event.stopPropagation()">
+    <h3>✏️ Editar usuario</h3>
+    <div>
+      <label>Nombre</label>
+      <input type="text" id="aeu-firstname" placeholder="Nombre" autocomplete="given-name">
+    </div>
+    <div>
+      <label>Apellidos</label>
+      <input type="text" id="aeu-lastname" placeholder="Apellidos" autocomplete="family-name">
+    </div>
+    <div>
+      <label>Alias</label>
+      <input type="text" id="aeu-alias" placeholder="Alias (en partidos y clasificación)" maxlength="30" autocomplete="nickname">
+    </div>
+    <div>
+      <label>Teléfono</label>
+      <input type="tel" id="aeu-phone" placeholder="+34 600 000 000" autocomplete="tel">
+    </div>
+    <div>
+      <label>Email</label>
+      <input type="email" id="aeu-email" readonly>
+    </div>
+    <div style="display:flex;gap:.5rem;margin-top:.25rem">
+      <button class="btn btn-primary" style="flex:1" onclick="adminSaveUserProfile()">💾 Guardar</button>
+      <button class="btn btn-outline" style="flex:1" onclick="closeAdminEditUser()">Cancelar</button>
+    </div>
+  </div>
+</div>
+<!-- Modal: Editar Partido (usuario) -->
+<div class="modal-overlay" id="user-edit-match-modal" style="display:none">
+  <div class="modal-sheet" style="max-width:480px;max-height:90vh;overflow-y:auto">
+    <button class="modal-close" onclick="closeEditMatch()">✕</button>
+    <div class="modal-title">✏️ Editar partido</div>
+
+    <div class="form-group">
+      <label class="form-label">📅 Fecha</label>
+      <input type="date" id="em-date" class="form-input">
+    </div>
+
+    <div style="margin-bottom:1rem">
+      <div style="font-size:.75rem;font-weight:700;color:var(--green);margin-bottom:.375rem">🟢 Pareja 1</div>
+      <select id="em-p1" class="form-select" style="margin-bottom:.375rem" onchange="renderEditSets()"></select>
+      <select id="em-p2" class="form-select" onchange="renderEditSets()"></select>
+    </div>
+    <div style="margin-bottom:1rem">
+      <div style="font-size:.75rem;font-weight:700;color:var(--amber);margin-bottom:.375rem">🟠 Pareja 2</div>
+      <select id="em-p3" class="form-select" style="margin-bottom:.375rem" onchange="renderEditSets()"></select>
+      <select id="em-p4" class="form-select" onchange="renderEditSets()"></select>
+    </div>
+
+    <div style="margin-bottom:1rem">
+      <div class="form-label" style="margin-bottom:.5rem">📊 Sets</div>
+      <div id="em-set-scorer"></div>
+      <div id="em-result-box" class="result-box rb-empty" style="margin-top:.5rem">Anota el marcador para ver el resultado</div>
+      <div style="display:flex;gap:.5rem;margin-top:.5rem">
+        <button class="btn btn-outline" onclick="addEditSet()" style="flex:1;font-size:.8rem;padding:.4rem">+ Set</button>
+        <button class="btn btn-outline" id="em-btn-remove-set" onclick="removeEditSet()" style="flex:1;font-size:.8rem;padding:.4rem;display:none">- Set</button>
+      </div>
+    </div>
+
+    <div style="margin-bottom:1.25rem">
+      <label style="display:flex;align-items:center;gap:.5rem;cursor:pointer;user-select:none">
+        <input type="checkbox" id="em-pachanga" style="width:1rem;height:1rem;cursor:pointer">
+        <span style="font-size:.875rem;font-weight:600">🎉 PACHANGA (no cuenta para clasificación)</span>
+      </label>
+    </div>
+
+    <div style="display:flex;gap:.5rem">
+      <button class="btn btn-primary" onclick="saveEditMatch()" style="flex:1">💾 Guardar cambios</button>
+      <button class="btn btn-outline" onclick="closeEditMatch()" style="flex:1">Cancelar</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>

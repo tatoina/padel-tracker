@@ -4,12 +4,14 @@ service cloud.firestore {
 
     // Users: any authenticated user can read (needed for group member queries)
     // Only owner or admin can write; only admin can delete
+    // Any authenticated user can update the 'groups' field (to add/remove group membership)
     match /users/{userId} {
       allow read: if request.auth != null;
       allow create: if request.auth != null && request.auth.uid == userId;
       allow update: if request.auth != null && (
         request.auth.uid == userId ||
-        request.auth.token.email == 'admin@admin.es'
+        request.auth.token.email == 'admin@admin.es' ||
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['groups'])
       );
       allow delete: if request.auth != null &&
         request.auth.token.email == 'admin@admin.es';
